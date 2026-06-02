@@ -54,6 +54,7 @@ export function AudioList(): React.JSX.Element {
   const setTrackMeta = useLibrary((s) => s.setTrackMeta)
   const setTrackDuration = useLibrary((s) => s.setTrackDuration)
   const setBulkTrackInfo = useLibrary((s) => s.setBulkTrackInfo)
+  const setOrderedPaths = useLibrary((s) => s.setOrderedPaths)
 
 
   const [sorting, setSorting] = useState<SortingState>([{ id: 'title', desc: false }])
@@ -347,6 +348,17 @@ export function AudioList(): React.JSX.Element {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel()
   })
+
+  // Publish the visible (sorted + filtered) order so the player navigates the
+  // same order the user sees. NUL can't appear in a path, so it is a safe
+  // join separator for the dependency key.
+  const orderKey = table
+    .getRowModel()
+    .rows.map((r) => r.original.path)
+    .join('\u0000')
+  useEffect(() => {
+    setOrderedPaths(orderKey ? orderKey.split('\u0000') : [])
+  }, [orderKey, setOrderedPaths])
 
   if (!activeCollection) {
     return (

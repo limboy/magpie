@@ -12,7 +12,9 @@ type LibraryState = {
   trackMeta: Record<string, { artist: string; album: string; title: string } | null>
   trackDurations: Record<string, number | null>
   likedPaths: Record<string, number>
+  orderedPaths: string[]
   setCollections: (collections: Collection[]) => void
+  setOrderedPaths: (paths: string[]) => void
   setLikedPaths: (likedPaths: Record<string, number>) => void
   addCollection: (title: string) => string
   updateCollectionTitle: (id: string, title: string) => void
@@ -39,7 +41,9 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   trackMeta: {},
   trackDurations: {},
   likedPaths: {},
+  orderedPaths: [],
   setCollections: (collections) => set({ collections }),
+  setOrderedPaths: (orderedPaths) => set({ orderedPaths }),
   setLikedPaths: (likedPaths) => set({ likedPaths }),
   addCollection: (title) => {
     const id = Date.now().toString()

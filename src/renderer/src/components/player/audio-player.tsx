@@ -16,6 +16,7 @@ export function AudioPlayer({ fullPlayer = false }: { fullPlayer?: boolean }): R
   const collections = useLibrary((s) => s.collections)
   const selectedCollectionId = useLibrary((s) => s.selectedCollectionId)
   const selectAudio = useLibrary((s) => s.selectAudio)
+  const orderedPaths = useLibrary((s) => s.orderedPaths)
 
   const activeCollection = collections.find((c) => c.id === selectedCollectionId)
 
@@ -94,10 +95,17 @@ export function AudioPlayer({ fullPlayer = false }: { fullPlayer?: boolean }): R
   const loopMode = usePlayer((s) => s.loopMode)
 
   const onNext = useCallback((forcePlay = false): void => {
-    let list = activeCollection?.items ?? []
+    // Navigate the visible (sorted + filtered) order the user sees.
+    let list = orderedPaths.length > 0 ? orderedPaths : (activeCollection?.items ?? [])
     let idx = selectedAudio ? list.indexOf(selectedAudio) : -1
 
-    // If not in active collection, search others
+    // Fall back to the raw collection order if the current track isn't visible.
+    if (idx === -1 && selectedAudio) {
+      list = activeCollection?.items ?? []
+      idx = list.indexOf(selectedAudio)
+    }
+
+    // If still not found, search other collections.
     if (idx === -1 && selectedAudio) {
       for (const c of collections) {
         const i = c.items.indexOf(selectedAudio)
@@ -142,11 +150,16 @@ export function AudioPlayer({ fullPlayer = false }: { fullPlayer?: boolean }): R
     if (forcePlay || isPlaying) {
       setPlaying(true)
     }
-  }, [activeCollection, collections, selectedAudio, shuffle, loopMode, isPlaying, selectAudio, setPlaying])
+  }, [orderedPaths, activeCollection, collections, selectedAudio, shuffle, loopMode, isPlaying, selectAudio, setPlaying])
 
   const onPrev = useCallback((): void => {
-    let list = activeCollection?.items ?? []
+    let list = orderedPaths.length > 0 ? orderedPaths : (activeCollection?.items ?? [])
     let idx = selectedAudio ? list.indexOf(selectedAudio) : -1
+
+    if (idx === -1 && selectedAudio) {
+      list = activeCollection?.items ?? []
+      idx = list.indexOf(selectedAudio)
+    }
 
     if (idx === -1 && selectedAudio) {
       for (const c of collections) {
@@ -178,7 +191,7 @@ export function AudioPlayer({ fullPlayer = false }: { fullPlayer?: boolean }): R
     if (isPlaying) {
       setPlaying(true)
     }
-  }, [activeCollection, collections, selectedAudio, shuffle, isPlaying, selectAudio, setPlaying])
+  }, [orderedPaths, activeCollection, collections, selectedAudio, shuffle, isPlaying, selectAudio, setPlaying])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
