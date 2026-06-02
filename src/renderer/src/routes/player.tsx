@@ -95,7 +95,7 @@ export function PlayerRoute(): React.JSX.Element {
       {/* Global Top Navigation Bar */}
       <header className="app-drag flex h-10 shrink-0 items-center justify-between border-b bg-background/80 backdrop-blur-sm px-3">
         {/* Left: macOS traffic light spacer + left sidebar toggler */}
-        <div className="flex items-center gap-1 shrink-0" style={{ paddingLeft: 64 }}>
+        <div className="flex items-center gap-1 shrink-0 pl-18 -mb-px">
           {!isCompact && (
             <Button
               size="icon"
@@ -105,9 +105,7 @@ export function PlayerRoute(): React.JSX.Element {
               aria-pressed={leftSidebarOpen}
               onClick={toggleLeft}
             >
-              <PanelLeft
-                className={`size-4 opacity-75`}
-              />
+              <PanelLeft className={`size-4 opacity-75`} />
             </Button>
           )}
         </div>
@@ -117,29 +115,29 @@ export function PlayerRoute(): React.JSX.Element {
           <UpdateIndicator />
           {!fullPlayer &&
             (isSearchOpen ? (
-            <div className="flex items-center bg-muted/50 rounded-md px-2 py-1 h-7 border border-border/50 focus-within:ring-1 focus-within:ring-primary/30 transition-all">
-              <Search className="size-3.5 text-muted-foreground mr-1.5" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Search songs..."
-                className="bg-transparent border-none outline-none text-xs w-32 md:w-48 placeholder:text-muted-foreground/50"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') {
-                    setIsSearchOpen(false)
-                  }
-                }}
-              />
-              <button
-                className="hover:text-foreground text-muted-foreground transition-colors ml-1"
-                onClick={() => setIsSearchOpen(false)}
-              >
-                <X className="size-3.5" />
-              </button>
-            </div>
-          ) : (
+              <div className="flex items-center bg-muted/50 rounded-md px-2 py-1 h-7 border border-border/50 focus-within:ring-1 focus-within:ring-primary/30 transition-all">
+                <Search className="size-3.5 text-muted-foreground mr-1.5" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search songs..."
+                  className="bg-transparent border-none outline-none text-xs w-32 md:w-48 placeholder:text-muted-foreground/50"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                      setIsSearchOpen(false)
+                    }
+                  }}
+                />
+                <button
+                  className="hover:text-foreground text-muted-foreground transition-colors ml-1"
+                  onClick={() => setIsSearchOpen(false)}
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            ) : (
               <Button
                 size="icon"
                 variant="ghost"
