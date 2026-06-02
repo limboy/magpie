@@ -7,7 +7,6 @@ import {
   Shuffle,
   Repeat,
   Repeat1,
-  Music,
   Volume2,
   Volume1,
   VolumeX,
@@ -21,7 +20,6 @@ import { msToClock } from '@/lib/format-time'
 import { usePlayer } from '@/store/player-store'
 import { useLibrary } from '@/store/library-store'
 import { useUI } from '@/store/ui-store'
-import { useCoverArt } from '@/hooks/use-cover-art'
 import { cn } from '@/lib/utils'
 
 type Props = {
@@ -49,7 +47,6 @@ export function TransportControls({
   const requestSeek = usePlayer((s) => s.requestSeek)
   const trackMeta = useLibrary((s) => s.trackMeta)
   const m = selectedAudio ? trackMeta[selectedAudio] : null
-  const cover = useCoverArt(selectedAudio)
 
   const title = selectedAudio
     ? m?.title && m.title !== 'Unknown'
@@ -95,33 +92,17 @@ export function TransportControls({
 
   return (
     <div className="flex flex-col items-center gap-3">
-      {/* Part 1: Cover art + track info */}
+      {/* Part 1: Track info (artwork only shown in full player) */}
       {showTrackInfo && (
-        <div className="flex w-full max-w-xl flex-col items-center gap-2.5 px-4">
-          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-muted shadow-md ring-1 ring-black/5">
-            {cover ? (
-              <img
-                key={cover}
-                src={cover}
-                alt=""
-                className="h-full w-full object-cover animate-in fade-in duration-500"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-muted-foreground/40">
-                <Music className="h-6 w-6" strokeWidth={1.75} />
-              </div>
-            )}
-          </div>
-          <div className="flex w-full flex-col items-center gap-0.5">
-            <h2 className="line-clamp-1 text-center text-lg font-semibold tracking-tight text-foreground transition-all">
-              {title}
-            </h2>
-            {artist && (
-              <p className="line-clamp-1 text-center text-xs font-medium text-muted-foreground/70">
-                {artist}
-              </p>
-            )}
-          </div>
+        <div className="flex w-full max-w-xl flex-col items-center gap-0.5 px-4">
+          <h2 className="line-clamp-1 text-center text-lg font-semibold tracking-tight text-foreground transition-all">
+            {title}
+          </h2>
+          {artist && (
+            <p className="line-clamp-1 text-center text-xs font-medium text-muted-foreground/70">
+              {artist}
+            </p>
+          )}
         </div>
       )}
 
