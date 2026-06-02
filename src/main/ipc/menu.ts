@@ -31,6 +31,22 @@ export function registerMenuIpc(getWindow: () => BrowserWindow | null): void {
     menu.popup({ window: win })
   })
 
+  ipcMain.handle('soundbox:showSidebarContextMenu', async () => {
+    const win = getWindow()
+    if (!win) return
+
+    const menu = Menu.buildFromTemplate([
+      {
+        label: 'New Collection',
+        click: () => {
+          win.webContents.send('soundbox:new-collection')
+        }
+      }
+    ])
+
+    menu.popup({ window: win })
+  })
+
   ipcMain.handle('soundbox:showCollectionContextMenu', async (_e, id: string, title: string) => {
     const win = getWindow()
     if (!win) return

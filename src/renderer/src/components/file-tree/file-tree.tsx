@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Plus, Folder } from 'lucide-react'
+import { Folder } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useLibrary } from '@/store/library-store'
 import { usePlayer } from '@/store/player-store'
@@ -62,16 +62,28 @@ export function FileTree(): React.JSX.Element {
     const undelete = window.soundbox.onDeleteCollection((id, title) => {
       handleDelete(id, title)
     })
+    const unnew = window.soundbox.onNewCollection(() => {
+      handleAddDefault()
+    })
     return () => {
       unrename()
       undelete()
+      unnew()
     }
-  }, [handleDelete])
+  }, [handleDelete, handleAddDefault])
+
+  const handleContextMenu = useCallback((e: React.MouseEvent): void => {
+    e.preventDefault()
+    void window.soundbox.showSidebarContextMenu()
+  }, [])
+
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background">
+    <div className="flex h-full min-h-0 flex-col bg-background" onContextMenu={handleContextMenu}>
       <ScrollArea className="flex-1 p-2">
         {collections.length === 0 ? (
-          <div className="p-4 text-center text-sm text-muted-foreground">No collections yet.</div>
+          <div className="p-4 text-center text-sm text-muted-foreground">
+            Right-click to create a collection.
+          </div>
         ) : (
           <div className="flex flex-col gap-0.5">
             {collections.map((c) => (
@@ -100,6 +112,7 @@ export function FileTree(): React.JSX.Element {
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault()
+                      e.stopPropagation()
                       void window.soundbox.showCollectionContextMenu(c.id, c.title)
                     }}
                     onKeyDown={(e) => {
@@ -119,16 +132,6 @@ export function FileTree(): React.JSX.Element {
           </div>
         )}
       </ScrollArea>
-
-      <div className="mt-auto border-t">
-        <button
-          onClick={handleAddDefault}
-          className="flex w-full items-center gap-2 px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          <span>New Collection</span>
-        </button>
-      </div>
     </div>
   )
 }

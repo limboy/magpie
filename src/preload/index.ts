@@ -62,6 +62,15 @@ const soundbox = {
   showSongContextMenu: (path: string) => ipcRenderer.invoke('soundbox:showSongContextMenu', path) as Promise<void>,
   showCollectionContextMenu: (id: string, title: string) =>
     ipcRenderer.invoke('soundbox:showCollectionContextMenu', id, title) as Promise<void>,
+  showSidebarContextMenu: () =>
+    ipcRenderer.invoke('soundbox:showSidebarContextMenu') as Promise<void>,
+  onNewCollection: (cb: () => void) => {
+    const listener = (): void => cb()
+    ipcRenderer.on('soundbox:new-collection', listener)
+    return () => {
+      ipcRenderer.removeListener('soundbox:new-collection', listener)
+    }
+  },
   onRenameCollection: (cb: (id: string, title: string) => void) => {
     const listener = (_: IpcRendererEvent, id: string, title: string): void => cb(id, title)
     ipcRenderer.on('soundbox:rename-collection', listener)
