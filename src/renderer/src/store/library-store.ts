@@ -17,6 +17,7 @@ type LibraryState = {
   setOrderedPaths: (paths: string[]) => void
   setLikedPaths: (likedPaths: Record<string, number>) => void
   addCollection: (title: string) => string
+  addCollectionWithItems: (title: string, items: string[], watchedFolders: string[]) => string
   updateCollectionTitle: (id: string, title: string) => void
   deleteCollection: (id: string) => void
   setTrackMeta: (path: string, meta: { artist: string; album: string; title: string } | null) => void
@@ -52,6 +53,20 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     set({ collections: next, selectedCollectionId: id, selectedAudio: null })
     usePlayer.getState().setPlaying(false)
     void window.soundbox.setState({ collections: next, selectedCollectionId: id, lastAudioPath: null })
+    return id
+  },
+  addCollectionWithItems: (title, items, watchedFolders) => {
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    const firstAudio = items[0] ?? null
+    const newCollection: Collection = { id, title, items, watchedFolders }
+    const next = [...get().collections, newCollection]
+    set({ collections: next, selectedCollectionId: id, selectedAudio: firstAudio })
+    usePlayer.getState().setPlaying(false)
+    void window.soundbox.setState({
+      collections: next,
+      selectedCollectionId: id,
+      lastAudioPath: firstAudio
+    })
     return id
   },
   updateCollectionTitle: (id, title) => {

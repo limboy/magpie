@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Folder } from 'lucide-react'
+import { Folder, FolderPlus } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { basename } from '@/lib/audio-extensions'
 import { useLibrary } from '@/store/library-store'
 import { usePlayer } from '@/store/player-store'
+import type { TreeNode } from '../../../../preload/soundbox'
 
 export function FileTree(): React.JSX.Element {
   const {
@@ -10,12 +12,15 @@ export function FileTree(): React.JSX.Element {
     selectedCollectionId,
     selectCollection,
     addCollection,
+    addCollectionWithItems,
     updateCollectionTitle,
     deleteCollection
   } = useLibrary()
   const setPlaying = usePlayer((s) => s.setPlaying)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
+  const [isDragOver, setIsDragOver] = useState(false)
+  const dragCounter = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleAddDefault = useCallback((): void => {
@@ -77,8 +82,73 @@ export function FileTree(): React.JSX.Element {
     void window.soundbox.showSidebarContextMenu()
   }, [])
 
+  const handleDragEnter = useCallback((e: React.DragEvent): void => {
+    e.preventDefault()
+    dragCounter.current++
+    setIsDragOver(true)
+  }, [])
+
+  const handleDragLeave = useCallback((): void => {
+    dragCounter.current--
+    if (dragCounter.current <= 0) {
+      dragCounter.current = 0
+      setIsDragOver(false)
+    }
+  }, [])
+
+  const handleDragOver = useCallback((e: React.DragEvent): void => {
+    e.preventDefault()
+  }, [])
+
+  const handleDrop = useCallback(
+    async (e: React.DragEvent): Promise<void> => {
+      e.preventDefault()
+      e.stopPropagation()
+      dragCounter.current = 0
+      setIsDragOver(false)
+
+      const files = Array.from(e.dataTransfer.files)
+
+      for (const file of files) {
+        const path = window.soundbox.getPathForFile(file)
+        if (!path) continue
+        const info = await window.soundbox.getPathInfo(path)
+        if (!info?.isDirectory) continue // only folders create collections
+
+        const tree = await window.soundbox.readTree(path)
+        const paths: string[] = []
+        const flatten = (n: TreeNode): void => {
+          if (n.kind === 'audio') paths.push(n.path)
+          else n.children.forEach(flatten)
+        }
+        flatten(tree)
+        if (paths.length === 0) continue
+
+        // Creates the collection (named after the folder) and selects it.
+        addCollectionWithItems(basename(path), paths, [path])
+      }
+    },
+    [addCollectionWithItems]
+  )
+
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background" onContextMenu={handleContextMenu}>
+    <div
+      className="relative flex h-full min-h-0 flex-col bg-background"
+      onContextMenu={handleContextMenu}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      {isDragOver && (
+        <div className="pointer-events-none absolute inset-1.5 z-50 flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-primary/50 bg-background/90 px-4 text-center backdrop-blur-sm">
+          <FolderPlus className="h-8 w-8 text-primary/70" strokeWidth={1.75} />
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-foreground">Drop folder here</p>
+            <p className="text-xs text-muted-foreground">Creates a collection from the folder</p>
+          </div>
+        </div>
+      )}
       <ScrollArea className="flex-1 p-2">
         {collections.length === 0 ? (
           <div className="p-4 text-center text-sm text-muted-foreground">
