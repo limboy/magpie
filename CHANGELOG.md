@@ -3,6 +3,28 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [v1.1.0](https://github.com/limboy/soundbox/compare/v1.0.5...v1.1.0) - 2026-06-02
+
+### Features
+
+- create a collection by dropping a folder on the sidebar ([ea31f8b](https://github.com/limboy/soundbox/commit/ea31f8bc454d3d72a8aa4ce2d6ec5569e9e9ab92))
+- create collections via sidebar right-click menu ([29b0a09](https://github.com/limboy/soundbox/commit/29b0a096edf295288e85321ba75b2ba36d35a50d))
+- add full-player view with synced lyrics ([a442eda](https://github.com/limboy/soundbox/commit/a442edab2d782de180020ab13b0f5789f73c5493))
+- add album artwork, volume control, and richer keyboard shortcuts ([f740e53](https://github.com/limboy/soundbox/commit/f740e53d15c6ae5c4cb4cad2c6d5595ff27dbdf5))
+
+### Bug Fixes
+
+- navigate tracks in the visible sorted order ([5982024](https://github.com/limboy/soundbox/commit/5982024e34cc964f8407e23ada7192a980ae66d4))
+
+### Documentation
+
+- update CHANGELOG for v1.0.5 ([902f955](https://github.com/limboy/soundbox/commit/902f955bb9b84e0f7731641b14de51e3fdd54685))
+
+### Styles
+
+- show artwork only in full player ([e52744d](https://github.com/limboy/soundbox/commit/e52744dd806013e78441596558d5d10a84d136dc))
+- taller top bar with vertically centered traffic lights ([cc3cf07](https://github.com/limboy/soundbox/commit/cc3cf075c699ec3840a63cf44d5ee1decd0d99de))
+
 ## [v1.0.5](https://github.com/limboy/soundbox/compare/v1.0.4...v1.0.5) - 2026-04-25
 
 ### Documentation
