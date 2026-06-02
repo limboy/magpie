@@ -10,7 +10,9 @@ import {
   Music,
   Volume2,
   Volume1,
-  VolumeX
+  VolumeX,
+  Maximize2,
+  Minimize2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
@@ -18,6 +20,7 @@ import { basename } from '@/lib/audio-extensions'
 import { msToClock } from '@/lib/format-time'
 import { usePlayer } from '@/store/player-store'
 import { useLibrary } from '@/store/library-store'
+import { useUI } from '@/store/ui-store'
 import { useCoverArt } from '@/hooks/use-cover-art'
 import { cn } from '@/lib/utils'
 
@@ -26,13 +29,15 @@ type Props = {
   selectedAudio: string | null
   onPrev: () => void
   onNext: () => void
+  showTrackInfo?: boolean
 }
 
 export function TransportControls({
   audioRef,
   selectedAudio,
   onPrev,
-  onNext
+  onNext,
+  showTrackInfo = true
 }: Props): React.JSX.Element {
   const isPlaying = usePlayer((s) => s.isPlaying)
   const currentTimeMs = usePlayer((s) => s.currentTimeMs)
@@ -89,37 +94,39 @@ export function TransportControls({
   }
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center gap-3">
       {/* Part 1: Cover art + track info */}
-      <div className="flex w-full max-w-xl flex-col items-center gap-2.5 px-4">
-        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-muted shadow-md ring-1 ring-black/5">
-          {cover ? (
-            <img
-              key={cover}
-              src={cover}
-              alt=""
-              className="h-full w-full object-cover animate-in fade-in duration-500"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-muted-foreground/40">
-              <Music className="h-6 w-6" strokeWidth={1.75} />
-            </div>
-          )}
+      {showTrackInfo && (
+        <div className="flex w-full max-w-xl flex-col items-center gap-2.5 px-4">
+          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-muted shadow-md ring-1 ring-black/5">
+            {cover ? (
+              <img
+                key={cover}
+                src={cover}
+                alt=""
+                className="h-full w-full object-cover animate-in fade-in duration-500"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-muted-foreground/40">
+                <Music className="h-6 w-6" strokeWidth={1.75} />
+              </div>
+            )}
+          </div>
+          <div className="flex w-full flex-col items-center gap-0.5">
+            <h2 className="line-clamp-1 text-center text-lg font-semibold tracking-tight text-foreground transition-all">
+              {title}
+            </h2>
+            {artist && (
+              <p className="line-clamp-1 text-center text-xs font-medium text-muted-foreground/70">
+                {artist}
+              </p>
+            )}
+          </div>
         </div>
-        <div className="flex w-full flex-col items-center gap-0.5">
-          <h2 className="line-clamp-1 text-center text-lg font-semibold tracking-tight text-foreground transition-all">
-            {title}
-          </h2>
-          {artist && (
-            <p className="line-clamp-1 text-center text-xs font-medium text-muted-foreground/70">
-              {artist}
-            </p>
-          )}
-        </div>
-      </div>
+      )}
 
       {/* Part 2: Progress Bar */}
-      <div className="flex w-full max-w-3xl flex-col gap-1 px-8 mt-3">
+      <div className="flex w-full max-w-3xl flex-col gap-1 px-8">
         <div
           className="relative px-0.5"
           onMouseMove={handleMouseMove}
@@ -154,9 +161,11 @@ export function TransportControls({
         </div>
       </div>
 
-      {/* Part 3: Controller — buttons stay centered, volume sits to the right */}
+      {/* Part 3: Controller — buttons stay centered, volume left, expand right */}
       <div className="grid w-full max-w-3xl grid-cols-[1fr_auto_1fr] items-center px-8">
-        <div />
+        <div className="flex justify-start">
+          <VolumeControl />
+        </div>
         <div className="flex items-center gap-4 md:gap-8 text-muted-foreground/80">
           <Button
             size="icon"
@@ -234,10 +243,29 @@ export function TransportControls({
           </Button>
         </div>
         <div className="flex justify-end">
-          <VolumeControl />
+          <ExpandButton />
         </div>
       </div>
     </div>
+  )
+}
+
+function ExpandButton(): React.JSX.Element {
+  const fullPlayer = useUI((s) => s.fullPlayer)
+  const toggleFullPlayer = useUI((s) => s.toggleFullPlayer)
+  const Icon = fullPlayer ? Minimize2 : Maximize2
+
+  return (
+    <Button
+      size="icon"
+      variant="ghost"
+      className="h-8 w-8 text-muted-foreground/60 transition-colors hover:text-foreground"
+      onClick={toggleFullPlayer}
+      title={fullPlayer ? 'Exit full player' : 'Full player'}
+      aria-pressed={fullPlayer}
+    >
+      <Icon className="h-4.5 w-4.5" strokeWidth={2} />
+    </Button>
   )
 }
 

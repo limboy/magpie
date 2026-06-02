@@ -19,6 +19,16 @@ export type AppState = {
 
 export type LibraryChangedPayload = { kind: 'tree'; path: string }
 
+export type LyricsResult = { synced: string | null; plain: string | null }
+
+export type LyricsQuery = {
+  path: string
+  title: string
+  artist: string
+  album: string
+  durationMs: number | null
+}
+
 export type UpdateInfo = { version: string }
 
 export interface SoundboxApi {
@@ -28,6 +38,7 @@ export interface SoundboxApi {
   probeMetadata(path: string): Promise<{ artist: string; album: string; title: string } | null>
   getBulkMetadata(paths: string[]): Promise<Record<string, { meta: { artist: string; album: string; title: string }; duration: number | null }>>
   getCoverArt(path: string): Promise<string | null>
+  getLyrics(query: LyricsQuery): Promise<LyricsResult | null>
   getState(): Promise<AppState>
   setState(patch: Partial<AppState>): Promise<AppState>
   onLibraryChanged(cb: (payload: LibraryChangedPayload) => void): () => void

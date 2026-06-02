@@ -16,6 +16,10 @@ const soundbox = {
     } | null>,
   getCoverArt: (path: string) =>
     ipcRenderer.invoke('soundbox:getCoverArt', path) as Promise<string | null>,
+  getLyrics: (query: import('./soundbox').LyricsQuery) =>
+    ipcRenderer.invoke('soundbox:getLyrics', query) as Promise<
+      import('./soundbox').LyricsResult | null
+    >,
   getBulkMetadata: (paths: string[]) =>
     ipcRenderer.invoke('soundbox:getBulkMetadata', paths) as Promise<
       Record<

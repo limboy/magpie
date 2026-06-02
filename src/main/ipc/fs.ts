@@ -6,6 +6,7 @@ import { readTree } from '../lib/scan'
 
 import { getCachedMetadata, setCachedMetadata } from '../lib/metadata-cache'
 import { getCoverArt } from '../lib/cover-cache'
+import { getLyrics, type LyricsQuery } from '../lib/lyrics-cache'
 
 export function registerFsIpc(): void {
   ipcMain.handle('soundbox:readTree', async (_e, root: string) => {
@@ -43,6 +44,10 @@ export function registerFsIpc(): void {
   })
   ipcMain.handle('soundbox:getCoverArt', async (_e, path: string) => {
     return getCoverArt(path)
+  })
+
+  ipcMain.handle('soundbox:getLyrics', async (_e, query: LyricsQuery) => {
+    return getLyrics(query)
   })
 
   ipcMain.handle('soundbox:getPathInfo', async (_e, path: string) => {

@@ -5,9 +5,11 @@ import { useLibrary } from '@/store/library-store'
 import { usePlayer } from '@/store/player-store'
 import { useUI } from '@/store/ui-store'
 import { useCoverArt } from '@/hooks/use-cover-art'
+import { cn } from '@/lib/utils'
 import { TransportControls } from './transport-controls'
+import { FullPlayer } from './full-player'
 
-export function AudioPlayer(): React.JSX.Element {
+export function AudioPlayer({ fullPlayer = false }: { fullPlayer?: boolean }): React.JSX.Element {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   
   const selectedAudio = useLibrary((s) => s.selectedAudio)
@@ -272,7 +274,13 @@ export function AudioPlayer(): React.JSX.Element {
   }, [selectedAudio, trackMeta, cover, setPlaying, onPrev, onNext])
 
   return (
-    <div className="flex flex-col gap-2 border-b bg-background px-4 py-4">
+    <div
+      className={cn(
+        fullPlayer
+          ? 'flex min-h-0 flex-1 flex-col bg-background'
+          : 'shrink-0 border-b bg-background/95 px-4 py-4 backdrop-blur-md'
+      )}
+    >
       <audio
         ref={audioRef}
         src={selectedAudio ? pathToLocalUrl(selectedAudio) : undefined}
@@ -326,12 +334,21 @@ export function AudioPlayer(): React.JSX.Element {
           setCurrentTimeMs(secondsToMs(e.currentTarget.currentTime))
         }}
       />
-      <TransportControls
-        audioRef={audioRef}
-        selectedAudio={selectedAudio}
-        onPrev={onPrev}
-        onNext={onNext}
-      />
+      {fullPlayer ? (
+        <FullPlayer
+          audioRef={audioRef}
+          selectedAudio={selectedAudio}
+          onPrev={onPrev}
+          onNext={onNext}
+        />
+      ) : (
+        <TransportControls
+          audioRef={audioRef}
+          selectedAudio={selectedAudio}
+          onPrev={onPrev}
+          onNext={onNext}
+        />
+      )}
     </div>
   )
 }

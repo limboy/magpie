@@ -25,6 +25,7 @@ export function PlayerRoute(): React.JSX.Element {
   const searchQuery = useUI((s) => s.searchQuery)
   const setIsSearchOpen = useUI((s) => s.setIsSearchOpen)
   const setSearchQuery = useUI((s) => s.setSearchQuery)
+  const fullPlayer = useUI((s) => s.fullPlayer)
 
   const searchInputRef = useRef<HTMLInputElement>(null)
 
@@ -114,7 +115,8 @@ export function PlayerRoute(): React.JSX.Element {
         {/* Right: Update indicator + Search */}
         <div className="flex items-center gap-2 app-no-drag">
           <UpdateIndicator />
-          {isSearchOpen ? (
+          {!fullPlayer &&
+            (isSearchOpen ? (
             <div className="flex items-center bg-muted/50 rounded-md px-2 py-1 h-7 border border-border/50 focus-within:ring-1 focus-within:ring-primary/30 transition-all">
               <Search className="size-3.5 text-muted-foreground mr-1.5" />
               <input
@@ -138,16 +140,16 @@ export function PlayerRoute(): React.JSX.Element {
               </button>
             </div>
           ) : (
-            <Button
-              size="icon"
-              variant="ghost"
-              className="size-7"
-              onClick={() => setIsSearchOpen(true)}
-              aria-label="Search"
-            >
-              <Search className="size-4" />
-            </Button>
-          )}
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-7"
+                onClick={() => setIsSearchOpen(true)}
+                aria-label="Search"
+              >
+                <Search className="size-4" />
+              </Button>
+            ))}
         </div>
       </header>
 
@@ -166,21 +168,10 @@ export function PlayerRoute(): React.JSX.Element {
 function PlayerCenter(): React.JSX.Element {
   const selectedCollectionId = useLibrary((s) => s.selectedCollectionId)
   const addItemsToSelectedCollection = useLibrary((s) => s.addItemsToSelectedCollection)
+  const fullPlayer = useUI((s) => s.fullPlayer)
 
   const [isDragOver, setIsDragOver] = useState(false)
-  const [playerHeight, setPlayerHeight] = useState(0)
-  const playerRef = useRef<HTMLDivElement>(null)
   const dragCounter = useRef(0)
-
-  useEffect(() => {
-    const el = playerRef.current
-    if (!el) return
-    const ro = new ResizeObserver((entries) => {
-      setPlayerHeight(entries[0].contentRect.height)
-    })
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
 
   const handleDragEnter = (e: React.DragEvent): void => {
     e.preventDefault()
@@ -236,29 +227,24 @@ function PlayerCenter(): React.JSX.Element {
 
   return (
     <div
-      className="h-full w-full relative flex flex-col"
-      style={{ containerType: 'inline-size' }}
+      className="@container h-full w-full relative flex flex-col"
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <div
-        ref={playerRef}
-        className="z-30 w-full bg-background/95 backdrop-blur-md border-b shrink-0"
-      >
-        <AudioPlayer />
-      </div>
-      <ScrollArea className="flex-1 min-h-0">
-        <AudioList />
-      </ScrollArea>
+      <AudioPlayer fullPlayer={fullPlayer} />
+      {!fullPlayer && (
+        <ScrollArea className="flex-1 min-h-0">
+          <AudioList />
+        </ScrollArea>
+      )}
       <div
         className={cn(
-          'absolute inset-x-0 bottom-0 pointer-events-none z-40 transition-opacity',
+          'absolute inset-0 pointer-events-none z-40 transition-opacity',
           isDragOver ? 'opacity-100' : 'opacity-0',
           'bg-primary/5 ring-2 ring-inset ring-primary/20'
         )}
-        style={{ top: playerHeight }}
       />
     </div>
   )
