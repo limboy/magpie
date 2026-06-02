@@ -4,10 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import pkg from 'electron-updater'
 const { autoUpdater } = pkg
 import icon from '../../resources/icon.png?asset'
-import {
-  registerLocalProtocolHandler,
-  registerLocalSchemePrivileged
-} from './lib/protocol'
+import { registerLocalProtocolHandler, registerLocalSchemePrivileged } from './lib/protocol'
 import { readState, writeState } from './lib/store'
 import { registerFsIpc } from './ipc/fs'
 import { registerDialogIpc } from './ipc/dialog'

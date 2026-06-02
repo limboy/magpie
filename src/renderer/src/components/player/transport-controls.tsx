@@ -107,7 +107,7 @@ export function TransportControls({
       )}
 
       {/* Part 2: Progress Bar */}
-      <div className="flex w-full max-w-3xl flex-col gap-1 px-8">
+      <div className="flex w-full max-w-3xl flex-col gap-1 px-2">
         <div
           className="relative px-0.5"
           onMouseMove={handleMouseMove}
@@ -143,7 +143,7 @@ export function TransportControls({
       </div>
 
       {/* Part 3: Controller — buttons stay centered, volume left, expand right */}
-      <div className="grid w-full max-w-3xl grid-cols-[1fr_auto_1fr] items-center px-8">
+      <div className="grid w-full max-w-3xl grid-cols-[1fr_auto_1fr] items-center px-2">
         <div className="flex justify-start">
           <VolumeControl />
         </div>
@@ -153,7 +153,9 @@ export function TransportControls({
             variant="ghost"
             className={cn(
               'h-9 w-9 transition-all relative',
-              shuffle ? 'text-primary opacity-100' : 'text-muted-foreground/50 hover:text-foreground'
+              shuffle
+                ? 'text-primary opacity-100'
+                : 'text-muted-foreground/50 hover:text-foreground'
             )}
             onClick={toggleShuffle}
             title="Shuffle"
@@ -205,18 +207,19 @@ export function TransportControls({
             variant="ghost"
             className={cn(
               'h-9 w-9 transition-all relative',
-              loopMode !== 'off' ? 'text-primary opacity-100' : 'text-muted-foreground/50 hover:text-foreground'
+              loopMode !== 'off'
+                ? 'text-primary opacity-100'
+                : 'text-muted-foreground/50 hover:text-foreground'
             )}
             onClick={toggleLoop}
-            title={loopMode === 'one' ? 'Repeat One' : loopMode === 'all' ? 'Repeat All' : 'Repeat Off'}
+            title={
+              loopMode === 'one' ? 'Repeat One' : loopMode === 'all' ? 'Repeat All' : 'Repeat Off'
+            }
           >
             {loopMode === 'one' ? (
               <Repeat1 className="h-4.5 w-4.5" strokeWidth={2} />
             ) : (
-              <Repeat
-                className="h-4.5 w-4.5"
-                strokeWidth={2}
-              />
+              <Repeat className="h-4.5 w-4.5" strokeWidth={2} />
             )}
             {loopMode !== 'off' && (
               <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
