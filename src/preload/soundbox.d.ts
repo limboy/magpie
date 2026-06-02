@@ -39,6 +39,7 @@ export interface SoundboxApi {
   getBulkMetadata(paths: string[]): Promise<Record<string, { meta: { artist: string; album: string; title: string }; duration: number | null }>>
   getCoverArt(path: string): Promise<string | null>
   getLyrics(query: LyricsQuery): Promise<LyricsResult | null>
+  signalReady(): void
   getState(): Promise<AppState>
   setState(patch: Partial<AppState>): Promise<AppState>
   onLibraryChanged(cb: (payload: LibraryChangedPayload) => void): () => void

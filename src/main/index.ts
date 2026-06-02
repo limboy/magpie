@@ -21,6 +21,11 @@ function getWindow(): BrowserWindow | null {
   return mainWindow && !mainWindow.isDestroyed() ? mainWindow : null
 }
 
+function revealWindow(): void {
+  const w = getWindow()
+  if (w && !w.isVisible()) w.show()
+}
+
 async function createWindow(): Promise<void> {
   const state = await readState()
   const { windowBounds } = state
@@ -43,8 +48,12 @@ async function createWindow(): Promise<void> {
     }
   })
 
+  // Reveal the window only once the renderer has restored its state and
+  // painted the target song, so the user never sees the empty loading UI.
+  // ready-to-show only arms a safety timeout in case that signal never
+  // arrives (e.g. a renderer error).
   mainWindow.on('ready-to-show', () => {
-    mainWindow?.show()
+    setTimeout(revealWindow, 3000)
   })
 
   let saveTimeout: NodeJS.Timeout | null = null
@@ -127,6 +136,8 @@ app.whenReady().then(async () => {
     if (!app.isPackaged) return
     autoUpdater.quitAndInstall()
   })
+
+  ipcMain.on('soundbox:renderer-ready', () => revealWindow())
 
   await readState()
 

@@ -16,6 +16,8 @@ export function PlayerRoute(): React.JSX.Element {
   const selectCollection = useLibrary((s) => s.selectCollection)
   const selectAudio = useLibrary((s) => s.selectAudio)
   const setLikedPaths = useLibrary((s) => s.setLikedPaths)
+  const setBulkTrackInfo = useLibrary((s) => s.setBulkTrackInfo)
+  const setHydrated = useLibrary((s) => s.setHydrated)
 
   const leftSidebarOpen = useUI((s) => s.leftSidebarOpen)
   const leftSidebarWidth = useUI((s) => s.leftSidebarWidth)
@@ -49,20 +51,53 @@ export function PlayerRoute(): React.JSX.Element {
   useEffect(() => {
     void (async () => {
       const state = await window.soundbox.getState()
+
+      // Prefetch cached metadata for the collection we're about to show so the
+      // list paints with parsed titles directly, instead of flashing filenames
+      // first and switching once AudioList's own fetch resolves.
+      const selected = state.collections?.find((c) => c.id === state.selectedCollectionId)
+      const items = selected?.items ?? []
+      if (items.length > 0) {
+        const bulk = await window.soundbox.getBulkMetadata(items).catch(() => ({}))
+        setBulkTrackInfo(bulk)
+      }
+
       if (state.collections) {
         setCollections(state.collections)
       }
       if (state.selectedCollectionId) {
         selectCollection(state.selectedCollectionId)
       }
+      // Select the restored track in the same batch so the player paints the
+      // target song directly, rather than flashing the collection's first
+      // track (or "Ready to play") before switching.
       if (state.lastAudioPath) {
-        queueMicrotask(() => selectAudio(state.lastAudioPath))
+        selectAudio(state.lastAudioPath)
       }
       if (state.likedPaths) {
         setLikedPaths(state.likedPaths)
       }
+      // Restore is done: only now should the player fall back to "Ready to
+      // play" when there's genuinely nothing to show.
+      setHydrated(true)
     })()
-  }, [setCollections, selectCollection, selectAudio, setLikedPaths])
+  }, [setCollections, selectCollection, selectAudio, setLikedPaths, setBulkTrackInfo, setHydrated])
+
+  const hydrated = useLibrary((s) => s.hydrated)
+  useEffect(() => {
+    if (!hydrated) return
+    // Tell the main process to reveal the window only after the restored UI
+    // has actually painted (a double rAF lands after the next commit's paint),
+    // so the window appears already showing the song — no loading flash.
+    let inner = 0
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() => window.soundbox.signalReady())
+    })
+    return () => {
+      cancelAnimationFrame(outer)
+      cancelAnimationFrame(inner)
+    }
+  }, [hydrated])
 
   useEffect(() => {
     return window.soundbox.onStateUpdated((state) => {

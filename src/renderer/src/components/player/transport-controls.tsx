@@ -46,13 +46,16 @@ export function TransportControls({
   const setLoopMode = usePlayer((s) => s.setLoopMode)
   const requestSeek = usePlayer((s) => s.requestSeek)
   const trackMeta = useLibrary((s) => s.trackMeta)
+  const hydrated = useLibrary((s) => s.hydrated)
   const m = selectedAudio ? trackMeta[selectedAudio] : null
 
   const title = selectedAudio
     ? m?.title && m.title !== 'Unknown'
       ? m.title
       : basename(selectedAudio)
-    : 'Ready to play'
+    : hydrated
+      ? 'Ready to play'
+      : ''
   const artist = m?.artist && m.artist !== 'Unknown' ? m.artist : null
 
   const [hoverMs, setHoverMs] = useState<number | null>(null)

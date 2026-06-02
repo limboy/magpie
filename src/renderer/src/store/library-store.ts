@@ -8,6 +8,7 @@ type LibraryState = {
   selectedCollectionId: string | null
   selectedAudio: string | null
   loading: boolean
+  hydrated: boolean
   error: string | null
   trackMeta: Record<string, { artist: string; album: string; title: string } | null>
   trackDurations: Record<string, number | null>
@@ -30,6 +31,7 @@ type LibraryState = {
   selectAudio: (path: string | null) => void
   toggleLike: (path: string) => void
   setLoading: (loading: boolean) => void
+  setHydrated: (hydrated: boolean) => void
   setError: (err: string | null) => void
 }
 
@@ -38,6 +40,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   selectedCollectionId: null,
   selectedAudio: null,
   loading: false,
+  hydrated: false,
   error: null,
   trackMeta: {},
   trackDurations: {},
@@ -192,5 +195,6 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     void window.soundbox.setState({ likedPaths: next })
   },
   setLoading: (loading) => set({ loading }),
+  setHydrated: (hydrated) => set({ hydrated }),
   setError: (error) => set({ error })
 }))

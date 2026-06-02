@@ -27,6 +27,7 @@ const soundbox = {
         { meta: { artist: string; album: string; title: string }; duration: number | null }
       >
     >,
+  signalReady: () => ipcRenderer.send('soundbox:renderer-ready'),
   getState: () => ipcRenderer.invoke('soundbox:getState'),
   setState: (patch: Partial<import('./soundbox').AppState>) =>
     ipcRenderer.invoke('soundbox:setState', patch),
