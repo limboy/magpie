@@ -3,6 +3,20 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [v1.1.1](https://github.com/limboy/soundbox/compare/v1.1.0...v1.1.1) - 2026-06-02
+
+### Bug Fixes
+
+- eliminate startup UI flash before restored song appears ([d8ce3a7](https://github.com/limboy/soundbox/commit/d8ce3a78fb90885774be0e6312174972f1d7fbcb))
+
+### Documentation
+
+- update CHANGELOG for v1.1.0 ([5d8f55e](https://github.com/limboy/soundbox/commit/5d8f55ef83821deb80f13ad548a412797039d2ee))
+
+### Styles
+
+- tweak transport controls padding and formatting ([5edc7cf](https://github.com/limboy/soundbox/commit/5edc7cf4eab564567e3e05b64c39d911062bb47b))
+
 ## [v1.1.0](https://github.com/limboy/soundbox/compare/v1.0.5...v1.1.0) - 2026-06-02
 
 ### Features
