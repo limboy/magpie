@@ -5,6 +5,7 @@ import { parseFile } from 'music-metadata'
 import { readTree } from '../lib/scan'
 
 import { getCachedMetadata, setCachedMetadata } from '../lib/metadata-cache'
+import { getCoverArt } from '../lib/cover-cache'
 
 export function registerFsIpc(): void {
   ipcMain.handle('soundbox:readTree', async (_e, root: string) => {
@@ -40,6 +41,10 @@ export function registerFsIpc(): void {
       return null
     }
   })
+  ipcMain.handle('soundbox:getCoverArt', async (_e, path: string) => {
+    return getCoverArt(path)
+  })
+
   ipcMain.handle('soundbox:getPathInfo', async (_e, path: string) => {
     try {
       const s = await stat(path)

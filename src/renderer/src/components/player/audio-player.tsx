@@ -3,6 +3,8 @@ import { basename, pathToLocalUrl } from '@/lib/audio-extensions'
 import { secondsToMs } from '@/lib/format-time'
 import { useLibrary } from '@/store/library-store'
 import { usePlayer } from '@/store/player-store'
+import { useUI } from '@/store/ui-store'
+import { useCoverArt } from '@/hooks/use-cover-art'
 import { TransportControls } from './transport-controls'
 
 export function AudioPlayer(): React.JSX.Element {
@@ -85,6 +87,7 @@ export function AudioPlayer(): React.JSX.Element {
     return () => window.removeEventListener('focus', handleFocus)
   }, [selectedAudio, selectAudio])
 
+  const cover = useCoverArt(selectedAudio)
   const shuffle = usePlayer((s) => s.shuffle)
   const loopMode = usePlayer((s) => s.loopMode)
 
@@ -198,12 +201,58 @@ export function AudioPlayer(): React.JSX.Element {
         case '>':
           onNext()
           break
+        case 'ArrowRight': {
+          e.preventDefault()
+          const a = audioRef.current
+          if (a && Number.isFinite(a.duration)) {
+            const next = Math.min(a.duration, a.currentTime + 5)
+            usePlayer.getState().requestSeek(secondsToMs(next))
+          }
+          break
+        }
+        case 'ArrowLeft': {
+          e.preventDefault()
+          const a = audioRef.current
+          if (a) {
+            const next = Math.max(0, a.currentTime - 5)
+            usePlayer.getState().requestSeek(secondsToMs(next))
+          }
+          break
+        }
+        case 'ArrowUp': {
+          e.preventDefault()
+          const p = usePlayer.getState()
+          p.setVolume(Math.min(1, Math.round((p.volume + 0.05) * 100) / 100))
+          if (p.muted) p.setMuted(false)
+          break
+        }
+        case 'ArrowDown': {
+          e.preventDefault()
+          const p = usePlayer.getState()
+          p.setVolume(Math.max(0, Math.round((p.volume - 0.05) * 100) / 100))
+          if (p.muted) p.setMuted(false)
+          break
+        }
+        case 'm':
+        case 'M': {
+          const p = usePlayer.getState()
+          p.setMuted(!p.muted)
+          break
+        }
+        case 'l':
+        case 'L':
+          if (selectedAudio) useLibrary.getState().toggleLike(selectedAudio)
+          break
+        case '/':
+          e.preventDefault()
+          useUI.getState().setIsSearchOpen(true)
+          break
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isPlaying, setPlaying, onPrev, onNext])
+  }, [isPlaying, setPlaying, onPrev, onNext, selectedAudio])
 
   useEffect(() => {
     if ('mediaSession' in navigator && selectedAudio) {
@@ -212,6 +261,7 @@ export function AudioPlayer(): React.JSX.Element {
         title: m?.title && m.title !== 'Unknown' ? m.title : basename(selectedAudio),
         artist: m?.artist && m.artist !== 'Unknown' ? m.artist : 'Unknown Artist',
         album: m?.album && m.album !== 'Unknown' ? m.album : 'Unknown Album',
+        artwork: cover ? [{ src: cover }] : undefined
       })
 
       navigator.mediaSession.setActionHandler('play', () => setPlaying(true))
@@ -219,7 +269,7 @@ export function AudioPlayer(): React.JSX.Element {
       navigator.mediaSession.setActionHandler('previoustrack', onPrev)
       navigator.mediaSession.setActionHandler('nexttrack', () => onNext(false))
     }
-  }, [selectedAudio, trackMeta, setPlaying, onPrev, onNext])
+  }, [selectedAudio, trackMeta, cover, setPlaying, onPrev, onNext])
 
   return (
     <div className="flex flex-col gap-2 border-b bg-background px-4 py-4">

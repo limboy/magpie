@@ -13,8 +13,11 @@ SoundBox is a modern, minimalist audio player for macOS (and more). Built with a
 
 - **Collection Management**: Organize your audio files into custom collections.
 - **Drag & Drop Support**: Add files or entire folders instantly by dragging them into the interface.
-- **Smart Metadata**: Automatically extracts title, artist, and album info using `music-metadata`.
-- **Wide Format Support**: Play MP3, OGG, and WAV files with ease.
+- **Smart Metadata**: Automatically extracts title, artist, album, and embedded **album artwork** using `music-metadata`.
+- **Now Playing**: Album art front and center, complete with macOS Control Center / lock-screen artwork.
+- **Wide Format Support**: Play MP3, M4A/M4B, FLAC, OGG, and WAV files with ease.
+- **Volume Control**: A hover-reveal volume slider with quick mute.
+- **Keyboard Shortcuts**: Space to play/pause, `←/→` to seek, `↑/↓` for volume, `m` to mute, `l` to like, `/` to search.
 - **Fast Search**: Quickly find any song with real-time library filtering.
 - **Live Sync**: Monitors your local folders for changes and keeps your library up to date.
 - **Modern Interface**: A clean, responsive design built with Tailwind CSS and Radix UI.

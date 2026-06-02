@@ -27,6 +27,7 @@ export interface SoundboxApi {
   probeDuration(path: string): Promise<number | null>
   probeMetadata(path: string): Promise<{ artist: string; album: string; title: string } | null>
   getBulkMetadata(paths: string[]): Promise<Record<string, { meta: { artist: string; album: string; title: string }; duration: number | null }>>
+  getCoverArt(path: string): Promise<string | null>
   getState(): Promise<AppState>
   setState(patch: Partial<AppState>): Promise<AppState>
   onLibraryChanged(cb: (payload: LibraryChangedPayload) => void): () => void
