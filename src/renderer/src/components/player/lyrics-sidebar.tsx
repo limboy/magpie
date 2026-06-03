@@ -33,7 +33,7 @@ export function LyricsSidebar(): React.JSX.Element {
   const lyrics = useLyrics(selectedAudio, title, artist, album, effectiveDuration)
 
   return (
-    <aside className="flex w-72 shrink-0 flex-col border-l bg-muted/40 backdrop-blur-sm @xl:w-80">
+    <aside className="flex w-80 shrink-0 flex-col border-l bg-muted/40 backdrop-blur-sm @xl:w-80">
       <div className="app-drag flex h-10 shrink-0 items-center justify-between border-b px-3">
         <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
           Lyrics
