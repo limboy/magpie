@@ -1,4 +1,4 @@
-import { FileAudio, Play, ChevronsUpDown, ArrowUp, ArrowDown, Star } from 'lucide-react'
+import { FileAudio, Play, Pause, ChevronsUpDown, ArrowUp, ArrowDown, Star } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import {
   Table,
@@ -57,6 +57,7 @@ export function AudioList(): React.JSX.Element {
   const toggleLike = useLibrary((s) => s.toggleLike)
   const likedPaths = useLibrary((s) => s.likedPaths)
   const setPlaying = usePlayer((s) => s.setPlaying)
+  const isPlaying = usePlayer((s) => s.isPlaying)
 
   const trackMeta = useLibrary((s) => s.trackMeta)
   const trackDurations = useLibrary((s) => s.trackDurations)
@@ -174,13 +175,26 @@ export function AudioList(): React.JSX.Element {
         cell: (info) => {
           const path = info.row.original.path
           const active = path === selectedAudio
-          return active ? (
-            <div className="flex items-center justify-center">
-              <Play className="h-3.5 w-3.5 text-primary shrink-0 fill-primary" />
-            </div>
-          ) : (
-            <div className="text-center text-muted-foreground/60 tabular-nums">
-              {(info as any).displayIndex}
+          // Active + playing shows a pause icon. Otherwise the number is shown,
+          // swapping to a play icon while the row is hovered.
+          if (active && isPlaying) {
+            return (
+              <div className="flex items-center justify-center">
+                <Pause className="h-3.5 w-3.5 text-primary shrink-0 fill-primary" />
+              </div>
+            )
+          }
+          return (
+            <div className="relative flex items-center justify-center">
+              <span
+                className={cn(
+                  'tabular-nums group-hover:opacity-0',
+                  active ? 'text-primary' : 'text-muted-foreground/60'
+                )}
+              >
+                {(info as any).displayIndex}
+              </span>
+              <Play className="absolute h-3.5 w-3.5 text-primary shrink-0 fill-primary opacity-0 group-hover:opacity-100" />
             </div>
           )
         },
@@ -313,7 +327,7 @@ export function AudioList(): React.JSX.Element {
     ]
 
     return cols
-  }, [selectedAudio, toggleLike])
+  }, [selectedAudio, isPlaying, toggleLike])
 
   const table = useReactTable({
     data,
