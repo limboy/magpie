@@ -40,6 +40,15 @@ type AudioItem = {
   likedAt: number | null
 }
 
+// Columns are not resizable. Icon/number columns get fixed pixel widths; the
+// text columns flex proportionally to fill the remaining width of the pane.
+const FIXED_WIDTHS: Record<string, number> = { index: 64, Like: 56, duration: 92 }
+const FLEX_WIDTHS: Record<string, string> = { title: '42%', artist: '29%', album: '29%' }
+
+function columnWidth(id: string): string | number {
+  return FIXED_WIDTHS[id] ?? FLEX_WIDTHS[id] ?? 'auto'
+}
+
 export function AudioList(): React.JSX.Element {
   const collections = useLibrary((s) => s.collections)
   const selectedCollectionId = useLibrary((s) => s.selectedCollectionId)
@@ -58,7 +67,6 @@ export function AudioList(): React.JSX.Element {
 
 
   const [sorting, setSorting] = useState<SortingState>([{ id: 'title', desc: false }])
-  const [columnSizing, setColumnSizing] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
   const activeCollection = collections.find((c) => c.id === selectedCollectionId)
@@ -164,13 +172,13 @@ export function AudioList(): React.JSX.Element {
         cell: (info) => {
           const path = info.row.original.path
           const active = path === selectedAudio
-          return (
+          return active ? (
+            <div className="flex items-center justify-center">
+              <Play className="h-3.5 w-3.5 text-primary shrink-0 fill-primary" />
+            </div>
+          ) : (
             <div className="pl-2 text-muted-foreground/60 tabular-nums">
-              {active ? (
-                <Play className="h-3.5 w-3.5 text-primary shrink-0 fill-primary" />
-              ) : (
-                (info as any).displayIndex
-              )}
+              {(info as any).displayIndex}
             </div>
           )
         },
@@ -338,13 +346,11 @@ export function AudioList(): React.JSX.Element {
     columns,
     state: {
       sorting,
-      columnSizing,
       columnVisibility
     },
     onSortingChange: setSorting,
-    onColumnSizingChange: setColumnSizing,
     onColumnVisibilityChange: setColumnVisibility,
-    columnResizeMode: 'onChange',
+    enableColumnResizing: false,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel()
   })
@@ -392,8 +398,8 @@ export function AudioList(): React.JSX.Element {
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className="group whitespace-nowrap relative last:border-0 hover:border-border/30 transition-colors"
-                    style={{ width: header.getSize() }}
+                    className="group whitespace-nowrap relative last:border-0 transition-colors"
+                    style={{ width: columnWidth(header.column.id) }}
                   >
                     {header.isPlaceholder
                       ? null
@@ -401,26 +407,6 @@ export function AudioList(): React.JSX.Element {
 
                     {/* Bottom Border */}
                     <div className="absolute inset-x-0 bottom-0 h-px bg-border z-30 pointer-events-none" />
-
-                    {header.column.getCanResize() && !header.column.getIsLastColumn() && (
-                      <div
-                        onMouseDown={header.getResizeHandler()}
-                        onTouchStart={header.getResizeHandler()}
-                        className={cn(
-                          'absolute top-0 bottom-0 -right-1.5 w-3 cursor-col-resize select-none touch-none z-20 group/resizer bg-transparent',
-                          header.column.getIsResizing() ? '' : ''
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            'absolute top-2 bottom-2 right-[5.5px] w-px bg-border transition-colors',
-                            header.column.getIsResizing()
-                              ? 'bg-primary w-0.5'
-                              : 'group-hover/resizer:bg-primary/50'
-                          )}
-                        />
-                      </div>
-                    )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -463,7 +449,7 @@ export function AudioList(): React.JSX.Element {
               className={cn('group', active && 'bg-accent/60')}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id} style={{ width: cell.column.getSize() }}>
+                <TableCell key={cell.id} style={{ width: columnWidth(cell.column.id) }}>
                   <div className="truncate">
                     {flexRender(cell.column.columnDef.cell, {
                       ...cell.getContext(),
