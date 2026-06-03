@@ -382,7 +382,7 @@ export function AudioList(): React.JSX.Element {
         <ContextMenuTrigger asChild>
           <TableHeader className="sticky top-0 z-20 bg-muted/50 backdrop-blur-sm">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="border-b-0">
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
