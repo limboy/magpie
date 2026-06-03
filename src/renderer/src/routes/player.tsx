@@ -124,6 +124,11 @@ export function PlayerRoute(): React.JSX.Element {
     setLeftSidebarOpen(!leftSidebarOpen)
   }, [leftSidebarOpen, setLeftSidebarOpen])
 
+  // Apply the per-mode minimum window size (full player is a narrow column).
+  useEffect(() => {
+    window.soundbox.setFullPlayer(fullPlayer)
+  }, [fullPlayer])
+
   useEffect(() => {
     if (isSearchOpen) {
       searchInputRef.current?.focus()

@@ -28,6 +28,7 @@ const soundbox = {
       >
     >,
   signalReady: () => ipcRenderer.send('soundbox:renderer-ready'),
+  setFullPlayer: (full: boolean) => ipcRenderer.send('soundbox:set-full-player', full),
   getState: () => ipcRenderer.invoke('soundbox:getState'),
   setState: (patch: Partial<import('./soundbox').AppState>) =>
     ipcRenderer.invoke('soundbox:setState', patch),

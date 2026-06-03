@@ -15,7 +15,16 @@ import { closeWatcher, setupWatcher } from './lib/watcher'
 
 registerLocalSchemePrivileged()
 
+// Minimum window size differs per player mode: the list view needs room for
+// the sidebar + track list, while the full player is a narrow, tall column.
+const LIST_MIN = { width: 1000, height: 600 }
+const FULL_PLAYER_MIN = { width: 400, height: 450 }
+
 let mainWindow: BrowserWindow | null = null
+
+// Which mode the window is currently in; determines which persisted bounds
+// (windowBounds vs fullPlayerBounds) get saved and restored.
+let isFullPlayer = false
 
 function getWindow(): BrowserWindow | null {
   return mainWindow && !mainWindow.isDestroyed() ? mainWindow : null
@@ -35,8 +44,8 @@ async function createWindow(): Promise<void> {
     y: windowBounds?.y,
     width: windowBounds?.width || 1200,
     height: windowBounds?.height || 800,
-    minWidth: 400,
-    minHeight: 200,
+    minWidth: LIST_MIN.width,
+    minHeight: LIST_MIN.height,
     show: false,
     autoHideMenuBar: true,
     titleBarStyle: 'hiddenInset',
@@ -57,14 +66,15 @@ async function createWindow(): Promise<void> {
   })
 
   let saveTimeout: NodeJS.Timeout | null = null
+  const persistBounds = (): void => {
+    const bounds = mainWindow?.getBounds()
+    if (bounds) {
+      void writeState(isFullPlayer ? { fullPlayerBounds: bounds } : { windowBounds: bounds })
+    }
+  }
   const saveBounds = (): void => {
     if (saveTimeout) clearTimeout(saveTimeout)
-    saveTimeout = setTimeout(() => {
-      const bounds = mainWindow?.getBounds()
-      if (bounds) {
-        void writeState({ windowBounds: bounds })
-      }
-    }, 500)
+    saveTimeout = setTimeout(persistBounds, 500)
   }
 
   mainWindow.on('resize', saveBounds)
@@ -72,10 +82,7 @@ async function createWindow(): Promise<void> {
 
   mainWindow.on('close', () => {
     if (saveTimeout) clearTimeout(saveTimeout)
-    const bounds = mainWindow?.getBounds()
-    if (bounds) {
-      void writeState({ windowBounds: bounds })
-    }
+    persistBounds()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -138,6 +145,26 @@ app.whenReady().then(async () => {
   })
 
   ipcMain.on('soundbox:renderer-ready', () => revealWindow())
+
+  ipcMain.on('soundbox:set-full-player', async (_e, full: boolean) => {
+    const w = getWindow()
+    if (!w || full === isFullPlayer) return
+
+    // Persist the bounds of the mode we're leaving so it can be restored next time.
+    await writeState(
+      isFullPlayer ? { fullPlayerBounds: w.getBounds() } : { windowBounds: w.getBounds() }
+    )
+
+    isFullPlayer = full
+
+    // Apply the target mode's minimum, then snap to its last-used bounds (if any).
+    const min = full ? FULL_PLAYER_MIN : LIST_MIN
+    w.setMinimumSize(min.width, min.height)
+
+    const state = await readState()
+    const target = full ? state.fullPlayerBounds : state.windowBounds
+    if (target) w.setBounds(target)
+  })
 
   await readState()
 

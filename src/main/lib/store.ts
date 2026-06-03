@@ -17,7 +17,15 @@ export type AppState = {
   selectedCollectionId: string | null
   lastAudioPath: string | null
   likedPaths?: Record<string, number>
+  // Bounds for list mode.
   windowBounds?: {
+    x?: number
+    y?: number
+    width: number
+    height: number
+  }
+  // Bounds for full player mode, remembered independently from list mode.
+  fullPlayerBounds?: {
     x?: number
     y?: number
     width: number
