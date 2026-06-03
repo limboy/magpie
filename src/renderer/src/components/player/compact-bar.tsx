@@ -10,12 +10,14 @@ import {
   Star,
   Volume2,
   Volume1,
-  VolumeX
+  VolumeX,
+  MessageSquareQuote
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { basename } from '@/lib/audio-extensions'
 import { usePlayer } from '@/store/player-store'
 import { useLibrary } from '@/store/library-store'
+import { useUI } from '@/store/ui-store'
 import { useCoverArt } from '@/hooks/use-cover-art'
 import { cn } from '@/lib/utils'
 import { ExpandButton } from './transport-controls'
@@ -128,12 +130,34 @@ export function CompactBar({ audioRef, selectedAudio, onPrev, onNext }: Props): 
       {/* Center: now-playing "LCD" */}
       <NowPlaying selectedAudio={selectedAudio} />
 
-      {/* Right: volume + expand */}
+      {/* Right: lyrics + volume + expand */}
       <div className="flex shrink-0 items-center gap-0.5">
+        <LyricsButton />
         <CycleVolumeButton />
         <ExpandButton />
       </div>
     </div>
+  )
+}
+
+function LyricsButton(): React.JSX.Element {
+  const lyricsSidebarOpen = useUI((s) => s.lyricsSidebarOpen)
+  const toggleLyricsSidebar = useUI((s) => s.toggleLyricsSidebar)
+
+  return (
+    <Button
+      size="icon"
+      variant="ghost"
+      className={cn(
+        'h-8 w-8 transition-colors',
+        lyricsSidebarOpen ? 'text-primary' : 'text-muted-foreground/60 hover:text-foreground'
+      )}
+      onClick={toggleLyricsSidebar}
+      title="Lyrics"
+      aria-pressed={lyricsSidebarOpen}
+    >
+      <MessageSquareQuote className="h-4.5 w-4.5" strokeWidth={2} />
+    </Button>
   )
 }
 

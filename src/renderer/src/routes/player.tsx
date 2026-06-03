@@ -6,6 +6,7 @@ import { TwoPane } from '@/components/layout/two-pane'
 import { FileTree } from '@/components/file-tree/file-tree'
 import { AudioList } from '@/components/player/audio-list'
 import { AudioPlayer } from '@/components/player/audio-player'
+import { LyricsSidebar } from '@/components/player/lyrics-sidebar'
 import { UpdateIndicator } from '@/components/update-indicator'
 import { cn } from '@/lib/utils'
 import { useLibrary } from '@/store/library-store'
@@ -216,6 +217,7 @@ function PlayerCenter(): React.JSX.Element {
   const selectedCollectionId = useLibrary((s) => s.selectedCollectionId)
   const addItemsToSelectedCollection = useLibrary((s) => s.addItemsToSelectedCollection)
   const fullPlayer = useUI((s) => s.fullPlayer)
+  const lyricsSidebarOpen = useUI((s) => s.lyricsSidebarOpen)
 
   const [isDragOver, setIsDragOver] = useState(false)
   const dragCounter = useRef(0)
@@ -274,18 +276,21 @@ function PlayerCenter(): React.JSX.Element {
 
   return (
     <div
-      className="@container h-full w-full relative flex flex-col"
+      className="@container h-full w-full relative flex"
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <AudioPlayer fullPlayer={fullPlayer} />
-      {!fullPlayer && (
-        <ScrollArea className="flex-1 min-h-0">
-          <AudioList />
-        </ScrollArea>
-      )}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <AudioPlayer fullPlayer={fullPlayer} />
+        {!fullPlayer && (
+          <ScrollArea className="min-h-0 flex-1">
+            <AudioList />
+          </ScrollArea>
+        )}
+      </div>
+      {!fullPlayer && lyricsSidebarOpen && <LyricsSidebar />}
       <div
         className={cn(
           'absolute inset-0 pointer-events-none z-40 transition-opacity',
