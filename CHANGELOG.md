@@ -3,6 +3,45 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [v1.2.0](https://github.com/limboy/soundbox/compare/v1.1.1...v1.2.0) - 2026-06-03
+
+### Features
+
+- **compact-bar:** reveal full-player expander on artwork hover ([e14ca96](https://github.com/limboy/soundbox/commit/e14ca960cbd7fc903df9a91ba70e3da4bb64b51e))
+- **window:** per-mode size limits and remembered bounds ([0376672](https://github.com/limboy/soundbox/commit/03766726e388afbba42467af3bf30f5626f03dec))
+- **player:** move exit button to top bar, add star to transport ([ac59b01](https://github.com/limboy/soundbox/commit/ac59b011773515b2c8c3a004d5646ffb383ed02d))
+- **player:** horizontal hover volume slider in full player ([c6dba72](https://github.com/limboy/soundbox/commit/c6dba72409e3912449c139ad70de19fabbec9e58))
+- **player:** take over full window in full player mode ([132b1ef](https://github.com/limboy/soundbox/commit/132b1ef9369db9af6beb8ca00baf01c30eaf6022))
+- **player:** add visual indication for currently playing audio in list ([5000f8b](https://github.com/limboy/soundbox/commit/5000f8be96745f750bd2f5b2c839fd585c4888d1))
+- **audio-list:** show play/pause icon on track number ([3d16c8b](https://github.com/limboy/soundbox/commit/3d16c8bb2406b6c536233e533899144a59bb19a1))
+- full-height sidebars and traffic-light sidebar toggle ([a5b43b4](https://github.com/limboy/soundbox/commit/a5b43b47110199ed25f18ffa2c977d046f9d26f7))
+- lyrics sidebar toggle in compact player ([7416c7b](https://github.com/limboy/soundbox/commit/7416c7bcd0a1b81f678cd7027221e055cabf7e8a))
+- Apple Music-style compact player bar ([0e03961](https://github.com/limboy/soundbox/commit/0e039618ac6b5aa9d42991e6457ba66d68c3d957))
+- star-only filter, star icon, and column alignment polish ([791deb2](https://github.com/limboy/soundbox/commit/791deb28cf6a16d91983bcc88884def6b45d9d98))
+- fix song list column widths and disable resizing ([ce87b4d](https://github.com/limboy/soundbox/commit/ce87b4d0fec6e552e0365f0da8e13d80db6edd86))
+
+### Bug Fixes
+
+- **audio-list:** remove double border under table header ([734601a](https://github.com/limboy/soundbox/commit/734601a76ee8a10218231c2e09a63bba1090deb6))
+- let compact progress bar sit on the card's bottom border ([1be9e09](https://github.com/limboy/soundbox/commit/1be9e09d75b4b66f9da3fa742546a01749d587c4))
+
+### Refactoring
+
+- **player:** use cycle volume button in full mode ([e888ed5](https://github.com/limboy/soundbox/commit/e888ed5c64cf5133b499ec36c6861c26b099b411))
+- **player:** disable sorting for duration column ([8450fb4](https://github.com/limboy/soundbox/commit/8450fb4bbb2ffdfc6e52f4d92142b61be9725349))
+
+### Documentation
+
+- replace screenshot in readme ([59387e9](https://github.com/limboy/soundbox/commit/59387e95e93031dc0fadaee6863ca8381d7c12bd))
+- update screenshot in readme ([bbb73a1](https://github.com/limboy/soundbox/commit/bbb73a1d405c6021e0994de3c0f4991cc44e0ed3))
+- update CHANGELOG for v1.1.1 ([5a644d5](https://github.com/limboy/soundbox/commit/5a644d5042fb1f99c78b8abbb480653375c5d0d0))
+
+### Styles
+
+- **compact-bar:** give play/pause button a filled circle ([556fcd8](https://github.com/limboy/soundbox/commit/556fcd8936589fc0986f3f7435030c3cbfaa17f7))
+- **player:** increase lyrics sidebar width to w-80 ([c0491e1](https://github.com/limboy/soundbox/commit/c0491e1bcd9404696ee260d67137f21673083c13))
+- adjust column widths and code formatting ([159d93d](https://github.com/limboy/soundbox/commit/159d93d27a4e07c21f1b4f09984f7d8f87238ee1))
+
 ## [v1.1.1](https://github.com/limboy/soundbox/compare/v1.1.0...v1.1.1) - 2026-06-02
 
 ### Bug Fixes
