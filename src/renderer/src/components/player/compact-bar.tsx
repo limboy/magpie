@@ -83,16 +83,15 @@ export function CompactBar({ audioRef, selectedAudio, onPrev, onNext }: Props): 
 
         <Button
           size="icon"
-          variant="ghost"
-          className="h-10 w-10 text-foreground hover:bg-transparent active:scale-90"
+          className="h-9 w-9 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all active:scale-95 shadow-lg"
           onClick={toggle}
           disabled={!selectedAudio}
           title={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? (
-            <Pause className="h-7 w-7 fill-current" />
+            <Pause className="h-6 w-6 fill-current" />
           ) : (
-            <Play className="h-7 w-7 translate-x-0.5 fill-current" />
+            <Play className="h-6 w-6 translate-x-0.5 fill-current" />
           )}
         </Button>
 
