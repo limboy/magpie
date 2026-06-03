@@ -129,7 +129,8 @@ export function PlayerRoute(): React.JSX.Element {
     }
   }, [isSearchOpen])
 
-  const leftOpen = !isCompact && leftSidebarOpen
+  // Full player mode takes over the whole window, including the left sidebar.
+  const leftOpen = !isCompact && !fullPlayer && leftSidebarOpen
 
   return (
     <div className="relative flex h-screen overflow-hidden">
@@ -202,7 +203,7 @@ export function PlayerRoute(): React.JSX.Element {
       {!fullPlayer && lyricsSidebarOpen && <LyricsSidebar />}
       {/* Sidebar toggler, parked next to the macOS traffic lights. Rendered last
           so its no-drag region wins over the app-drag header/spacer underneath. */}
-      {!isCompact && (
+      {!isCompact && !fullPlayer && (
         <Button
           size="icon"
           variant="ghost"
@@ -280,7 +281,7 @@ function PlayerCenter(): React.JSX.Element {
 
   return (
     <div
-      className="@container relative flex h-full w-full flex-col"
+      className="@container relative flex min-h-0 w-full flex-1 flex-col"
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
