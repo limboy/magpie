@@ -7,6 +7,7 @@ import { FileTree } from '@/components/file-tree/file-tree'
 import { AudioList } from '@/components/player/audio-list'
 import { AudioPlayer } from '@/components/player/audio-player'
 import { LyricsSidebar } from '@/components/player/lyrics-sidebar'
+import { ExpandButton } from '@/components/player/transport-controls'
 import { UpdateIndicator } from '@/components/update-indicator'
 import { cn } from '@/lib/utils'
 import { useLibrary } from '@/store/library-store'
@@ -146,6 +147,7 @@ export function PlayerRoute(): React.JSX.Element {
               {/* Right: Update indicator + Search */}
               <div className="flex items-center gap-2 app-no-drag">
                 <UpdateIndicator />
+                {fullPlayer && <ExpandButton />}
                 {!fullPlayer && (
                   <Button
                     size="icon"

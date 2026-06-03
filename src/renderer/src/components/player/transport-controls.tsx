@@ -11,7 +11,8 @@ import {
   Volume1,
   VolumeX,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Star
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
@@ -230,10 +231,33 @@ export function TransportControls({
           </Button>
         </div>
         <div className="flex justify-end">
-          <ExpandButton />
+          <StarButton selectedAudio={selectedAudio} />
         </div>
       </div>
     </div>
+  )
+}
+
+function StarButton({ selectedAudio }: { selectedAudio: string | null }): React.JSX.Element {
+  const likedPaths = useLibrary((s) => s.likedPaths)
+  const toggleLike = useLibrary((s) => s.toggleLike)
+  const liked = selectedAudio ? !!likedPaths[selectedAudio] : false
+
+  return (
+    <Button
+      size="icon"
+      variant="ghost"
+      className={cn(
+        'h-8 w-8 transition-colors',
+        liked ? 'text-primary' : 'text-muted-foreground/60 hover:text-foreground'
+      )}
+      onClick={() => selectedAudio && toggleLike(selectedAudio)}
+      disabled={!selectedAudio}
+      title={liked ? 'Unstar' : 'Star'}
+      aria-pressed={liked}
+    >
+      <Star className={cn('h-4.5 w-4.5', liked && 'fill-primary')} strokeWidth={2} />
+    </Button>
   )
 }
 
