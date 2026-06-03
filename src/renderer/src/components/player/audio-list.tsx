@@ -42,7 +42,7 @@ type AudioItem = {
 
 // Columns are not resizable. Icon/number columns get fixed pixel widths; the
 // text columns flex proportionally to fill the remaining width of the pane.
-const FIXED_WIDTHS: Record<string, number> = { index: 64, Like: 56, duration: 92 }
+const FIXED_WIDTHS: Record<string, number> = { index: 56, Like: 56, duration: 92 }
 const FLEX_WIDTHS: Record<string, string> = { title: '42%', artist: '29%', album: '29%' }
 
 function columnWidth(id: string): string | number {
@@ -64,7 +64,6 @@ export function AudioList(): React.JSX.Element {
   const setTrackDuration = useLibrary((s) => s.setTrackDuration)
   const setBulkTrackInfo = useLibrary((s) => s.setBulkTrackInfo)
   const setOrderedPaths = useLibrary((s) => s.setOrderedPaths)
-
 
   const [sorting, setSorting] = useState<SortingState>([{ id: 'title', desc: false }])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -88,9 +87,7 @@ export function AudioList(): React.JSX.Element {
       const currentMeta = useLibrary.getState().trackMeta
       const currentDurations = useLibrary.getState().trackDurations
 
-      const missing = pathsToCheck.filter(
-        (p) => !(p in currentMeta) || !(p in currentDurations)
-      )
+      const missing = pathsToCheck.filter((p) => !(p in currentMeta) || !(p in currentDurations))
       if (missing.length === 0) return
 
       for (const p of missing) {
@@ -214,7 +211,9 @@ export function AudioList(): React.JSX.Element {
               <button
                 className={cn(
                   'p-1.5 rounded-full transition-all hover:bg-primary/10',
-                  likedAt ? 'text-primary' : 'text-muted-foreground/30 opacity-0 group-hover:opacity-100'
+                  likedAt
+                    ? 'text-primary'
+                    : 'text-muted-foreground/30 opacity-0 group-hover:opacity-100'
                 )}
                 onClick={(e) => {
                   e.stopPropagation()
