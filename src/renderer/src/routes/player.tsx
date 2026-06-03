@@ -30,6 +30,7 @@ export function PlayerRoute(): React.JSX.Element {
   const setSearchQuery = useUI((s) => s.setSearchQuery)
   const showStarredOnly = useUI((s) => s.showStarredOnly)
   const toggleStarredOnly = useUI((s) => s.toggleStarredOnly)
+  const lyricsSidebarOpen = useUI((s) => s.lyricsSidebarOpen)
   const fullPlayer = useUI((s) => s.fullPlayer)
 
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -128,87 +129,91 @@ export function PlayerRoute(): React.JSX.Element {
     }
   }, [isSearchOpen])
 
+  const leftOpen = !isCompact && leftSidebarOpen
+
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
-      {/* Global Top Navigation Bar */}
-      <header className="app-drag flex h-10 shrink-0 items-center justify-between border-b bg-background/80 backdrop-blur-sm px-3">
-        {/* Left: macOS traffic light spacer + left sidebar toggler */}
-        <div className="flex items-center gap-1 shrink-0 pl-18 -mb-px">
-          {!isCompact && (
-            <Button
-              size="icon"
-              variant="ghost"
-              className="app-no-drag size-7"
-              aria-label={leftSidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
-              aria-pressed={leftSidebarOpen}
-              onClick={toggleLeft}
-            >
-              <PanelLeft className={`size-4 opacity-75`} />
-            </Button>
-          )}
-        </div>
-
-        {/* Right: Update indicator + Search */}
-        <div className="flex items-center gap-2 app-no-drag">
-          <UpdateIndicator />
-          {!fullPlayer && (
-            <Button
-              size="icon"
-              variant="ghost"
-              className={cn('size-7', showStarredOnly && 'text-primary hover:text-primary')}
-              onClick={toggleStarredOnly}
-              aria-label="Show starred only"
-              aria-pressed={showStarredOnly}
-            >
-              <Star className={cn('size-4', showStarredOnly && 'fill-primary')} />
-            </Button>
-          )}
-          {!fullPlayer &&
-            (isSearchOpen ? (
-              <div className="flex items-center bg-muted/50 rounded-md px-2 py-1 h-7 border border-border/50 focus-within:ring-1 focus-within:ring-primary/30 transition-all">
-                <Search className="size-3.5 text-muted-foreground mr-1.5" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search songs..."
-                  className="bg-transparent border-none outline-none text-xs w-32 md:w-48 placeholder:text-muted-foreground/50"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Escape') {
-                      setIsSearchOpen(false)
-                    }
-                  }}
-                />
-                <button
-                  className="hover:text-foreground text-muted-foreground transition-colors ml-1"
-                  onClick={() => setIsSearchOpen(false)}
-                >
-                  <X className="size-3.5" />
-                </button>
-              </div>
-            ) : (
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-7"
-                onClick={() => setIsSearchOpen(true)}
-                aria-label="Search"
-              >
-                <Search className="size-4" />
-              </Button>
-            ))}
-        </div>
-      </header>
-
-      {/* Main Content */}
+    <div className="relative flex h-screen overflow-hidden">
       <TwoPane
-        leftOpen={!isCompact && leftSidebarOpen}
+        leftOpen={leftOpen}
         leftWidth={leftSidebarWidth}
         onLeftWidthChange={setLeftSidebarWidth}
         left={<FileTree />}
-        center={<PlayerCenter />}
+        center={
+          <div className="flex h-full min-w-0 flex-1 flex-col">
+            {/* Global Top Navigation Bar */}
+            <header className="app-drag flex h-10 shrink-0 items-center justify-end border-b bg-background/80 backdrop-blur-sm px-3">
+              {/* Right: Update indicator + Search */}
+              <div className="flex items-center gap-2 app-no-drag">
+                <UpdateIndicator />
+                {!fullPlayer && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className={cn('size-7', showStarredOnly && 'text-primary hover:text-primary')}
+                    onClick={toggleStarredOnly}
+                    aria-label="Show starred only"
+                    aria-pressed={showStarredOnly}
+                  >
+                    <Star className={cn('size-4', showStarredOnly && 'fill-primary')} />
+                  </Button>
+                )}
+                {!fullPlayer &&
+                  (isSearchOpen ? (
+                    <div className="flex items-center bg-muted/50 rounded-md px-2 py-1 h-7 border border-border/50 focus-within:ring-1 focus-within:ring-primary/30 transition-all">
+                      <Search className="size-3.5 text-muted-foreground mr-1.5" />
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        placeholder="Search songs..."
+                        className="bg-transparent border-none outline-none text-xs w-32 md:w-48 placeholder:text-muted-foreground/50"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Escape') {
+                            setIsSearchOpen(false)
+                          }
+                        }}
+                      />
+                      <button
+                        className="hover:text-foreground text-muted-foreground transition-colors ml-1"
+                        onClick={() => setIsSearchOpen(false)}
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="size-7"
+                      onClick={() => setIsSearchOpen(true)}
+                      aria-label="Search"
+                    >
+                      <Search className="size-4" />
+                    </Button>
+                  ))}
+              </div>
+            </header>
+
+            <PlayerCenter />
+          </div>
+        }
       />
+      {!fullPlayer && lyricsSidebarOpen && <LyricsSidebar />}
+      {/* Sidebar toggler, parked next to the macOS traffic lights. Rendered last
+          so its no-drag region wins over the app-drag header/spacer underneath. */}
+      {!isCompact && (
+        <Button
+          size="icon"
+          variant="ghost"
+          className="app-no-drag absolute left-21 top-1.5 z-50 size-7"
+          aria-label={leftSidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+          aria-pressed={leftSidebarOpen}
+          onClick={toggleLeft}
+        >
+          <PanelLeft className="size-4 opacity-75" />
+        </Button>
+      )}
     </div>
   )
 }
@@ -217,7 +222,6 @@ function PlayerCenter(): React.JSX.Element {
   const selectedCollectionId = useLibrary((s) => s.selectedCollectionId)
   const addItemsToSelectedCollection = useLibrary((s) => s.addItemsToSelectedCollection)
   const fullPlayer = useUI((s) => s.fullPlayer)
-  const lyricsSidebarOpen = useUI((s) => s.lyricsSidebarOpen)
 
   const [isDragOver, setIsDragOver] = useState(false)
   const dragCounter = useRef(0)
@@ -276,21 +280,18 @@ function PlayerCenter(): React.JSX.Element {
 
   return (
     <div
-      className="@container h-full w-full relative flex"
+      className="@container relative flex h-full w-full flex-col"
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <AudioPlayer fullPlayer={fullPlayer} />
-        {!fullPlayer && (
-          <ScrollArea className="min-h-0 flex-1">
-            <AudioList />
-          </ScrollArea>
-        )}
-      </div>
-      {!fullPlayer && lyricsSidebarOpen && <LyricsSidebar />}
+      <AudioPlayer fullPlayer={fullPlayer} />
+      {!fullPlayer && (
+        <ScrollArea className="min-h-0 flex-1">
+          <AudioList />
+        </ScrollArea>
+      )}
       <div
         className={cn(
           'absolute inset-0 pointer-events-none z-40 transition-opacity',

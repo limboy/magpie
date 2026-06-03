@@ -133,13 +133,15 @@ export function FileTree(): React.JSX.Element {
 
   return (
     <div
-      className="relative flex h-full min-h-0 flex-col bg-background"
+      className="relative flex h-full min-h-0 flex-col bg-muted/40 backdrop-blur-sm"
       onContextMenu={handleContextMenu}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
+      {/* Drag region that clears the macOS traffic lights, aligned to the header */}
+      <div className="app-drag h-10 shrink-0" />
       {isDragOver && (
         <div className="pointer-events-none absolute inset-1.5 z-50 flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-primary/50 bg-background/90 px-4 text-center backdrop-blur-sm">
           <FolderPlus className="h-8 w-8 text-primary/70" strokeWidth={1.75} />

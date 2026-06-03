@@ -33,15 +33,15 @@ export function LyricsSidebar(): React.JSX.Element {
   const lyrics = useLyrics(selectedAudio, title, artist, album, effectiveDuration)
 
   return (
-    <aside className="flex w-72 shrink-0 flex-col border-l bg-secondary/30 backdrop-blur-sm @xl:w-80">
-      <div className="flex h-10 shrink-0 items-center justify-between border-b px-3">
+    <aside className="flex w-72 shrink-0 flex-col border-l bg-muted/40 backdrop-blur-sm @xl:w-80">
+      <div className="app-drag flex h-10 shrink-0 items-center justify-between border-b px-3">
         <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
           Lyrics
         </span>
         <Button
           size="icon"
           variant="ghost"
-          className="size-6 text-muted-foreground/60 hover:text-foreground"
+          className="app-no-drag size-6 text-muted-foreground/60 hover:text-foreground"
           onClick={toggleLyricsSidebar}
           aria-label="Close lyrics"
         >
