@@ -11,7 +11,8 @@ import {
   Volume2,
   Volume1,
   VolumeX,
-  MessageSquareQuote
+  MessageSquareQuote,
+  Maximize2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { basename } from '@/lib/audio-extensions'
@@ -20,7 +21,6 @@ import { useLibrary } from '@/store/library-store'
 import { useUI } from '@/store/ui-store'
 import { useCoverArt } from '@/hooks/use-cover-art'
 import { cn } from '@/lib/utils'
-import { ExpandButton } from './transport-controls'
 
 type Props = {
   audioRef: React.RefObject<HTMLAudioElement | null>
@@ -130,11 +130,10 @@ export function CompactBar({ audioRef, selectedAudio, onPrev, onNext }: Props): 
       {/* Center: now-playing "LCD" */}
       <NowPlaying selectedAudio={selectedAudio} />
 
-      {/* Right: lyrics + volume + expand */}
+      {/* Right: lyrics + volume */}
       <div className="flex shrink-0 items-center gap-0.5">
         <LyricsButton />
         <CycleVolumeButton />
-        <ExpandButton />
       </div>
     </div>
   )
@@ -209,6 +208,7 @@ function NowPlaying({ selectedAudio }: { selectedAudio: string | null }): React.
   const hydrated = useLibrary((s) => s.hydrated)
   const likedPaths = useLibrary((s) => s.likedPaths)
   const toggleLike = useLibrary((s) => s.toggleLike)
+  const toggleFullPlayer = useUI((s) => s.toggleFullPlayer)
   const cover = useCoverArt(selectedAudio)
 
   const m = selectedAudio ? trackMeta[selectedAudio] : null
@@ -227,8 +227,14 @@ function NowPlaying({ selectedAudio }: { selectedAudio: string | null }): React.
   return (
     <div className="relative mx-auto min-w-0 max-w-2xl flex-1">
       <div className="group relative flex h-12 items-center gap-3 rounded-lg border border-border/40 bg-muted/50 p-2">
-        {/* Artwork */}
-        <div className="size-8 shrink-0 overflow-hidden rounded-md bg-muted">
+        {/* Artwork — hovering reveals the full-player expander */}
+        <button
+          type="button"
+          className="group/cover relative size-8 shrink-0 overflow-hidden rounded-md bg-muted"
+          onClick={toggleFullPlayer}
+          title="Full player"
+          aria-label="Full player"
+        >
           {cover ? (
             <img key={cover} src={cover} alt="" className="h-full w-full object-cover" />
           ) : (
@@ -236,7 +242,10 @@ function NowPlaying({ selectedAudio }: { selectedAudio: string | null }): React.
               <Music className="h-4 w-4" strokeWidth={1.5} />
             </div>
           )}
-        </div>
+          <div className="absolute inset-0 flex items-center justify-center bg-foreground/45 opacity-0 transition-opacity group-hover/cover:opacity-100">
+            <Maximize2 className="h-3.5 w-3.5 text-background" strokeWidth={2.5} />
+          </div>
+        </button>
 
         {/* Title + artist */}
         <div className="min-w-0 flex-1 text-center">
