@@ -226,9 +226,9 @@ function NowPlaying({ selectedAudio }: { selectedAudio: string | null }): React.
 
   return (
     <div className="relative mx-auto min-w-0 max-w-2xl flex-1">
-      <div className="group relative flex h-12 items-center gap-3 overflow-hidden rounded-lg border border-border/40 bg-muted/50 pl-2 pr-3">
+      <div className="group relative flex h-12 items-center gap-3 rounded-lg border border-border/40 bg-muted/50 p-2">
         {/* Artwork */}
-        <div className="size-9 shrink-0 overflow-hidden rounded-md bg-muted">
+        <div className="size-8 shrink-0 overflow-hidden rounded-md bg-muted">
           {cover ? (
             <img key={cover} src={cover} alt="" className="h-full w-full object-cover" />
           ) : (
@@ -261,9 +261,10 @@ function NowPlaying({ selectedAudio }: { selectedAudio: string | null }): React.
           <Star className={cn('h-4 w-4', liked && 'fill-primary')} />
         </button>
 
-        {/* Thin progress indicator pinned to the bottom edge (non-interactive) */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 bg-border/60">
-          <div className="h-full bg-foreground/70" style={{ width: `${progress}%` }} />
+        {/* Thin progress indicator near the bottom edge (non-interactive),
+            inset so it clears the card's rounded corners */}
+        <div className="pointer-events-none absolute inset-x-2 -bottom-px z-50 h-px overflow-hidden rounded-full bg-border/60">
+          <div className="h-full rounded-full bg-foreground/70" style={{ width: `${progress}%` }} />
         </div>
       </div>
     </div>
