@@ -422,6 +422,7 @@ export function AudioList(): React.JSX.Element {
       <TableBody>
         {table.getRowModel().rows.map((row, i) => {
           const active = row.original.path === selectedAudio
+          const nowPlaying = active && isPlaying
           return (
             <TableRow
               key={row.id}
@@ -434,7 +435,11 @@ export function AudioList(): React.JSX.Element {
                 e.preventDefault()
                 void window.soundbox.showSongContextMenu(row.original.path)
               }}
-              className={cn('group', active && 'bg-accent/60')}
+              className={cn(
+                'group relative',
+                active && !nowPlaying && 'bg-accent/60',
+                nowPlaying && 'bg-primary/5 hover:bg-primary/5'
+              )}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id} style={{ width: columnWidth(cell.column.id) }}>
