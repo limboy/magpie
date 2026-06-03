@@ -7,15 +7,13 @@ import {
   Shuffle,
   Repeat,
   Repeat1,
-  Volume2,
-  Volume1,
-  VolumeX,
   Maximize2,
   Minimize2,
   Star
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
+import { CycleVolumeButton } from './compact-bar'
 import { basename } from '@/lib/audio-extensions'
 import { msToClock } from '@/lib/format-time'
 import { usePlayer } from '@/store/player-store'
@@ -149,7 +147,7 @@ export function TransportControls({
       {/* Part 3: Controller — buttons stay centered, volume left, expand right */}
       <div className="grid w-full max-w-3xl grid-cols-[1fr_auto_1fr] items-center px-2">
         <div className="flex justify-start">
-          <VolumeControl />
+          <CycleVolumeButton />
         </div>
         <div className="flex items-center gap-4 md:gap-8 text-muted-foreground/80">
           <Button
@@ -280,43 +278,3 @@ export function ExpandButton(): React.JSX.Element {
   )
 }
 
-export function VolumeControl(): React.JSX.Element {
-  const volume = usePlayer((s) => s.volume)
-  const muted = usePlayer((s) => s.muted)
-  const setVolume = usePlayer((s) => s.setVolume)
-  const setMuted = usePlayer((s) => s.setMuted)
-
-  const effective = muted ? 0 : volume
-  const Icon = effective === 0 ? VolumeX : effective < 0.5 ? Volume1 : Volume2
-
-  return (
-    // Icon stays fixed on the left; the pill expands rightward to reveal the slider.
-    <div className="group flex items-center rounded-full pl-1 transition-all hover:bg-muted/60 hover:pr-3">
-      <Button
-        size="icon"
-        variant="ghost"
-        className="h-8 w-8 shrink-0 text-muted-foreground/60 hover:bg-transparent hover:text-foreground transition-colors"
-        onClick={() => setMuted(!muted)}
-        title={muted ? 'Unmute' : 'Mute'}
-      >
-        <Icon className="h-4.5 w-4.5" strokeWidth={2} />
-      </Button>
-      {/* Horizontal slider slides out to the right of the icon on hover */}
-      <div className="w-0 overflow-hidden opacity-0 transition-all duration-200 group-hover:ml-2 group-hover:w-24 group-hover:opacity-100">
-        <Slider
-          className="min-w-24 cursor-pointer [&_[data-slot=slider-track]]:bg-foreground/20"
-          hideThumb
-          value={[Math.round(effective * 100)]}
-          min={0}
-          max={100}
-          step={1}
-          onValueChange={(v) => {
-            const next = v[0] / 100
-            setVolume(next)
-            if (muted && next > 0) setMuted(false)
-          }}
-        />
-      </div>
-    </div>
-  )
-}

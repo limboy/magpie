@@ -163,7 +163,7 @@ function LyricsButton(): React.JSX.Element {
 // Click cycles through 100% → 75% → 50% → 25% → mute → 100% …
 const VOLUME_STEPS = [1, 0.75, 0.5, 0.25, 0] as const
 
-function CycleVolumeButton(): React.JSX.Element {
+export function CycleVolumeButton(): React.JSX.Element {
   const volume = usePlayer((s) => s.volume)
   const muted = usePlayer((s) => s.muted)
   const setVolume = usePlayer((s) => s.setVolume)
