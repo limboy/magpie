@@ -237,7 +237,7 @@ export function TransportControls({
   )
 }
 
-function ExpandButton(): React.JSX.Element {
+export function ExpandButton(): React.JSX.Element {
   const fullPlayer = useUI((s) => s.fullPlayer)
   const toggleFullPlayer = useUI((s) => s.toggleFullPlayer)
   const Icon = fullPlayer ? Minimize2 : Maximize2
@@ -256,7 +256,7 @@ function ExpandButton(): React.JSX.Element {
   )
 }
 
-function VolumeControl(): React.JSX.Element {
+export function VolumeControl(): React.JSX.Element {
   const volume = usePlayer((s) => s.volume)
   const muted = usePlayer((s) => s.muted)
   const setVolume = usePlayer((s) => s.setVolume)

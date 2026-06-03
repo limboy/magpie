@@ -6,7 +6,7 @@ import { usePlayer } from '@/store/player-store'
 import { useUI } from '@/store/ui-store'
 import { useCoverArt } from '@/hooks/use-cover-art'
 import { cn } from '@/lib/utils'
-import { TransportControls } from './transport-controls'
+import { CompactBar } from './compact-bar'
 import { FullPlayer } from './full-player'
 
 export function AudioPlayer({ fullPlayer = false }: { fullPlayer?: boolean }): React.JSX.Element {
@@ -291,7 +291,7 @@ export function AudioPlayer({ fullPlayer = false }: { fullPlayer?: boolean }): R
       className={cn(
         fullPlayer
           ? 'flex min-h-0 flex-1 flex-col bg-background'
-          : 'shrink-0 border-b bg-background/95 px-4 py-4 backdrop-blur-md'
+          : 'shrink-0 border-b bg-background/95 px-3 py-2.5 backdrop-blur-md'
       )}
     >
       <audio
@@ -355,7 +355,7 @@ export function AudioPlayer({ fullPlayer = false }: { fullPlayer?: boolean }): R
           onNext={onNext}
         />
       ) : (
-        <TransportControls
+        <CompactBar
           audioRef={audioRef}
           selectedAudio={selectedAudio}
           onPrev={onPrev}
