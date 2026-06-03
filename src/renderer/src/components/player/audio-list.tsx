@@ -1,4 +1,4 @@
-import { FileAudio, Play, ChevronsUpDown, ArrowUp, ArrowDown, Heart } from 'lucide-react'
+import { FileAudio, Play, ChevronsUpDown, ArrowUp, ArrowDown, Star } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import {
   Table,
@@ -42,7 +42,7 @@ type AudioItem = {
 
 // Columns are not resizable. Icon/number columns get fixed pixel widths; the
 // text columns flex proportionally to fill the remaining width of the pane.
-const FIXED_WIDTHS: Record<string, number> = { index: 56, Like: 56, duration: 80 }
+const FIXED_WIDTHS: Record<string, number> = { index: 56, Like: 40, duration: 80 }
 const FLEX_WIDTHS: Record<string, string> = { title: '42%', artist: '29%', album: '29%' }
 
 function columnWidth(id: string): string | number {
@@ -133,6 +133,7 @@ export function AudioList(): React.JSX.Element {
   }, [selectAudio, setPlaying])
 
   const searchQuery = useUI((s) => s.searchQuery)
+  const showStarredOnly = useUI((s) => s.showStarredOnly)
 
   const data = useMemo<AudioItem[]>(() => {
     const all = rows.map((path, index) => {
@@ -149,23 +150,27 @@ export function AudioList(): React.JSX.Element {
       }
     })
 
-    if (!searchQuery) return all
+    let filtered = showStarredOnly ? all.filter((item) => item.likedAt) : all
 
-    const q = searchQuery.toLowerCase()
-    return all.filter(
-      (item) =>
-        item.title.toLowerCase().includes(q) ||
-        item.artist.toLowerCase().includes(q) ||
-        item.album.toLowerCase().includes(q)
-    )
-  }, [rows, trackMeta, trackDurations, searchQuery, likedPaths])
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      filtered = filtered.filter(
+        (item) =>
+          item.title.toLowerCase().includes(q) ||
+          item.artist.toLowerCase().includes(q) ||
+          item.album.toLowerCase().includes(q)
+      )
+    }
+
+    return filtered
+  }, [rows, trackMeta, trackDurations, searchQuery, showStarredOnly, likedPaths])
 
   const columns = useMemo<ColumnDef<AudioItem>[]>(() => {
     const cols: ColumnDef<AudioItem>[] = [
       {
         id: 'index',
         accessorKey: 'index',
-        header: () => <div className="pl-2">#</div>,
+        header: () => <div className="text-center">#</div>,
         cell: (info) => {
           const path = info.row.original.path
           const active = path === selectedAudio
@@ -174,7 +179,7 @@ export function AudioList(): React.JSX.Element {
               <Play className="h-3.5 w-3.5 text-primary shrink-0 fill-primary" />
             </div>
           ) : (
-            <div className="pl-2 text-muted-foreground/60 tabular-nums">
+            <div className="text-center text-muted-foreground/60 tabular-nums">
               {(info as any).displayIndex}
             </div>
           )
@@ -186,23 +191,8 @@ export function AudioList(): React.JSX.Element {
       {
         id: 'Like',
         accessorKey: 'likedAt',
-        header: ({ column }) => (
-          <div className="flex items-center justify-center w-full">
-            <button
-              className="flex items-center gap-1 hover:text-foreground transition-colors"
-              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            >
-              Like
-              {column.getIsSorted() === 'asc' ? (
-                <ArrowUp className="h-3.5 w-3.5" />
-              ) : column.getIsSorted() === 'desc' ? (
-                <ArrowDown className="h-3.5 w-3.5" />
-              ) : (
-                <ChevronsUpDown className="h-3.5 w-3.5 opacity-30" />
-              )}
-            </button>
-          </div>
-        ),
+        enableSorting: false,
+        header: () => null,
         cell: (info) => {
           const likedAt = info.getValue() as number | null
           const path = info.row.original.path
@@ -220,7 +210,7 @@ export function AudioList(): React.JSX.Element {
                   toggleLike(path)
                 }}
               >
-                <Heart className={cn('h-4 w-4', likedAt && 'fill-primary')} />
+                <Star className={cn('h-4 w-4', likedAt && 'fill-primary')} />
               </button>
             </div>
           )
@@ -434,7 +424,7 @@ export function AudioList(): React.JSX.Element {
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id} style={{ width: columnWidth(cell.column.id) }}>
-                  <div className="truncate">
+                  <div className={cn(cell.column.id in FIXED_WIDTHS ? '' : 'truncate')}>
                     {flexRender(cell.column.columnDef.cell, {
                       ...cell.getContext(),
                       displayIndex: i + 1

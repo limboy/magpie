@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { PanelLeft, Search, X } from 'lucide-react'
+import { PanelLeft, Search, Star, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { TwoPane } from '@/components/layout/two-pane'
@@ -27,6 +27,8 @@ export function PlayerRoute(): React.JSX.Element {
   const searchQuery = useUI((s) => s.searchQuery)
   const setIsSearchOpen = useUI((s) => s.setIsSearchOpen)
   const setSearchQuery = useUI((s) => s.setSearchQuery)
+  const showStarredOnly = useUI((s) => s.showStarredOnly)
+  const toggleStarredOnly = useUI((s) => s.toggleStarredOnly)
   const fullPlayer = useUI((s) => s.fullPlayer)
 
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -148,6 +150,18 @@ export function PlayerRoute(): React.JSX.Element {
         {/* Right: Update indicator + Search */}
         <div className="flex items-center gap-2 app-no-drag">
           <UpdateIndicator />
+          {!fullPlayer && (
+            <Button
+              size="icon"
+              variant="ghost"
+              className={cn('size-7', showStarredOnly && 'text-primary hover:text-primary')}
+              onClick={toggleStarredOnly}
+              aria-label="Show starred only"
+              aria-pressed={showStarredOnly}
+            >
+              <Star className={cn('size-4', showStarredOnly && 'fill-primary')} />
+            </Button>
+          )}
           {!fullPlayer &&
             (isSearchOpen ? (
               <div className="flex items-center bg-muted/50 rounded-md px-2 py-1 h-7 border border-border/50 focus-within:ring-1 focus-within:ring-primary/30 transition-all">
