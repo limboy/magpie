@@ -42,7 +42,7 @@ type AudioItem = {
 
 // Columns are not resizable. Icon/number columns get fixed pixel widths; the
 // text columns flex proportionally to fill the remaining width of the pane.
-const FIXED_WIDTHS: Record<string, number> = { index: 56, Like: 56, duration: 92 }
+const FIXED_WIDTHS: Record<string, number> = { index: 56, Like: 56, duration: 80 }
 const FLEX_WIDTHS: Record<string, string> = { title: '42%', artist: '29%', album: '29%' }
 
 function columnWidth(id: string): string | number {
@@ -310,23 +310,8 @@ export function AudioList(): React.JSX.Element {
       },
       {
         accessorKey: 'duration',
-        header: ({ column }) => (
-          <div className="text-right w-full pr-2">
-            <button
-              className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            >
-              Duration
-              {column.getIsSorted() === 'asc' ? (
-                <ArrowUp className="h-3.5 w-3.5" />
-              ) : column.getIsSorted() === 'desc' ? (
-                <ArrowDown className="h-3.5 w-3.5" />
-              ) : (
-                <ChevronsUpDown className="h-3.5 w-3.5 opacity-30" />
-              )}
-            </button>
-          </div>
-        ),
+        enableSorting: false,
+        header: () => <div className="text-right w-full pr-2">Duration</div>,
         cell: (info) => (
           <div className="text-right tabular-nums text-muted-foreground pr-2">
             {msToClock(info.getValue() as number | null)}
