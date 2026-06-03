@@ -266,20 +266,22 @@ export function VolumeControl(): React.JSX.Element {
   const Icon = effective === 0 ? VolumeX : effective < 0.5 ? Volume1 : Volume2
 
   return (
-    <div className="group relative flex items-center">
+    // Icon stays fixed on the left; the pill expands rightward to reveal the slider.
+    <div className="group flex items-center rounded-full pl-1 transition-all hover:bg-muted/60 hover:pr-3">
       <Button
         size="icon"
         variant="ghost"
-        className="h-8 w-8 text-muted-foreground/60 hover:text-foreground transition-colors"
+        className="h-8 w-8 shrink-0 text-muted-foreground/60 hover:bg-transparent hover:text-foreground transition-colors"
         onClick={() => setMuted(!muted)}
         title={muted ? 'Unmute' : 'Mute'}
       >
         <Icon className="h-4.5 w-4.5" strokeWidth={2} />
       </Button>
-      <div className="absolute bottom-full left-1/2 z-50 hidden -translate-x-1/2 flex-col items-center rounded-full border bg-popover px-2 py-3 shadow-lg group-hover:flex">
+      {/* Horizontal slider slides out to the right of the icon on hover */}
+      <div className="w-0 overflow-hidden opacity-0 transition-all duration-200 group-hover:ml-2 group-hover:w-24 group-hover:opacity-100">
         <Slider
-          orientation="vertical"
-          className="data-[orientation=vertical]:min-h-24 h-24"
+          className="min-w-24 cursor-pointer [&_[data-slot=slider-track]]:bg-foreground/20"
+          hideThumb
           value={[Math.round(effective * 100)]}
           min={0}
           max={100}
