@@ -61,13 +61,16 @@ export function CompactBar({ audioRef, selectedAudio, onPrev, onNext }: Props): 
           size="icon"
           variant="ghost"
           className={cn(
-            'h-8 w-8 transition-colors',
+            'h-8 w-8 transition-colors relative',
             shuffle ? 'text-primary' : 'text-muted-foreground/70 hover:text-foreground'
           )}
           onClick={toggleShuffle}
           title="Shuffle"
         >
           <Shuffle className="h-4 w-4" strokeWidth={2} />
+          {shuffle && (
+            <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+          )}
         </Button>
 
         <Button
@@ -110,7 +113,7 @@ export function CompactBar({ audioRef, selectedAudio, onPrev, onNext }: Props): 
           size="icon"
           variant="ghost"
           className={cn(
-            'h-8 w-8 transition-colors',
+            'h-8 w-8 transition-colors relative',
             loopMode !== 'off' ? 'text-primary' : 'text-muted-foreground/70 hover:text-foreground'
           )}
           onClick={toggleLoop}
@@ -122,6 +125,9 @@ export function CompactBar({ audioRef, selectedAudio, onPrev, onNext }: Props): 
             <Repeat1 className="h-4 w-4" strokeWidth={2} />
           ) : (
             <Repeat className="h-4 w-4" strokeWidth={2} />
+          )}
+          {loopMode !== 'off' && (
+            <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
           )}
         </Button>
       </div>
