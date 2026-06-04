@@ -3,6 +3,18 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [v1.2.1](https://github.com/limboy/soundbox/compare/v1.2.0...v1.2.1) - 2026-06-04
+
+### Documentation
+
+- update README screenshot to reflect current UI ([d283276](https://github.com/limboy/soundbox/commit/d283276e0943d53dbaf6d83ced212c2dabc29d96))
+- update CHANGELOG for v1.2.0 ([874929c](https://github.com/limboy/soundbox/commit/874929ce195fef767d741505e6e95aec68710864))
+
+### Other Changes
+
+- Add active state indicator dots for shuffle and loop buttons in compact player ([db58b11](https://github.com/limboy/soundbox/commit/db58b111fdd5fad50975a7651207521065007334))
+- Fix index and star column widths in audio list to be strictly fixed ([7321e92](https://github.com/limboy/soundbox/commit/7321e924b57638246d668aee49a1fba206aa5b68))
+
 ## [v1.2.0](https://github.com/limboy/soundbox/compare/v1.1.1...v1.2.0) - 2026-06-03
 
 ### Features
