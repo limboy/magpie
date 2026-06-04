@@ -43,7 +43,7 @@ type AudioItem = {
 // Columns are not resizable. Icon/number columns get fixed pixel widths; the
 // text columns flex proportionally to fill the remaining width of the pane.
 const FIXED_WIDTHS: Record<string, number> = { index: 56, Like: 40, duration: 80 }
-const FLEX_WIDTHS: Record<string, string> = { title: '42%', artist: '29%', album: '29%' }
+const FLEX_WIDTHS: Record<string, string> = { artist: '29%', album: '29%' }
 
 function columnWidth(id: string): string | number {
   return FIXED_WIDTHS[id] ?? FLEX_WIDTHS[id] ?? 'auto'
@@ -378,6 +378,26 @@ export function AudioList(): React.JSX.Element {
 
   return (
     <Table className="min-w-full table-fixed border-collapse">
+      <colgroup>
+        {table.getVisibleFlatColumns().map((column) => {
+          const isFixed = column.id in FIXED_WIDTHS
+          const width = columnWidth(column.id)
+          return (
+            <col
+              key={column.id}
+              style={
+                isFixed
+                  ? {
+                      width: FIXED_WIDTHS[column.id],
+                      minWidth: FIXED_WIDTHS[column.id],
+                      maxWidth: FIXED_WIDTHS[column.id]
+                    }
+                  : { width }
+              }
+            />
+          )
+        })}
+      </colgroup>
       <ContextMenu>
         <ContextMenuTrigger asChild>
           <TableHeader className="sticky top-0 z-20 bg-muted/50 backdrop-blur-sm">
@@ -387,7 +407,15 @@ export function AudioList(): React.JSX.Element {
                   <TableHead
                     key={header.id}
                     className="group whitespace-nowrap relative last:border-0 transition-colors"
-                    style={{ width: columnWidth(header.column.id) }}
+                    style={
+                      header.column.id in FIXED_WIDTHS
+                        ? {
+                            width: FIXED_WIDTHS[header.column.id],
+                            minWidth: FIXED_WIDTHS[header.column.id],
+                            maxWidth: FIXED_WIDTHS[header.column.id]
+                          }
+                        : { width: columnWidth(header.column.id) }
+                    }
                   >
                     {header.isPlaceholder
                       ? null
@@ -442,7 +470,18 @@ export function AudioList(): React.JSX.Element {
               )}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id} style={{ width: columnWidth(cell.column.id) }}>
+                <TableCell
+                  key={cell.id}
+                  style={
+                    cell.column.id in FIXED_WIDTHS
+                      ? {
+                          width: FIXED_WIDTHS[cell.column.id],
+                          minWidth: FIXED_WIDTHS[cell.column.id],
+                          maxWidth: FIXED_WIDTHS[cell.column.id]
+                        }
+                      : { width: columnWidth(cell.column.id) }
+                  }
+                >
                   <div className={cn(cell.column.id in FIXED_WIDTHS ? '' : 'truncate')}>
                     {flexRender(cell.column.columnDef.cell, {
                       ...cell.getContext(),
