@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function UpdateIndicator(): React.JSX.Element | null {
@@ -11,10 +12,11 @@ export function UpdateIndicator(): React.JSX.Element | null {
     })
 
     if (import.meta.env.DEV) {
-      ; (window as unknown as { __triggerUpdatePreview?: (v?: string) => void }).__triggerUpdatePreview =
-        (version = '1.0.1') => {
-          setUpdateVersion(version)
-        }
+      ;(
+        window as unknown as { __triggerUpdatePreview?: (v?: string) => void }
+      ).__triggerUpdatePreview = (version = '1.0.1') => {
+        setUpdateVersion(version)
+      }
     }
 
     return off
@@ -29,13 +31,14 @@ export function UpdateIndicator(): React.JSX.Element | null {
 
   return (
     <Button
-      size="sm"
-      variant="outline"
-      className="text-amber-600 hover:bg-amber-50 hover:text-amber-600 h-6 px-3 text-xs shrink-0 rounded-full border-amber-600 transition-all"
+      size="icon"
+      className="size-6 bg-blue-500 text-white hover:bg-blue-500 hover:text-white"
       disabled={applying}
       onClick={handleApply}
+      aria-label={applying ? 'Applying update' : `Apply update ${updateVersion}`}
+      title={applying ? 'Applying update…' : `Apply update ${updateVersion}`}
     >
-      <span>{applying ? 'Restarting' : 'Update'}</span>
+      <Download className="size-3.5" />
     </Button>
   )
 }

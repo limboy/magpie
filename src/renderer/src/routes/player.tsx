@@ -116,7 +116,6 @@ export function PlayerRoute(): React.JSX.Element {
               {windowTitle}
             </span>
             <div className="app-no-drag absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
-              <UpdateIndicator />
               <Button
                 size="icon"
                 variant="ghost"
@@ -251,17 +250,20 @@ function StatusBar(): React.JSX.Element {
         {collection ? `${collection.items.length} items` : '0 items'}
       </span>
 
-      <Button
-        size="icon"
-        variant="ghost"
-        className={cn('size-6 justify-self-end', lyricsSidebarOpen && 'bg-accent text-foreground')}
-        onClick={toggleLyricsSidebar}
-        aria-label={lyricsSidebarOpen ? 'Hide lyrics' : 'Show lyrics'}
-        aria-pressed={lyricsSidebarOpen}
-        title="Lyrics"
-      >
-        <MessageSquareQuote className="size-3.5" />
-      </Button>
+      <div className="flex items-center gap-1 justify-self-end">
+        <UpdateIndicator />
+        <Button
+          size="icon"
+          variant="ghost"
+          className={cn('size-6', lyricsSidebarOpen && 'bg-accent text-foreground')}
+          onClick={toggleLyricsSidebar}
+          aria-label={lyricsSidebarOpen ? 'Hide lyrics' : 'Show lyrics'}
+          aria-pressed={lyricsSidebarOpen}
+          title="Lyrics"
+        >
+          <MessageSquareQuote className="size-3.5" />
+        </Button>
+      </div>
     </footer>
   )
 }
