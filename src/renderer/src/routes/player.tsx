@@ -83,7 +83,7 @@ export function PlayerRoute(): React.JSX.Element {
   }, [setCollections, selectAudio, setLikedPaths])
 
   useLayoutEffect(() => {
-    window.soundbox.setLyricsPanelWidth(!foldersPageOpen && lyricsSidebarOpen ? 288 : 0)
+    window.soundbox.setLyricsPanelWidth(!foldersPageOpen && lyricsSidebarOpen ? 320 : 0)
   }, [foldersPageOpen, lyricsSidebarOpen])
 
   useEffect(() => {
@@ -92,78 +92,82 @@ export function PlayerRoute(): React.JSX.Element {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
-      <header className="app-drag relative flex h-10 shrink-0 items-center justify-center border-b bg-muted/35">
-        <span
-          className={cn(
-            'max-w-[50%] truncate text-[11px] font-medium tracking-wide text-muted-foreground/70',
-            isSearchOpen && 'invisible'
-          )}
-        >
-          {windowTitle}
-        </span>
-        {!foldersPageOpen && (
-          <div className="app-no-drag absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
-            <UpdateIndicator />
-            <Button
-              size="icon"
-              variant="ghost"
-              className={cn('size-7', showStarredOnly && 'text-foreground')}
-              onClick={toggleStarredOnly}
-              aria-label="Show starred songs only"
-              aria-pressed={showStarredOnly}
-              title="Starred songs"
+      <div className="flex min-h-0 flex-1">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="app-drag relative flex h-10 shrink-0 items-center justify-center border-b bg-muted/35">
+            <span
+              className={cn(
+                'max-w-[50%] truncate text-[11px] font-medium tracking-wide text-muted-foreground/70',
+                isSearchOpen && 'invisible'
+              )}
             >
-              <Star className={cn('size-3.5', showStarredOnly && 'fill-current')} />
-            </Button>
-            {isSearchOpen ? (
-              <div className="flex h-7 items-center rounded-md border bg-background/80 px-2 shadow-xs">
-                <Search className="mr-1.5 size-3.5 text-muted-foreground" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search songs…"
-                  className="w-36 bg-transparent text-xs outline-none placeholder:text-muted-foreground/60"
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Escape') setIsSearchOpen(false)
-                  }}
-                />
-                <button
-                  type="button"
-                  className="ml-1 text-muted-foreground hover:text-foreground"
-                  onClick={() => setIsSearchOpen(false)}
-                  aria-label="Close search"
+              {windowTitle}
+            </span>
+            {!foldersPageOpen && (
+              <div className="app-no-drag absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
+                <UpdateIndicator />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className={cn('size-7', showStarredOnly && 'text-foreground')}
+                  onClick={toggleStarredOnly}
+                  aria-label="Show starred songs only"
+                  aria-pressed={showStarredOnly}
+                  title="Starred songs"
                 >
-                  <X className="size-3.5" />
-                </button>
+                  <Star className={cn('size-3.5', showStarredOnly && 'fill-current')} />
+                </Button>
+                {isSearchOpen ? (
+                  <div className="flex h-7 items-center rounded-md border bg-background/80 px-2 shadow-xs">
+                    <Search className="mr-1.5 size-3.5 text-muted-foreground" />
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      placeholder="Search songs…"
+                      className="w-36 bg-transparent text-xs outline-none placeholder:text-muted-foreground/60"
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Escape') setIsSearchOpen(false)
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="ml-1 text-muted-foreground hover:text-foreground"
+                      onClick={() => setIsSearchOpen(false)}
+                      aria-label="Close search"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="size-7"
+                    onClick={() => setIsSearchOpen(true)}
+                    aria-label="Search songs"
+                    title="Search"
+                  >
+                    <Search className="size-3.5" />
+                  </Button>
+                )}
               </div>
-            ) : (
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-7"
-                onClick={() => setIsSearchOpen(true)}
-                aria-label="Search songs"
-                title="Search"
-              >
-                <Search className="size-3.5" />
-              </Button>
+            )}
+          </header>
+
+          <div className="flex min-h-0 flex-1">
+            <div className={cn('flex min-h-0 flex-1', foldersPageOpen && 'hidden')}>
+              <PlayerCenter />
+            </div>
+            {foldersPageOpen && (
+              <div className="h-full min-h-0 flex-1">
+                <FileTree onSelectCollection={() => setFoldersPageOpen(false)} />
+              </div>
             )}
           </div>
-        )}
-      </header>
-
-      <div className="flex min-h-0 flex-1">
-        <div className={cn('flex min-h-0 flex-1', foldersPageOpen && 'hidden')}>
-          <PlayerCenter />
-          {lyricsSidebarOpen && <LyricsSidebar />}
         </div>
-        {foldersPageOpen && (
-          <div className="h-full min-h-0 flex-1">
-            <FileTree onSelectCollection={() => setFoldersPageOpen(false)} />
-          </div>
-        )}
+        {!foldersPageOpen && lyricsSidebarOpen && <LyricsSidebar />}
       </div>
 
       <StatusBar />

@@ -16,7 +16,6 @@ import { closeWatcher, setupWatcher } from './lib/watcher'
 registerLocalSchemePrivileged()
 
 const PLAYER_SIZE = { width: 410, height: 720 }
-const MAX_WINDOW_WIDTH = PLAYER_SIZE.width + 288
 
 let mainWindow: BrowserWindow | null = null
 let currentRightPanelWidth = 0
@@ -40,10 +39,7 @@ async function createWindow(): Promise<void> {
     y: windowBounds?.y,
     width: PLAYER_SIZE.width,
     height: PLAYER_SIZE.height,
-    minWidth: PLAYER_SIZE.width,
-    minHeight: PLAYER_SIZE.height,
-    maxWidth: MAX_WINDOW_WIDTH,
-    maxHeight: PLAYER_SIZE.height,
+    useContentSize: true,
     resizable: false,
     maximizable: false,
     fullscreenable: false,
@@ -157,16 +153,20 @@ app.whenReady().then(async () => {
     const window = getWindow()
     if (!window) return
 
-    const rightWidth = Math.max(0, Math.min(288, Math.round(requestedRightWidth)))
+    const rightWidth = Math.max(0, Math.min(320, Math.round(requestedRightWidth)))
     if (rightWidth === currentRightPanelWidth) return
 
     const bounds = window.getBounds()
-    const width = PLAYER_SIZE.width + rightWidth
+    const contentBounds = window.getContentBounds()
+    const contentWidth = PLAYER_SIZE.width + rightWidth
+    const frameWidth = bounds.width - contentBounds.width
+    const width = contentWidth + frameWidth
     const workArea = screen.getDisplayMatching(bounds).workArea
     const x = Math.max(workArea.x, Math.min(bounds.x, workArea.x + workArea.width - width))
 
     currentRightPanelWidth = rightWidth
-    window.setBounds({ x, y: bounds.y, width, height: PLAYER_SIZE.height })
+    window.setContentSize(contentWidth, PLAYER_SIZE.height)
+    if (x !== bounds.x) window.setPosition(x, bounds.y)
   })
 
   await readState()

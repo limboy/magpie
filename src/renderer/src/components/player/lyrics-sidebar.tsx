@@ -29,7 +29,7 @@ export function LyricsSidebar(): React.JSX.Element {
   const lyrics = useLyrics(selectedAudio, title, artist, album, effectiveDuration)
 
   return (
-    <aside className="flex w-72 shrink-0 flex-col border-l bg-muted/40 backdrop-blur-sm">
+    <aside className="flex w-80 shrink-0 flex-col border-l bg-muted/40 backdrop-blur-sm">
       <LyricsPanel state={lyrics} currentTimeMs={currentTimeMs} onSeek={requestSeek} />
     </aside>
   )

@@ -26,8 +26,8 @@ export function LyricsPanel({ state, currentTimeMs, onSeek }: Props): React.JSX.
 
   if (state.status === 'plain') {
     return (
-      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-8 py-10">
-        <p className="mx-auto max-w-prose whitespace-pre-wrap text-center text-base leading-8 text-muted-foreground">
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-6 py-4">
+        <p className="whitespace-pre-wrap text-left text-base leading-8 text-muted-foreground">
           {state.text}
         </p>
       </div>
@@ -73,8 +73,7 @@ function SyncedLyrics({
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-      <div className="flex flex-col">
-        <div className="h-[38vh] shrink-0" aria-hidden />
+      <div className="flex flex-col py-4">
         {lines.map((line, i) => {
           const active = i === activeIndex
           return (
@@ -83,7 +82,7 @@ function SyncedLyrics({
               ref={active ? activeRef : undefined}
               onClick={() => onSeek(line.time)}
               className={cn(
-                'block w-full px-8 py-2 text-center text-base leading-relaxed transition-all duration-300',
+                'block w-full origin-left px-6 py-2 text-left text-base leading-relaxed transition-all duration-300',
                 active
                   ? 'scale-[1.03] font-semibold text-foreground'
                   : 'text-muted-foreground/35 hover:text-muted-foreground'
@@ -93,7 +92,6 @@ function SyncedLyrics({
             </button>
           )
         })}
-        <div className="h-[38vh] shrink-0" aria-hidden />
       </div>
     </div>
   )
