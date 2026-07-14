@@ -105,7 +105,7 @@ export function PlayerRoute(): React.JSX.Element {
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
       <div className="flex min-h-0 flex-1">
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex w-[410px] shrink-0 flex-col">
           <header className="app-drag relative flex h-10 shrink-0 items-center justify-center border-b bg-muted/35">
             <span
               className={cn(
