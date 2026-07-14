@@ -3,6 +3,16 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [v1.3.2](https://github.com/limboy/soundbox/compare/v1.3.1...v1.3.2) - 2026-07-14
+
+### Documentation
+
+- update CHANGELOG for v1.3.1 ([10a8ff2](https://github.com/limboy/soundbox/commit/10a8ff2edd462d566388b22d3b5fc87245cb5b3e))
+
+### Other Changes
+
+- Move update indicator into the status bar and refresh its icon button ([c767a6a](https://github.com/limboy/soundbox/commit/c767a6a5e13dea1a884ead62e0948cb2ef40499e))
+
 ## [v1.3.1](https://github.com/limboy/soundbox/compare/v1.3.0...v1.3.1) - 2026-07-14
 
 ### Features
