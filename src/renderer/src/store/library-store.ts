@@ -155,6 +155,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     let nextSelectedAudio = selectedAudio
     if (selectedAudio && pathSet.has(selectedAudio)) {
       nextSelectedAudio = null
+      usePlayer.getState().setPlaying(false)
     }
 
     const next = collections.map(c => {

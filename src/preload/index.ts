@@ -64,8 +64,15 @@ const soundbox = {
   },
   revealInFinder: (path: string) =>
     ipcRenderer.invoke('soundbox:revealInFinder', path) as Promise<void>,
-  showSongContextMenu: (path: string) =>
-    ipcRenderer.invoke('soundbox:showSongContextMenu', path) as Promise<void>,
+  showSongContextMenu: (path: string, selectedPaths: string[]) =>
+    ipcRenderer.invoke('soundbox:showSongContextMenu', path, selectedPaths) as Promise<void>,
+  onRemoveSongs: (cb: (paths: string[]) => void) => {
+    const listener = (_: IpcRendererEvent, paths: string[]): void => cb(paths)
+    ipcRenderer.on('soundbox:remove-songs', listener)
+    return () => {
+      ipcRenderer.removeListener('soundbox:remove-songs', listener)
+    }
+  },
   showCollectionContextMenu: (id: string, title: string) =>
     ipcRenderer.invoke('soundbox:showCollectionContextMenu', id, title) as Promise<void>,
   showSidebarContextMenu: () =>
