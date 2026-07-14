@@ -201,7 +201,7 @@ function StatusBar(): React.JSX.Element {
 
       <div className="min-w-0 flex-1 truncate text-center">
         {collection
-          ? `${collection.title} · ${collection.items.length} songs`
+          ? `${collection.title} · ${collection.items.length} items`
           : 'No folder selected'}
       </div>
 
