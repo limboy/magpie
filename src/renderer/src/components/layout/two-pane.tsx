@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
 const LEFT_MIN = 200
 const LEFT_MAX = 300
@@ -8,7 +8,7 @@ export function TwoPane({
   center,
   leftOpen,
   leftWidth,
-  onLeftWidthChange,
+  onLeftWidthChange
 }: {
   left: React.ReactNode
   center: React.ReactNode
@@ -16,15 +16,12 @@ export function TwoPane({
   leftWidth: number
   onLeftWidthChange: (w: number) => void
 }): React.JSX.Element {
-  const [isDragging, setIsDragging] = useState(false)
-
   return (
     <div className="flex-1 min-h-0 flex overflow-hidden bg-background text-foreground relative">
       <aside
         className="shrink-0 border-r bg-secondary/40 backdrop-blur-sm overflow-hidden relative z-20"
         style={{
-          width: leftOpen ? leftWidth : 0,
-          transition: isDragging ? 'none' : 'width 50ms ease',
+          width: leftOpen ? leftWidth : 0
         }}
         aria-hidden={!leftOpen}
       >
@@ -39,8 +36,6 @@ export function TwoPane({
           min={LEFT_MIN}
           max={LEFT_MAX}
           onResize={onLeftWidthChange}
-          onDragStart={() => setIsDragging(true)}
-          onDragEnd={() => setIsDragging(false)}
         />
       )}
       <main className="flex-1 min-w-0 flex flex-col">{center}</main>
@@ -59,7 +54,7 @@ function Resizer({
   max,
   onResize,
   onDragStart,
-  onDragEnd,
+  onDragEnd
 }: {
   side: 'left' | 'right'
   currentSize: number

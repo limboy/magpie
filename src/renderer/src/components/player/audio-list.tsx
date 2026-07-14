@@ -1,28 +1,5 @@
-import { FileAudio, Play, Pause, ChevronsUpDown, ArrowUp, ArrowDown, Star } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table'
-import {
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
-  SortingState,
-  ColumnDef,
-  VisibilityState
-} from '@tanstack/react-table'
-import {
-  ContextMenu,
-  ContextMenuCheckboxItem,
-  ContextMenuContent,
-  ContextMenuTrigger
-} from '@/components/ui/context-menu'
+import { useEffect, useMemo } from 'react'
+import { FileAudio, Star } from 'lucide-react'
 import { basename } from '@/lib/audio-extensions'
 import { msToClock } from '@/lib/format-time'
 import { cn } from '@/lib/utils'
@@ -32,98 +9,76 @@ import { useUI } from '@/store/ui-store'
 
 type AudioItem = {
   path: string
+  index: number
   title: string
   artist: string
-  album: string
   duration: number | null
-  index: number
-  likedAt: number | null
-}
-
-// Columns are not resizable. Icon/number columns get fixed pixel widths; the
-// text columns flex proportionally to fill the remaining width of the pane.
-const FIXED_WIDTHS: Record<string, number> = { index: 56, Like: 40, duration: 80 }
-const FLEX_WIDTHS: Record<string, string> = { artist: '29%', album: '29%' }
-
-function columnWidth(id: string): string | number {
-  return FIXED_WIDTHS[id] ?? FLEX_WIDTHS[id] ?? 'auto'
+  liked: boolean
 }
 
 export function AudioList(): React.JSX.Element {
-  const collections = useLibrary((s) => s.collections)
-  const selectedCollectionId = useLibrary((s) => s.selectedCollectionId)
-  const selectedAudio = useLibrary((s) => s.selectedAudio)
-  const selectAudio = useLibrary((s) => s.selectAudio)
-  const toggleLike = useLibrary((s) => s.toggleLike)
-  const likedPaths = useLibrary((s) => s.likedPaths)
-  const setPlaying = usePlayer((s) => s.setPlaying)
-  const isPlaying = usePlayer((s) => s.isPlaying)
+  const collections = useLibrary((state) => state.collections)
+  const selectedCollectionId = useLibrary((state) => state.selectedCollectionId)
+  const selectedAudio = useLibrary((state) => state.selectedAudio)
+  const selectAudio = useLibrary((state) => state.selectAudio)
+  const toggleLike = useLibrary((state) => state.toggleLike)
+  const likedPaths = useLibrary((state) => state.likedPaths)
+  const trackMeta = useLibrary((state) => state.trackMeta)
+  const trackDurations = useLibrary((state) => state.trackDurations)
+  const setTrackMeta = useLibrary((state) => state.setTrackMeta)
+  const setTrackDuration = useLibrary((state) => state.setTrackDuration)
+  const setBulkTrackInfo = useLibrary((state) => state.setBulkTrackInfo)
+  const setOrderedPaths = useLibrary((state) => state.setOrderedPaths)
+  const setPlaying = usePlayer((state) => state.setPlaying)
+  const searchQuery = useUI((state) => state.searchQuery)
+  const showStarredOnly = useUI((state) => state.showStarredOnly)
 
-  const trackMeta = useLibrary((s) => s.trackMeta)
-  const trackDurations = useLibrary((s) => s.trackDurations)
-  const setTrackMeta = useLibrary((s) => s.setTrackMeta)
-  const setTrackDuration = useLibrary((s) => s.setTrackDuration)
-  const setBulkTrackInfo = useLibrary((s) => s.setBulkTrackInfo)
-  const setOrderedPaths = useLibrary((s) => s.setOrderedPaths)
-
-  const [sorting, setSorting] = useState<SortingState>([{ id: 'title', desc: false }])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-
-  const activeCollection = collections.find((c) => c.id === selectedCollectionId)
-  const rows = useMemo(() => (activeCollection ? activeCollection.items : []), [activeCollection])
+  const activeCollection = collections.find((item) => item.id === selectedCollectionId)
+  const paths = useMemo(() => activeCollection?.items ?? [], [activeCollection])
 
   useEffect(() => {
     let cancelled = false
 
-    const checkAll = async (): Promise<void> => {
-      const pathsToCheck = [...rows]
-      if (pathsToCheck.length === 0) return
-
-      // First, get everything we can from the bulk cache
-      const bulk = await window.soundbox.getBulkMetadata(pathsToCheck).catch(() => ({}))
+    const loadMetadata = async (): Promise<void> => {
+      if (paths.length === 0) return
+      const bulk = await window.soundbox.getBulkMetadata(paths).catch(() => ({}))
       if (cancelled) return
-
       setBulkTrackInfo(bulk)
 
-      const currentMeta = useLibrary.getState().trackMeta
-      const currentDurations = useLibrary.getState().trackDurations
+      const current = useLibrary.getState()
+      const missing = paths.filter(
+        (path) => !(path in current.trackMeta) || !(path in current.trackDurations)
+      )
 
-      const missing = pathsToCheck.filter((p) => !(p in currentMeta) || !(p in currentDurations))
-      if (missing.length === 0) return
-
-      for (const p of missing) {
+      for (const path of missing) {
         if (cancelled) return
-
-        const info = await window.soundbox.getPathInfo(p).catch(() => null)
+        const info = await window.soundbox.getPathInfo(path).catch(() => null)
         if (!info) continue
 
-        if (!(p in currentDurations)) {
-          const d = await window.soundbox.probeDuration(p).catch(() => null)
+        if (!(path in useLibrary.getState().trackDurations)) {
+          const duration = await window.soundbox.probeDuration(path).catch(() => null)
           if (cancelled) return
-          setTrackDuration(p, d)
+          setTrackDuration(path, duration)
         }
-
-        if (!(p in currentMeta)) {
-          const m = await window.soundbox.probeMetadata(p).catch(() => null)
+        if (!(path in useLibrary.getState().trackMeta)) {
+          const metadata = await window.soundbox.probeMetadata(path).catch(() => null)
           if (cancelled) return
-          setTrackMeta(p, m || { artist: 'Unknown', album: 'Unknown', title: basename(p) })
+          setTrackMeta(
+            path,
+            metadata ?? { artist: 'Unknown', album: 'Unknown', title: basename(path) }
+          )
         }
       }
     }
 
-    void checkAll()
-
-    const handleFocus = (): void => {
-      void checkAll()
-    }
-
+    void loadMetadata()
+    const handleFocus = (): void => void loadMetadata()
     window.addEventListener('focus', handleFocus)
-
     return () => {
       cancelled = true
       window.removeEventListener('focus', handleFocus)
     }
-  }, [rows, setBulkTrackInfo, setTrackDuration, setTrackMeta])
+  }, [paths, setBulkTrackInfo, setTrackDuration, setTrackMeta])
 
   useEffect(() => {
     return window.soundbox.onPlaySong((path) => {
@@ -133,367 +88,116 @@ export function AudioList(): React.JSX.Element {
     })
   }, [selectAudio, setPlaying])
 
-  const searchQuery = useUI((s) => s.searchQuery)
-  const showStarredOnly = useUI((s) => s.showStarredOnly)
-
-  const data = useMemo<AudioItem[]>(() => {
-    const all = rows.map((path, index) => {
-      const m = trackMeta[path]
-      const duration = trackDurations[path] ?? null
-      return {
-        path,
-        index: index + 1,
-        title: m?.title && m.title !== 'Unknown' ? m.title : basename(path),
-        artist: m?.artist && m.artist !== 'Unknown' ? m.artist : '-',
-        album: m?.album && m.album !== 'Unknown' ? m.album : '-',
-        duration,
-        likedAt: likedPaths[path] || null
-      }
-    })
-
-    let filtered = showStarredOnly ? all.filter((item) => item.likedAt) : all
-
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase()
-      filtered = filtered.filter(
+  const items = useMemo<AudioItem[]>(() => {
+    const normalizedQuery = searchQuery.trim().toLocaleLowerCase()
+    return paths
+      .map((path, index) => {
+        const metadata = trackMeta[path]
+        return {
+          path,
+          index: index + 1,
+          title: metadata?.title && metadata.title !== 'Unknown' ? metadata.title : basename(path),
+          artist:
+            metadata?.artist && metadata.artist !== 'Unknown' ? metadata.artist : 'Unknown Artist',
+          duration: trackDurations[path] ?? null,
+          liked: Boolean(likedPaths[path])
+        }
+      })
+      .filter((item) => !showStarredOnly || item.liked)
+      .filter(
         (item) =>
-          item.title.toLowerCase().includes(q) ||
-          item.artist.toLowerCase().includes(q) ||
-          item.album.toLowerCase().includes(q)
+          !normalizedQuery ||
+          item.title.toLocaleLowerCase().includes(normalizedQuery) ||
+          item.artist.toLocaleLowerCase().includes(normalizedQuery)
       )
-    }
+  }, [paths, trackMeta, trackDurations, likedPaths, searchQuery, showStarredOnly])
 
-    return filtered
-  }, [rows, trackMeta, trackDurations, searchQuery, showStarredOnly, likedPaths])
-
-  const columns = useMemo<ColumnDef<AudioItem>[]>(() => {
-    const cols: ColumnDef<AudioItem>[] = [
-      {
-        id: 'index',
-        accessorKey: 'index',
-        header: () => <div className="text-center">#</div>,
-        cell: (info) => {
-          const path = info.row.original.path
-          const active = path === selectedAudio
-          // Active + playing shows a pause icon. Otherwise the number is shown,
-          // swapping to a play icon while the row is hovered.
-          if (active && isPlaying) {
-            return (
-              <div className="flex items-center justify-center">
-                <Pause className="h-3.5 w-3.5 text-primary shrink-0 fill-primary" />
-              </div>
-            )
-          }
-          return (
-            <div className="relative flex items-center justify-center">
-              <span
-                className={cn(
-                  'tabular-nums group-hover:opacity-0',
-                  active ? 'text-primary' : 'text-muted-foreground/60'
-                )}
-              >
-                {(info as any).displayIndex}
-              </span>
-              <Play className="absolute h-3.5 w-3.5 text-primary shrink-0 fill-primary opacity-0 group-hover:opacity-100" />
-            </div>
-          )
-        },
-        size: 50,
-        minSize: 50,
-        enableHiding: false
-      },
-      {
-        id: 'Like',
-        accessorKey: 'likedAt',
-        enableSorting: false,
-        header: () => null,
-        cell: (info) => {
-          const likedAt = info.getValue() as number | null
-          const path = info.row.original.path
-          return (
-            <div className="flex items-center justify-center">
-              <button
-                className={cn(
-                  'p-1.5 rounded-full transition-all hover:bg-primary/10',
-                  likedAt
-                    ? 'text-primary'
-                    : 'text-muted-foreground/30 opacity-0 group-hover:opacity-100'
-                )}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  toggleLike(path)
-                }}
-              >
-                <Star className={cn('h-4 w-4', likedAt && 'fill-primary')} />
-              </button>
-            </div>
-          )
-        },
-        size: 60,
-        minSize: 60,
-        enableHiding: true
-      },
-      {
-        accessorKey: 'title',
-        header: ({ column }) => (
-          <button
-            className="flex items-center gap-1 hover:text-foreground transition-colors w-full"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Name
-            {column.getIsSorted() === 'asc' ? (
-              <ArrowUp className="h-3.5 w-3.5" />
-            ) : column.getIsSorted() === 'desc' ? (
-              <ArrowDown className="h-3.5 w-3.5" />
-            ) : (
-              <ChevronsUpDown className="h-3.5 w-3.5 opacity-30" />
-            )}
-          </button>
-        ),
-        cell: (info) => {
-          const path = info.row.original.path
-          const active = path === selectedAudio
-          return (
-            <span className={cn('truncate block', active && 'text-primary font-medium')}>
-              {info.getValue() as string}
-            </span>
-          )
-        },
-        sortingFn: (rowA, rowB, columnId) => {
-          const a = rowA.getValue(columnId) as string
-          const b = rowB.getValue(columnId) as string
-          return a.localeCompare(b, undefined, {
-            numeric: true,
-            sensitivity: 'base',
-            usage: 'sort'
-          })
-        },
-        size: 250,
-        minSize: 100,
-        enableHiding: false
-      },
-      {
-        accessorKey: 'artist',
-        header: ({ column }) => (
-          <button
-            className="flex items-center gap-1 hover:text-foreground transition-colors w-full"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Artist
-            {column.getIsSorted() === 'asc' ? (
-              <ArrowUp className="h-3.5 w-3.5" />
-            ) : column.getIsSorted() === 'desc' ? (
-              <ArrowDown className="h-3.5 w-3.5" />
-            ) : (
-              <ChevronsUpDown className="h-3.5 w-3.5 opacity-30" />
-            )}
-          </button>
-        ),
-        size: 150,
-        minSize: 80
-      },
-      {
-        accessorKey: 'album',
-        header: ({ column }) => (
-          <button
-            className="flex items-center gap-1 hover:text-foreground transition-colors w-full"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Album
-            {column.getIsSorted() === 'asc' ? (
-              <ArrowUp className="h-3.5 w-3.5" />
-            ) : column.getIsSorted() === 'desc' ? (
-              <ArrowDown className="h-3.5 w-3.5" />
-            ) : (
-              <ChevronsUpDown className="h-3.5 w-3.5 opacity-30" />
-            )}
-          </button>
-        ),
-        size: 150,
-        minSize: 80
-      },
-      {
-        accessorKey: 'duration',
-        enableSorting: false,
-        header: () => <div className="text-right w-full pr-2">Duration</div>,
-        cell: (info) => (
-          <div className="text-right tabular-nums text-muted-foreground pr-2">
-            {msToClock(info.getValue() as number | null)}
-          </div>
-        ),
-        size: 90,
-        minSize: 80
-      }
-    ]
-
-    return cols
-  }, [selectedAudio, isPlaying, toggleLike])
-
-  const table = useReactTable({
-    data,
-    columns,
-    state: {
-      sorting,
-      columnVisibility
-    },
-    onSortingChange: setSorting,
-    onColumnVisibilityChange: setColumnVisibility,
-    enableColumnResizing: false,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel()
-  })
-
-  // Publish the visible (sorted + filtered) order so the player navigates the
-  // same order the user sees. NUL can't appear in a path, so it is a safe
-  // join separator for the dependency key.
-  const orderKey = table
-    .getRowModel()
-    .rows.map((r) => r.original.path)
-    .join('\u0000')
+  const orderKey = items.map((item) => item.path).join('\u0000')
   useEffect(() => {
     setOrderedPaths(orderKey ? orderKey.split('\u0000') : [])
   }, [orderKey, setOrderedPaths])
 
-  if (!activeCollection) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-muted-foreground">
-        <div>
-          <FileAudio className="mx-auto h-8 w-8 opacity-30" />
-          <p className="mt-2">Select or create a collection.</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (rows.length === 0) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-muted-foreground">
-        <div>
-          <FileAudio className="mx-auto h-8 w-8 opacity-30" />
-          <p className="mt-2">Drag audio files or folder here.</p>
-        </div>
-      </div>
-    )
-  }
+  if (!activeCollection) return <EmptyList message="Add a folder to start listening." />
+  if (paths.length === 0) return <EmptyList message="Drag audio files or a folder here." />
 
   return (
-    <Table className="min-w-full table-fixed border-collapse">
-      <colgroup>
-        {table.getVisibleFlatColumns().map((column) => {
-          const isFixed = column.id in FIXED_WIDTHS
-          const width = columnWidth(column.id)
-          return (
-            <col
-              key={column.id}
-              style={
-                isFixed
-                  ? {
-                      width: FIXED_WIDTHS[column.id],
-                      minWidth: FIXED_WIDTHS[column.id],
-                      maxWidth: FIXED_WIDTHS[column.id]
-                    }
-                  : { width }
-              }
-            />
-          )
-        })}
-      </colgroup>
-      <ContextMenu>
-        <ContextMenuTrigger asChild>
-          <TableHeader className="sticky top-0 z-20 bg-muted/50 backdrop-blur-sm">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="border-b-0">
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="group whitespace-nowrap relative last:border-0 transition-colors"
-                    style={
-                      header.column.id in FIXED_WIDTHS
-                        ? {
-                            width: FIXED_WIDTHS[header.column.id],
-                            minWidth: FIXED_WIDTHS[header.column.id],
-                            maxWidth: FIXED_WIDTHS[header.column.id]
-                          }
-                        : { width: columnWidth(header.column.id) }
-                    }
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-
-                    {/* Bottom Border */}
-                    <div className="absolute inset-x-0 bottom-0 h-px bg-border z-30 pointer-events-none" />
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-        </ContextMenuTrigger>
-        <ContextMenuContent className="w-48">
-          {table
-            .getAllColumns()
-            .filter((column) => column.getCanHide())
-            .map((column) => {
-              return (
-                <ContextMenuCheckboxItem
-                  key={column.id}
-                  className="capitalize"
-                  checked={column.getIsVisible()}
-                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                >
-                  {column.id}
-                </ContextMenuCheckboxItem>
-              )
-            })}
-        </ContextMenuContent>
-      </ContextMenu>
-      <TableBody>
-        {table.getRowModel().rows.map((row, i) => {
-          const active = row.original.path === selectedAudio
-          const nowPlaying = active && isPlaying
-          return (
-            <TableRow
-              key={row.id}
-              onClick={() => {
-                selectAudio(row.original.path)
-                void window.soundbox.setState({ lastAudioPath: row.original.path })
+    <div className="flex flex-col gap-0.5 py-2 pl-1 pr-2">
+      {items.map((item) => {
+        const active = item.path === selectedAudio
+        return (
+          <div
+            key={item.path}
+            role="button"
+            tabIndex={0}
+            className={cn(
+              'group grid h-11 cursor-default grid-cols-[38px_minmax(0,1fr)_56px_34px] items-center rounded-md px-2 text-sm transition-colors',
+              active ? 'bg-accent text-foreground' : 'hover:bg-muted/65'
+            )}
+            onClick={() => {
+              selectAudio(item.path)
+              void window.soundbox.setState({ lastAudioPath: item.path })
+              setPlaying(true)
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                selectAudio(item.path)
+                void window.soundbox.setState({ lastAudioPath: item.path })
                 setPlaying(true)
-              }}
-              onContextMenu={(e) => {
-                e.preventDefault()
-                void window.soundbox.showSongContextMenu(row.original.path)
-              }}
+              }
+            }}
+            onContextMenu={(event) => {
+              event.preventDefault()
+              void window.soundbox.showSongContextMenu(item.path)
+            }}
+          >
+            <span
               className={cn(
-                'group relative',
-                active && !nowPlaying && 'bg-accent/60',
-                nowPlaying && 'bg-primary/5 hover:bg-primary/5'
+                'text-right text-xs tabular-nums text-muted-foreground/60',
+                active && 'font-medium text-foreground'
               )}
             >
-              {row.getVisibleCells().map((cell) => (
-                <TableCell
-                  key={cell.id}
-                  style={
-                    cell.column.id in FIXED_WIDTHS
-                      ? {
-                          width: FIXED_WIDTHS[cell.column.id],
-                          minWidth: FIXED_WIDTHS[cell.column.id],
-                          maxWidth: FIXED_WIDTHS[cell.column.id]
-                        }
-                      : { width: columnWidth(cell.column.id) }
-                  }
-                >
-                  <div className={cn(cell.column.id in FIXED_WIDTHS ? '' : 'truncate')}>
-                    {flexRender(cell.column.columnDef.cell, {
-                      ...cell.getContext(),
-                      displayIndex: i + 1
-                    } as any)}
-                  </div>
-                </TableCell>
-              ))}
-            </TableRow>
-          )
-        })}
-      </TableBody>
-    </Table>
+              {item.index}.
+            </span>
+            <div className="min-w-0 pl-2">
+              <p className="truncate">
+                <span className={cn('font-medium', active && 'font-semibold')}>{item.title}</span>
+                <span className="text-muted-foreground"> — {item.artist}</span>
+              </p>
+            </div>
+            <span className="text-right text-xs tabular-nums text-muted-foreground">
+              {msToClock(item.duration)}
+            </span>
+            <button
+              type="button"
+              className={cn(
+                'ml-auto flex size-7 items-center justify-center rounded-md text-muted-foreground/35 transition-all hover:bg-background/70 hover:text-foreground',
+                item.liked && 'text-foreground'
+              )}
+              onClick={(event) => {
+                event.stopPropagation()
+                toggleLike(item.path)
+              }}
+              aria-label={item.liked ? 'Unstar song' : 'Star song'}
+              aria-pressed={item.liked}
+              title={item.liked ? 'Unstar' : 'Star'}
+            >
+              <Star className={cn('size-3.5', item.liked && 'fill-current')} />
+            </button>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function EmptyList({ message }: { message: string }): React.JSX.Element {
+  return (
+    <div className="flex min-h-72 flex-1 items-center justify-center p-8 text-center text-sm text-muted-foreground">
+      <div>
+        <FileAudio className="mx-auto size-8 opacity-25" />
+        <p className="mt-2">{message}</p>
+      </div>
+    </div>
   )
 }

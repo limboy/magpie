@@ -77,7 +77,6 @@ export function FullPlayer({ audioRef, selectedAudio, onPrev, onNext }: Props): 
           selectedAudio={selectedAudio}
           onPrev={onPrev}
           onNext={onNext}
-          showTrackInfo={false}
         />
       </div>
     </div>

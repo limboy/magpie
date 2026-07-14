@@ -6,7 +6,11 @@ import { useLibrary } from '@/store/library-store'
 import { usePlayer } from '@/store/player-store'
 import type { TreeNode } from '../../../../preload/soundbox'
 
-export function FileTree(): React.JSX.Element {
+export function FileTree({
+  onSelectCollection
+}: {
+  onSelectCollection?: () => void
+}): React.JSX.Element {
   const {
     collections,
     selectedCollectionId,
@@ -38,19 +42,25 @@ export function FileTree(): React.JSX.Element {
     setPlaying(false)
   }, [collections, addCollection, setPlaying])
 
-  const handleRename = useCallback((id: string, title: string): void => {
-    const trimmed = title.trim()
-    if (trimmed) {
-      updateCollectionTitle(id, trimmed)
-    }
-    setEditingId(null)
-  }, [updateCollectionTitle])
+  const handleRename = useCallback(
+    (id: string, title: string): void => {
+      const trimmed = title.trim()
+      if (trimmed) {
+        updateCollectionTitle(id, trimmed)
+      }
+      setEditingId(null)
+    },
+    [updateCollectionTitle]
+  )
 
-  const handleDelete = useCallback((id: string, title: string): void => {
-    if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
-      deleteCollection(id)
-    }
-  }, [deleteCollection])
+  const handleDelete = useCallback(
+    (id: string, title: string): void => {
+      if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
+        deleteCollection(id)
+      }
+    },
+    [deleteCollection]
+  )
 
   useEffect(() => {
     if (editingId && inputRef.current) {
@@ -133,15 +143,13 @@ export function FileTree(): React.JSX.Element {
 
   return (
     <div
-      className="relative flex h-full min-h-0 flex-col bg-muted/40 backdrop-blur-sm"
+      className="relative flex h-full min-h-0 flex-col bg-background"
       onContextMenu={handleContextMenu}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      {/* Drag region that clears the macOS traffic lights, aligned to the header */}
-      <div className="app-drag h-10 shrink-0" />
       {isDragOver && (
         <div className="pointer-events-none absolute inset-1.5 z-50 flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-primary/50 bg-background/90 px-4 text-center backdrop-blur-sm">
           <FolderPlus className="h-8 w-8 text-primary/70" strokeWidth={1.75} />
@@ -154,7 +162,7 @@ export function FileTree(): React.JSX.Element {
       <ScrollArea className="flex-1 p-2">
         {collections.length === 0 ? (
           <div className="p-4 text-center text-sm text-muted-foreground">
-            Right-click to create a collection.
+            Drag a folder here to create a collection.
           </div>
         ) : (
           <div className="flex flex-col gap-0.5">
@@ -177,7 +185,10 @@ export function FileTree(): React.JSX.Element {
                   </div>
                 ) : (
                   <button
-                    onClick={() => selectCollection(c.id)}
+                    onClick={() => {
+                      selectCollection(c.id)
+                      onSelectCollection?.()
+                    }}
                     onDoubleClick={() => {
                       setEditingId(c.id)
                       setEditingTitle(c.title)
@@ -207,4 +218,3 @@ export function FileTree(): React.JSX.Element {
     </div>
   )
 }
-

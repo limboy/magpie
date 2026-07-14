@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, screen } from 'electron'
 import { join } from 'node:path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import pkg from 'electron-updater'
@@ -15,16 +15,11 @@ import { closeWatcher, setupWatcher } from './lib/watcher'
 
 registerLocalSchemePrivileged()
 
-// Minimum window size differs per player mode: the list view needs room for
-// the sidebar + track list, while the full player is a narrow, tall column.
-const LIST_MIN = { width: 1000, height: 600 }
-const FULL_PLAYER_MIN = { width: 400, height: 450 }
+const PLAYER_SIZE = { width: 410, height: 720 }
+const MAX_WINDOW_WIDTH = PLAYER_SIZE.width + 288
 
 let mainWindow: BrowserWindow | null = null
-
-// Which mode the window is currently in; determines which persisted bounds
-// (windowBounds vs fullPlayerBounds) get saved and restored.
-let isFullPlayer = false
+let currentRightPanelWidth = 0
 
 function getWindow(): BrowserWindow | null {
   return mainWindow && !mainWindow.isDestroyed() ? mainWindow : null
@@ -38,14 +33,20 @@ function revealWindow(): void {
 async function createWindow(): Promise<void> {
   const state = await readState()
   const { windowBounds } = state
+  currentRightPanelWidth = 0
 
   mainWindow = new BrowserWindow({
     x: windowBounds?.x,
     y: windowBounds?.y,
-    width: windowBounds?.width || 1200,
-    height: windowBounds?.height || 800,
-    minWidth: LIST_MIN.width,
-    minHeight: LIST_MIN.height,
+    width: PLAYER_SIZE.width,
+    height: PLAYER_SIZE.height,
+    minWidth: PLAYER_SIZE.width,
+    minHeight: PLAYER_SIZE.height,
+    maxWidth: MAX_WINDOW_WIDTH,
+    maxHeight: PLAYER_SIZE.height,
+    resizable: false,
+    maximizable: false,
+    fullscreenable: false,
     show: false,
     autoHideMenuBar: true,
     titleBarStyle: 'hiddenInset',
@@ -69,7 +70,14 @@ async function createWindow(): Promise<void> {
   const persistBounds = (): void => {
     const bounds = mainWindow?.getBounds()
     if (bounds) {
-      void writeState(isFullPlayer ? { fullPlayerBounds: bounds } : { windowBounds: bounds })
+      void writeState({
+        windowBounds: {
+          x: bounds.x,
+          y: bounds.y,
+          width: PLAYER_SIZE.width,
+          height: PLAYER_SIZE.height
+        }
+      })
     }
   }
   const saveBounds = (): void => {
@@ -77,7 +85,6 @@ async function createWindow(): Promise<void> {
     saveTimeout = setTimeout(persistBounds, 500)
   }
 
-  mainWindow.on('resize', saveBounds)
   mainWindow.on('move', saveBounds)
 
   mainWindow.on('close', () => {
@@ -146,24 +153,20 @@ app.whenReady().then(async () => {
 
   ipcMain.on('soundbox:renderer-ready', () => revealWindow())
 
-  ipcMain.on('soundbox:set-full-player', async (_e, full: boolean) => {
-    const w = getWindow()
-    if (!w || full === isFullPlayer) return
+  ipcMain.on('soundbox:set-lyrics-panel-width', (_event, requestedRightWidth: number) => {
+    const window = getWindow()
+    if (!window) return
 
-    // Persist the bounds of the mode we're leaving so it can be restored next time.
-    await writeState(
-      isFullPlayer ? { fullPlayerBounds: w.getBounds() } : { windowBounds: w.getBounds() }
-    )
+    const rightWidth = Math.max(0, Math.min(288, Math.round(requestedRightWidth)))
+    if (rightWidth === currentRightPanelWidth) return
 
-    isFullPlayer = full
+    const bounds = window.getBounds()
+    const width = PLAYER_SIZE.width + rightWidth
+    const workArea = screen.getDisplayMatching(bounds).workArea
+    const x = Math.max(workArea.x, Math.min(bounds.x, workArea.x + workArea.width - width))
 
-    // Apply the target mode's minimum, then snap to its last-used bounds (if any).
-    const min = full ? FULL_PLAYER_MIN : LIST_MIN
-    w.setMinimumSize(min.width, min.height)
-
-    const state = await readState()
-    const target = full ? state.fullPlayerBounds : state.windowBounds
-    if (target) w.setBounds(target)
+    currentRightPanelWidth = rightWidth
+    window.setBounds({ x, y: bounds.y, width, height: PLAYER_SIZE.height })
   })
 
   await readState()

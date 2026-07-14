@@ -4,14 +4,11 @@ import { secondsToMs } from '@/lib/format-time'
 import { useLibrary } from '@/store/library-store'
 import { usePlayer } from '@/store/player-store'
 import { useUI } from '@/store/ui-store'
-import { useCoverArt } from '@/hooks/use-cover-art'
-import { cn } from '@/lib/utils'
-import { CompactBar } from './compact-bar'
-import { FullPlayer } from './full-player'
+import { TransportControls } from './transport-controls'
 
-export function AudioPlayer({ fullPlayer = false }: { fullPlayer?: boolean }): React.JSX.Element {
+export function AudioPlayer(): React.JSX.Element {
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  
+
   const selectedAudio = useLibrary((s) => s.selectedAudio)
   const collections = useLibrary((s) => s.collections)
   const selectedCollectionId = useLibrary((s) => s.selectedCollectionId)
@@ -30,7 +27,7 @@ export function AudioPlayer({ fullPlayer = false }: { fullPlayer?: boolean }): R
   const seekRequestMs = usePlayer((s) => s.seekRequestMs)
   const clearSeekRequest = usePlayer((s) => s.clearSeekRequest)
   const trackMeta = useLibrary((s) => s.trackMeta)
-  
+
   useEffect(() => {
     const a = audioRef.current
     if (!a) return
@@ -90,67 +87,79 @@ export function AudioPlayer({ fullPlayer = false }: { fullPlayer?: boolean }): R
     return () => window.removeEventListener('focus', handleFocus)
   }, [selectedAudio, selectAudio])
 
-  const cover = useCoverArt(selectedAudio)
   const shuffle = usePlayer((s) => s.shuffle)
   const loopMode = usePlayer((s) => s.loopMode)
 
-  const onNext = useCallback((forcePlay = false): void => {
-    // Navigate the visible (sorted + filtered) order the user sees.
-    let list = orderedPaths.length > 0 ? orderedPaths : (activeCollection?.items ?? [])
-    let idx = selectedAudio ? list.indexOf(selectedAudio) : -1
+  const onNext = useCallback(
+    (forcePlay = false): void => {
+      // Navigate the visible (sorted + filtered) order the user sees.
+      let list = orderedPaths.length > 0 ? orderedPaths : (activeCollection?.items ?? [])
+      let idx = selectedAudio ? list.indexOf(selectedAudio) : -1
 
-    // Fall back to the raw collection order if the current track isn't visible.
-    if (idx === -1 && selectedAudio) {
-      list = activeCollection?.items ?? []
-      idx = list.indexOf(selectedAudio)
-    }
+      // Fall back to the raw collection order if the current track isn't visible.
+      if (idx === -1 && selectedAudio) {
+        list = activeCollection?.items ?? []
+        idx = list.indexOf(selectedAudio)
+      }
 
-    // If still not found, search other collections.
-    if (idx === -1 && selectedAudio) {
-      for (const c of collections) {
-        const i = c.items.indexOf(selectedAudio)
-        if (i !== -1) {
-          list = c.items
-          idx = i
-          break
+      // If still not found, search other collections.
+      if (idx === -1 && selectedAudio) {
+        for (const c of collections) {
+          const i = c.items.indexOf(selectedAudio)
+          if (i !== -1) {
+            list = c.items
+            idx = i
+            break
+          }
         }
       }
-    }
 
-    if (idx === -1 || list.length === 0) return
+      if (idx === -1 || list.length === 0) return
 
-    let nextIdx: number
-    if (shuffle) {
-      nextIdx = Math.floor(Math.random() * list.length)
-      if (nextIdx === idx && list.length > 1) {
-        nextIdx = (nextIdx + 1) % list.length
-      }
-    } else {
-      nextIdx = idx + 1
-      if (nextIdx >= list.length) {
-        if (loopMode === 'all') {
-          nextIdx = 0
-        } else if (forcePlay) {
-          // Reached end during auto-play
-          setPlaying(false)
-          return
-        } else {
-          // Manual click next at end of list, wrap around anyway
-          nextIdx = 0
+      let nextIdx: number
+      if (shuffle) {
+        nextIdx = Math.floor(Math.random() * list.length)
+        if (nextIdx === idx && list.length > 1) {
+          nextIdx = (nextIdx + 1) % list.length
+        }
+      } else {
+        nextIdx = idx + 1
+        if (nextIdx >= list.length) {
+          if (loopMode === 'all') {
+            nextIdx = 0
+          } else if (forcePlay) {
+            // Reached end during auto-play
+            setPlaying(false)
+            return
+          } else {
+            // Manual click next at end of list, wrap around anyway
+            nextIdx = 0
+          }
         }
       }
-    }
 
-    const next = list[nextIdx]
-    selectAudio(next)
-    void window.soundbox.setState({ lastAudioPath: next })
-    
-    // If auto-play ended, we definitely want to play the next one.
-    // If it was already playing, we also want to keep playing.
-    if (forcePlay || isPlaying) {
-      setPlaying(true)
-    }
-  }, [orderedPaths, activeCollection, collections, selectedAudio, shuffle, loopMode, isPlaying, selectAudio, setPlaying])
+      const next = list[nextIdx]
+      selectAudio(next)
+      void window.soundbox.setState({ lastAudioPath: next })
+
+      // If auto-play ended, we definitely want to play the next one.
+      // If it was already playing, we also want to keep playing.
+      if (forcePlay || isPlaying) {
+        setPlaying(true)
+      }
+    },
+    [
+      orderedPaths,
+      activeCollection,
+      collections,
+      selectedAudio,
+      shuffle,
+      loopMode,
+      isPlaying,
+      selectAudio,
+      setPlaying
+    ]
+  )
 
   const onPrev = useCallback((): void => {
     let list = orderedPaths.length > 0 ? orderedPaths : (activeCollection?.items ?? [])
@@ -187,11 +196,20 @@ export function AudioPlayer({ fullPlayer = false }: { fullPlayer?: boolean }): R
     const prev = list[prevIdx]
     selectAudio(prev)
     void window.soundbox.setState({ lastAudioPath: prev })
-    
+
     if (isPlaying) {
       setPlaying(true)
     }
-  }, [orderedPaths, activeCollection, collections, selectedAudio, shuffle, isPlaying, selectAudio, setPlaying])
+  }, [
+    orderedPaths,
+    activeCollection,
+    collections,
+    selectedAudio,
+    shuffle,
+    isPlaying,
+    selectAudio,
+    setPlaying
+  ])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
@@ -275,8 +293,7 @@ export function AudioPlayer({ fullPlayer = false }: { fullPlayer?: boolean }): R
       navigator.mediaSession.metadata = new MediaMetadata({
         title: m?.title && m.title !== 'Unknown' ? m.title : basename(selectedAudio),
         artist: m?.artist && m.artist !== 'Unknown' ? m.artist : 'Unknown Artist',
-        album: m?.album && m.album !== 'Unknown' ? m.album : 'Unknown Album',
-        artwork: cover ? [{ src: cover }] : undefined
+        album: m?.album && m.album !== 'Unknown' ? m.album : 'Unknown Album'
       })
 
       navigator.mediaSession.setActionHandler('play', () => setPlaying(true))
@@ -284,16 +301,10 @@ export function AudioPlayer({ fullPlayer = false }: { fullPlayer?: boolean }): R
       navigator.mediaSession.setActionHandler('previoustrack', onPrev)
       navigator.mediaSession.setActionHandler('nexttrack', () => onNext(false))
     }
-  }, [selectedAudio, trackMeta, cover, setPlaying, onPrev, onNext])
+  }, [selectedAudio, trackMeta, setPlaying, onPrev, onNext])
 
   return (
-    <div
-      className={cn(
-        fullPlayer
-          ? 'flex min-h-0 flex-1 flex-col bg-background'
-          : 'shrink-0 border-b bg-background/95 px-3 py-2.5 backdrop-blur-md'
-      )}
-    >
+    <section className="shrink-0 border-b bg-background/95 backdrop-blur-md">
       <audio
         ref={audioRef}
         src={selectedAudio ? pathToLocalUrl(selectedAudio) : undefined}
@@ -347,21 +358,12 @@ export function AudioPlayer({ fullPlayer = false }: { fullPlayer?: boolean }): R
           setCurrentTimeMs(secondsToMs(e.currentTarget.currentTime))
         }}
       />
-      {fullPlayer ? (
-        <FullPlayer
-          audioRef={audioRef}
-          selectedAudio={selectedAudio}
-          onPrev={onPrev}
-          onNext={onNext}
-        />
-      ) : (
-        <CompactBar
-          audioRef={audioRef}
-          selectedAudio={selectedAudio}
-          onPrev={onPrev}
-          onNext={onNext}
-        />
-      )}
-    </div>
+      <TransportControls
+        audioRef={audioRef}
+        selectedAudio={selectedAudio}
+        onPrev={onPrev}
+        onNext={onNext}
+      />
+    </section>
   )
 }

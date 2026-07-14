@@ -29,6 +29,8 @@ const soundbox = {
     >,
   signalReady: () => ipcRenderer.send('soundbox:renderer-ready'),
   setFullPlayer: (full: boolean) => ipcRenderer.send('soundbox:set-full-player', full),
+  setLyricsPanelWidth: (rightWidth: number) =>
+    ipcRenderer.send('soundbox:set-lyrics-panel-width', rightWidth),
   getState: () => ipcRenderer.invoke('soundbox:getState'),
   setState: (patch: Partial<import('./soundbox').AppState>) =>
     ipcRenderer.invoke('soundbox:setState', patch),
@@ -60,8 +62,10 @@ const soundbox = {
       ipcRenderer.removeListener('soundbox:play-song', listener)
     }
   },
-  revealInFinder: (path: string) => ipcRenderer.invoke('soundbox:revealInFinder', path) as Promise<void>,
-  showSongContextMenu: (path: string) => ipcRenderer.invoke('soundbox:showSongContextMenu', path) as Promise<void>,
+  revealInFinder: (path: string) =>
+    ipcRenderer.invoke('soundbox:revealInFinder', path) as Promise<void>,
+  showSongContextMenu: (path: string) =>
+    ipcRenderer.invoke('soundbox:showSongContextMenu', path) as Promise<void>,
   showCollectionContextMenu: (id: string, title: string) =>
     ipcRenderer.invoke('soundbox:showCollectionContextMenu', id, title) as Promise<void>,
   showSidebarContextMenu: () =>
@@ -99,7 +103,6 @@ const soundbox = {
     apply: () => ipcRenderer.invoke('soundbox:apply-update') as Promise<void>
   }
 }
-
 
 if (process.contextIsolated) {
   try {
