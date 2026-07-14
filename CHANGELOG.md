@@ -3,6 +3,20 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [v1.3.4](https://github.com/limboy/soundbox/compare/v1.3.3...v1.3.4) - 2026-07-14
+
+### Features
+
+- remove songs from playlists ([2776d2d](https://github.com/limboy/soundbox/commit/2776d2da0fe80eda7bb9c513dd43a837eb373241))
+
+### Bug Fixes
+
+- use muted background for selected audio list rows ([3da1d19](https://github.com/limboy/soundbox/commit/3da1d19536e615df59f9f6081693a7468326f076))
+
+### Documentation
+
+- update CHANGELOG for v1.3.3 ([0a51571](https://github.com/limboy/soundbox/commit/0a51571d946701ce95c7e6e67fe6dbf43d09a27c))
+
 ## [v1.3.3](https://github.com/limboy/soundbox/compare/v1.3.2...v1.3.3) - 2026-07-14
 
 ### Documentation
