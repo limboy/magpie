@@ -3,6 +3,29 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [v1.3.1](https://github.com/limboy/soundbox/compare/v1.3.0...v1.3.1) - 2026-07-14
+
+### Features
+
+- show folders in collection popover ([0920b79](https://github.com/limboy/soundbox/commit/0920b79555c08c63b2546282ef2b74635650bc17))
+
+### Bug Fixes
+
+- show 'items' instead of 'songs' in status bar ([6fc5462](https://github.com/limboy/soundbox/commit/6fc54625c0eaaf7555cdbbc637edf0d806043ddd))
+
+### Documentation
+
+- update CHANGELOG for v1.3.0 ([35e9874](https://github.com/limboy/soundbox/commit/35e9874745c7e1357635eb4dceeb42d1f69ffc95))
+
+### Styles
+
+- hide scrollbars and tweak lyrics panel spacing ([13e5174](https://github.com/limboy/soundbox/commit/13e51742b280f07d95a82969787c202202bb9fd5))
+
+### Other Changes
+
+- Support dropping folders to create collections ([58e6ede](https://github.com/limboy/soundbox/commit/58e6ede64ac6bb5fbc174060f5c9f3d842d708c4))
+- Update lockfile with vaul and dependency metadata ([c86351b](https://github.com/limboy/soundbox/commit/c86351bc2646871b67726db73dc106fb009148c7))
+
 ## [v1.3.0](https://github.com/limboy/soundbox/compare/v1.2.1...v1.3.0) - 2026-07-14
 
 ### Features
