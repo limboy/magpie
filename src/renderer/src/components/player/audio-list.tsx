@@ -117,7 +117,7 @@ export function AudioList(): React.JSX.Element {
     setOrderedPaths(orderKey ? orderKey.split('\u0000') : [])
   }, [orderKey, setOrderedPaths])
 
-  if (!activeCollection) return <EmptyList message="Add a folder to start listening." />
+  if (!activeCollection) return <EmptyList message="Drag a folder here to start listening." />
   if (paths.length === 0) return <EmptyList message="Drag audio files or a folder here." />
 
   return (

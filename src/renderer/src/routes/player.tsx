@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Folder, MessageSquareQuote, Search, Star, X } from 'lucide-react'
+import { Folder, FolderPlus, MessageSquareQuote, Search, Star, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -269,13 +269,14 @@ function StatusBar(): React.JSX.Element {
 function PlayerCenter(): React.JSX.Element {
   const selectedCollectionId = useLibrary((s) => s.selectedCollectionId)
   const addItemsToSelectedCollection = useLibrary((s) => s.addItemsToSelectedCollection)
+  const addCollectionWithItems = useLibrary((s) => s.addCollectionWithItems)
   const [isDragOver, setIsDragOver] = useState(false)
   const dragCounter = useRef(0)
 
   const handleDragEnter = (event: React.DragEvent): void => {
     event.preventDefault()
     dragCounter.current += 1
-    if (selectedCollectionId) setIsDragOver(true)
+    setIsDragOver(true)
   }
 
   const handleDragLeave = (): void => {
@@ -291,7 +292,6 @@ function PlayerCenter(): React.JSX.Element {
     event.stopPropagation()
     dragCounter.current = 0
     setIsDragOver(false)
-    if (!selectedCollectionId) return
 
     const paths: string[] = []
     const folderPaths: string[] = []
@@ -300,6 +300,24 @@ function PlayerCenter(): React.JSX.Element {
       if (!path) continue
       const info = await window.soundbox.getPathInfo(path)
       if (!info) continue
+
+      if (!selectedCollectionId) {
+        if (!info.isDirectory) continue
+
+        const tree = await window.soundbox.readTree(path)
+        const folderItems: string[] = []
+        const flatten = (node: import('../../../preload/soundbox').TreeNode): void => {
+          if (node.kind === 'audio') folderItems.push(node.path)
+          else node.children.forEach(flatten)
+        }
+        flatten(tree)
+
+        if (folderItems.length > 0) {
+          addCollectionWithItems(basename(path), folderItems, [path])
+        }
+        continue
+      }
+
       if (info.isFile) {
         if (['.mp3', '.m4a', '.m4b', '.flac', '.ogg', '.wav'].includes(info.ext)) paths.push(path)
       } else if (info.isDirectory) {
@@ -327,15 +345,26 @@ function PlayerCenter(): React.JSX.Element {
       onDrop={handleDrop}
     >
       <AudioPlayer />
-      <ScrollArea className="min-h-0 flex-1 bg-background">
-        <AudioList />
-      </ScrollArea>
-      <div
-        className={cn(
-          'pointer-events-none absolute inset-0 z-40 bg-primary/5 ring-2 ring-inset ring-primary/20 transition-opacity',
-          isDragOver ? 'opacity-100' : 'opacity-0'
+      <div className="relative flex min-h-0 flex-1">
+        <ScrollArea className="min-h-0 flex-1 bg-background">
+          <AudioList />
+        </ScrollArea>
+        {isDragOver && (
+          <div className="pointer-events-none absolute inset-1.5 z-40 flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-primary/50 bg-background/90 px-4 text-center backdrop-blur-sm">
+            <FolderPlus className="h-8 w-8 text-primary/70" strokeWidth={1.75} />
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">
+                {selectedCollectionId ? 'Drop audio here' : 'Drop folder here'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {selectedCollectionId
+                  ? 'Adds audio to the current collection'
+                  : 'Creates a collection from the folder'}
+              </p>
+            </div>
+          </div>
         )}
-      />
+      </div>
     </main>
   )
 }
