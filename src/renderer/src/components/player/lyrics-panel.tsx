@@ -26,7 +26,7 @@ export function LyricsPanel({ state, currentTimeMs, onSeek }: Props): React.JSX.
 
   if (state.status === 'plain') {
     return (
-      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-6 py-4">
+      <div className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-6 py-4">
         <p className="whitespace-pre-wrap text-left text-base leading-8 text-muted-foreground">
           {state.text}
         </p>
@@ -72,7 +72,7 @@ function SyncedLyrics({
   }, [activeIndex])
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+    <div className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
       <div className="flex flex-col py-4">
         {lines.map((line, i) => {
           const active = i === activeIndex
@@ -82,10 +82,10 @@ function SyncedLyrics({
               ref={active ? activeRef : undefined}
               onClick={() => onSeek(line.time)}
               className={cn(
-                'block w-full origin-left px-6 py-2 text-left text-base leading-relaxed transition-all duration-300',
+                'block w-full origin-left px-6 py-1.5 text-left text-base leading-5.5 transition-all duration-300',
                 active
                   ? 'scale-[1.03] font-semibold text-foreground'
-                  : 'text-muted-foreground/35 hover:text-muted-foreground'
+                  : 'text-muted-foreground/50 hover:text-muted-foreground'
               )}
             >
               {line.text || '♪'}

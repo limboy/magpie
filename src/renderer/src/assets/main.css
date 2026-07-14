@@ -117,6 +117,12 @@
   .app-no-drag {
     -webkit-app-region: no-drag;
   }
+  .scrollbar-hidden {
+    scrollbar-width: none;
+  }
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @layer base {
@@ -161,7 +167,7 @@
   }
 
   /* Fix Radix ScrollArea viewport content to allow flex-1 children to fill height */
-  [data-slot="scroll-area-viewport"] > div {
+  [data-slot='scroll-area-viewport'] > div {
     display: flex !important;
     flex-direction: column;
     min-height: 100%;
