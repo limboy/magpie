@@ -3,6 +3,25 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [v1.3.0](https://github.com/limboy/soundbox/compare/v1.2.1...v1.3.0) - 2026-07-14
+
+### Features
+
+- redesign player interface ([30843d7](https://github.com/limboy/soundbox/commit/30843d7d1c924b6abb803d901c1819e80568ab95))
+
+### Bug Fixes
+
+- hide window title when folders page is open ([ad3fc7c](https://github.com/limboy/soundbox/commit/ad3fc7c51beababb3bebcc6a0099ee5d86607a8d))
+
+### Documentation
+
+- update CHANGELOG for v1.2.1 ([682cb6d](https://github.com/limboy/soundbox/commit/682cb6d3acfe49bbc593a7172cb872218e0358cb))
+
+### Other Changes
+
+- Tighten transport control sizing ([214c36f](https://github.com/limboy/soundbox/commit/214c36f6db2d989a543abf8c68f9c20cc02e5163))
+- Expand lyrics sidebar and align player layout with wider panel ([4779171](https://github.com/limboy/soundbox/commit/47791712a7e424b4263c2cde8322a35440780c35))
+
 ## [v1.2.1](https://github.com/limboy/soundbox/compare/v1.2.0...v1.2.1) - 2026-06-04
 
 ### Documentation
