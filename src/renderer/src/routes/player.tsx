@@ -1,7 +1,20 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Folder, MessageSquareQuote, Search, Star, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog'
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
+  DrawerTrigger
+} from '@/components/ui/drawer'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { FileTree } from '@/components/file-tree/file-tree'
 import { AudioList } from '@/components/player/audio-list'
@@ -172,37 +185,64 @@ function StatusBar(): React.JSX.Element {
   const lyricsSidebarOpen = useUI((s) => s.lyricsSidebarOpen)
   const toggleLyricsSidebar = useUI((s) => s.toggleLyricsSidebar)
   const collection = collections.find((item) => item.id === selectedCollectionId)
+  const foldersHeight = Math.min(420, 58 + Math.max(4, collections.length) * 34)
+  const foldersTrigger = (
+    <Button
+      size="icon"
+      variant="ghost"
+      className={cn('size-6 shrink-0', foldersOpen && 'bg-accent text-foreground')}
+      aria-label="Choose a folder"
+      aria-expanded={foldersOpen}
+      title="Folders"
+    >
+      <Folder className="size-3.5 shrink-0" />
+    </Button>
+  )
+  const foldersContent = (
+    <FileTree
+      onSelectCollection={() => setFoldersOpen(false)}
+      onClose={() => setFoldersOpen(false)}
+    />
+  )
 
   return (
     <footer className="grid h-8 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center border-t bg-muted/55 px-1.5 text-[11px] text-muted-foreground backdrop-blur-xl">
       <div className="flex min-w-0 items-center">
-        <Popover open={foldersOpen} onOpenChange={setFoldersOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              size="icon"
-              variant="ghost"
-              className={cn('size-6 shrink-0', foldersOpen && 'bg-accent text-foreground')}
-              aria-label="Choose a folder"
-              aria-expanded={foldersOpen}
-              title="Folders"
+        {lyricsSidebarOpen ? (
+          <Dialog open={foldersOpen} onOpenChange={setFoldersOpen}>
+            <DialogTrigger asChild>{foldersTrigger}</DialogTrigger>
+            <DialogContent
+              className="w-[340px] gap-0 overflow-hidden p-0 sm:max-w-[340px]"
+              style={{ height: foldersHeight, maxHeight: 'calc(100vh - 3rem)' }}
+              showCloseButton={false}
             >
-              <Folder className="size-3.5 shrink-0" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            side="top"
-            align="start"
-            sideOffset={6}
-            collisionPadding={8}
-            className="w-[300px] overflow-hidden p-0"
-            style={{
-              height: collections.length === 0 ? 150 : Math.min(420, 58 + collections.length * 34),
-              maxHeight: 'var(--radix-popover-content-available-height)'
-            }}
+              <DialogTitle className="sr-only">Folders</DialogTitle>
+              <DialogDescription className="sr-only">
+                Choose or manage a music collection.
+              </DialogDescription>
+              {foldersContent}
+            </DialogContent>
+          </Dialog>
+        ) : (
+          <Drawer
+            open={foldersOpen}
+            onOpenChange={setFoldersOpen}
+            shouldScaleBackground={false}
+            repositionInputs={false}
           >
-            <FileTree onSelectCollection={() => setFoldersOpen(false)} />
-          </PopoverContent>
-        </Popover>
+            <DrawerTrigger asChild>{foldersTrigger}</DrawerTrigger>
+            <DrawerContent
+              className="overflow-hidden"
+              style={{ height: foldersHeight, maxHeight: 'calc(100vh - 3rem)' }}
+            >
+              <DrawerTitle className="sr-only">Folders</DrawerTitle>
+              <DrawerDescription className="sr-only">
+                Choose or manage a music collection.
+              </DrawerDescription>
+              <div className="min-h-0 flex-1">{foldersContent}</div>
+            </DrawerContent>
+          </Drawer>
+        )}
 
         <span className="min-w-0 truncate pl-1">{collection?.title ?? 'No folder selected'}</span>
       </div>
