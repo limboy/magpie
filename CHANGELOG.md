@@ -3,6 +3,16 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [v1.3.3](https://github.com/limboy/soundbox/compare/v1.3.2...v1.3.3) - 2026-07-14
+
+### Documentation
+
+- update CHANGELOG for v1.3.2 ([d0e3057](https://github.com/limboy/soundbox/commit/d0e30578bb08902262037dd6d556d6c40c61d105))
+
+### Other Changes
+
+- Constrain player sidebar to a fixed width ([dfb1e25](https://github.com/limboy/soundbox/commit/dfb1e253eeae03725054d4649eb581972c904299))
+
 ## [v1.3.2](https://github.com/limboy/soundbox/compare/v1.3.1...v1.3.2) - 2026-07-14
 
 ### Documentation
