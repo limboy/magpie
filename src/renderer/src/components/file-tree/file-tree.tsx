@@ -150,6 +150,23 @@ export function FileTree({
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
+      <div className="flex h-10 shrink-0 items-center gap-2 border-b px-3">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold">Folders</p>
+          <p className="text-[10px] leading-none text-muted-foreground">
+            {collections.length} {collections.length === 1 ? 'collection' : 'collections'}
+          </p>
+        </div>
+        <button
+          type="button"
+          className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          onClick={handleAddDefault}
+          aria-label="New collection"
+          title="New collection"
+        >
+          <FolderPlus className="size-4" />
+        </button>
+      </div>
       {isDragOver && (
         <div className="pointer-events-none absolute inset-1.5 z-50 flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-primary/50 bg-background/90 px-4 text-center backdrop-blur-sm">
           <FolderPlus className="h-8 w-8 text-primary/70" strokeWidth={1.75} />
@@ -159,7 +176,7 @@ export function FileTree({
           </div>
         </div>
       )}
-      <ScrollArea className="flex-1 p-2">
+      <ScrollArea className="min-h-0 flex-1 p-2">
         {collections.length === 0 ? (
           <div className="p-4 text-center text-sm text-muted-foreground">
             Drag a folder here to create a collection.
@@ -189,25 +206,18 @@ export function FileTree({
                       selectCollection(c.id)
                       onSelectCollection?.()
                     }}
-                    onDoubleClick={() => {
-                      setEditingId(c.id)
-                      setEditingTitle(c.title)
-                    }}
                     onContextMenu={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       void window.soundbox.showCollectionContextMenu(c.id, c.title)
                     }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        setEditingId(c.id)
-                        setEditingTitle(c.title)
-                      }
-                    }}
                     className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-left transition-colors ${selectedCollectionId === c.id ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}
                   >
                     <Folder className="h-4 w-4 shrink-0 opacity-70" />
-                    <span className="truncate">{c.title}</span>
+                    <span className="min-w-0 flex-1 truncate">{c.title}</span>
+                    <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground/60">
+                      {c.items.length}
+                    </span>
                   </button>
                 )}
               </div>
