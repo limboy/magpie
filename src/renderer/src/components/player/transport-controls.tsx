@@ -44,12 +44,12 @@ export function TransportControls({
 
   return (
     <div className="flex flex-col">
-      <div className="grid h-20 grid-cols-[1fr_auto_1fr] items-center gap-3 bg-muted/20 px-4">
+      <div className="grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-3 bg-muted/20 px-4">
         <div className="flex justify-start">
           <ShuffleButton />
         </div>
 
-        <div className="flex items-center justify-center gap-5">
+        <div className="flex items-center justify-center gap-3">
           <SeekButton
             seconds={5}
             direction="back"
@@ -59,38 +59,38 @@ export function TransportControls({
           <Button
             size="icon"
             variant="ghost"
-            className="size-10 rounded-full text-foreground"
+            className="size-8 rounded-full text-foreground"
             onClick={onPrev}
             disabled={!selectedAudio}
             aria-label="Previous song"
             title="Previous"
           >
-            <SkipBack className="size-5 fill-current" />
+            <SkipBack className="size-4.5 fill-current" />
           </Button>
           <Button
             size="icon"
-            className="size-12 rounded-full bg-foreground text-background shadow-sm hover:bg-foreground/90"
+            className="size-10 rounded-full bg-foreground text-background shadow-sm hover:bg-foreground/90"
             onClick={togglePlayback}
             disabled={!selectedAudio}
             aria-label={isPlaying ? 'Pause' : 'Play'}
             title={isPlaying ? 'Pause' : 'Play'}
           >
             {isPlaying ? (
-              <Pause className="size-6 fill-current" />
+              <Pause className="size-5 fill-current" />
             ) : (
-              <Play className="size-6 translate-x-px fill-current" />
+              <Play className="size-5 translate-x-px fill-current" />
             )}
           </Button>
           <Button
             size="icon"
             variant="ghost"
-            className="size-10 rounded-full text-foreground"
+            className="size-8 rounded-full text-foreground"
             onClick={onNext}
             disabled={!selectedAudio}
             aria-label="Next song"
             title="Next"
           >
-            <SkipForward className="size-5 fill-current" />
+            <SkipForward className="size-4.5 fill-current" />
           </Button>
           <SeekButton
             seconds={15}
@@ -183,14 +183,14 @@ function SeekButton({
     <Button
       size="icon"
       variant="ghost"
-      className="relative size-10 rounded-full text-muted-foreground hover:text-foreground"
+      className="relative size-8 rounded-full text-muted-foreground hover:text-foreground"
       onClick={onClick}
       disabled={disabled}
       aria-label={`${direction === 'back' ? 'Back' : 'Forward'} ${seconds} seconds`}
       title={`${direction === 'back' ? 'Back' : 'Forward'} ${seconds} seconds`}
     >
-      <Icon className="size-5" strokeWidth={1.8} />
-      <span className="pointer-events-none absolute inset-0 flex items-center justify-center pt-px text-[8px] font-semibold tabular-nums">
+      <Icon className="size-4.5" strokeWidth={1.8} />
+      <span className="pointer-events-none absolute inset-0 flex items-center justify-center pt-px text-[7px] font-semibold tabular-nums">
         {seconds}
       </span>
     </Button>
