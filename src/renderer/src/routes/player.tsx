@@ -98,7 +98,7 @@ export function PlayerRoute(): React.JSX.Element {
             <span
               className={cn(
                 'max-w-[50%] truncate text-[11px] font-medium tracking-wide text-muted-foreground/70',
-                isSearchOpen && 'invisible'
+                (isSearchOpen || foldersPageOpen) && 'invisible'
               )}
             >
               {windowTitle}

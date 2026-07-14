@@ -130,7 +130,7 @@ export function AudioList(): React.JSX.Element {
             role="button"
             tabIndex={0}
             className={cn(
-              'group grid h-11 cursor-default grid-cols-[38px_minmax(0,1fr)_56px_34px] items-center rounded-md px-2 text-sm transition-colors',
+              'group grid h-9 cursor-default grid-cols-[38px_minmax(0,1fr)_56px_34px] items-center rounded-md px-1 text-sm transition-colors',
               active ? 'bg-accent text-foreground' : 'hover:bg-muted/65'
             )}
             onClick={() => {
@@ -171,7 +171,7 @@ export function AudioList(): React.JSX.Element {
             <button
               type="button"
               className={cn(
-                'ml-auto flex size-7 items-center justify-center rounded-md text-muted-foreground/35 transition-all hover:bg-background/70 hover:text-foreground',
+                'ml-auto flex size-7 items-center justify-center rounded-md text-muted-foreground/35 transition-all hover:text-foreground',
                 item.liked && 'text-foreground'
               )}
               onClick={(event) => {
