@@ -191,10 +191,10 @@ export function AudioList(): React.JSX.Element {
             className={cn(
               'group grid h-9 cursor-default grid-cols-[38px_minmax(0,1fr)_56px_34px] items-center rounded-md px-1 text-sm transition-colors',
               selected
-                ? 'bg-accent text-foreground'
+                ? 'bg-muted text-foreground'
                 : active
                   ? 'bg-muted/70 text-foreground'
-                  : 'hover:bg-muted/65'
+                  : 'hover:bg-muted/70'
             )}
             onClick={(event) => {
               if (event.shiftKey) {
