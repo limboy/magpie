@@ -3,6 +3,16 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [v1.3.6](https://github.com/limboy/soundbox/compare/v1.3.5...v1.3.6) - 2026-07-15
+
+### Documentation
+
+- update CHANGELOG for v1.3.5 ([fa55f61](https://github.com/limboy/soundbox/commit/fa55f61ae9916fef3598902ec6dd0ef8d10a6d49))
+
+### Other Changes
+
+- Reset current track on previous after 3 seconds ([59a5395](https://github.com/limboy/soundbox/commit/59a53959e5a0a1335a0f06aaf5291417f2ae7ef6))
+
 ## [v1.3.5](https://github.com/limboy/soundbox/compare/v1.3.4...v1.3.5) - 2026-07-15
 
 ### Documentation
