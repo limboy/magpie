@@ -20,6 +20,7 @@ type ListSelection = {
   collectionId: string | null
   paths: Set<string>
   anchorPath: string | null
+  followsPlayback: boolean
 }
 
 export function AudioList(): React.JSX.Element {
@@ -44,7 +45,8 @@ export function AudioList(): React.JSX.Element {
   const [selection, setSelection] = useState<ListSelection>(() => ({
     collectionId: null,
     paths: new Set(),
-    anchorPath: null
+    anchorPath: null,
+    followsPlayback: true
   }))
 
   const activeCollection = collections.find((item) => item.id === selectedCollectionId)
@@ -97,6 +99,12 @@ export function AudioList(): React.JSX.Element {
   useEffect(() => {
     return window.soundbox.onPlaySong((path) => {
       selectAudio(path)
+      setSelection({
+        collectionId: useLibrary.getState().selectedCollectionId,
+        paths: new Set([path]),
+        anchorPath: path,
+        followsPlayback: true
+      })
       void window.soundbox.setState({ lastAudioPath: path })
       setPlaying(true)
     })
@@ -132,16 +140,26 @@ export function AudioList(): React.JSX.Element {
   }, [orderKey, setOrderedPaths])
 
   const selectedPaths = useMemo(() => {
-    if (selection.collectionId !== selectedCollectionId) return new Set<string>()
     const visiblePaths = new Set(items.map((item) => item.path))
+    if (selection.followsPlayback) {
+      return selectedAudio && visiblePaths.has(selectedAudio)
+        ? new Set([selectedAudio])
+        : new Set<string>()
+    }
+    if (selection.collectionId !== selectedCollectionId) return new Set<string>()
     return new Set(Array.from(selection.paths).filter((path) => visiblePaths.has(path)))
-  }, [items, selectedCollectionId, selection])
+  }, [items, selectedAudio, selectedCollectionId, selection])
 
   const removePaths = useCallback(
     (pathsToRemove: string[]): void => {
       if (pathsToRemove.length === 0) return
       removeItemsFromSelectedCollection(pathsToRemove)
-      setSelection({ collectionId: selectedCollectionId, paths: new Set(), anchorPath: null })
+      setSelection({
+        collectionId: selectedCollectionId,
+        paths: new Set(),
+        anchorPath: null,
+        followsPlayback: true
+      })
     },
     [removeItemsFromSelectedCollection, selectedCollectionId]
   )
@@ -212,7 +230,8 @@ export function AudioList(): React.JSX.Element {
                   setSelection({
                     collectionId: selectedCollectionId,
                     paths: new Set(items.slice(start, end + 1).map((candidate) => candidate.path)),
-                    anchorPath
+                    anchorPath,
+                    followsPlayback: false
                   })
                 }
                 return
@@ -221,7 +240,8 @@ export function AudioList(): React.JSX.Element {
               setSelection({
                 collectionId: selectedCollectionId,
                 paths: new Set([item.path]),
-                anchorPath: item.path
+                anchorPath: item.path,
+                followsPlayback: true
               })
               selectAudio(item.path)
               void window.soundbox.setState({ lastAudioPath: item.path })
@@ -230,6 +250,12 @@ export function AudioList(): React.JSX.Element {
             onKeyDown={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault()
+                setSelection({
+                  collectionId: selectedCollectionId,
+                  paths: new Set([item.path]),
+                  anchorPath: item.path,
+                  followsPlayback: true
+                })
                 selectAudio(item.path)
                 void window.soundbox.setState({ lastAudioPath: item.path })
                 setPlaying(true)
@@ -244,7 +270,8 @@ export function AudioList(): React.JSX.Element {
                 setSelection({
                   collectionId: selectedCollectionId,
                   paths: new Set([item.path]),
-                  anchorPath: item.path
+                  anchorPath: item.path,
+                  followsPlayback: false
                 })
               }
               void window.soundbox.showSongContextMenu(item.path, contextSelection)
