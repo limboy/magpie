@@ -145,7 +145,7 @@ export function CompactBar({ audioRef, selectedAudio, onPrev, onNext }: Props): 
 }
 
 function LyricsButton(): React.JSX.Element {
-  const lyricsSidebarOpen = useUI((s) => s.lyricsSidebarOpen)
+  const lyricsSidebarOpen = useUI((s) => s.sidebarPanel === 'lyrics')
   const toggleLyricsSidebar = useUI((s) => s.toggleLyricsSidebar)
 
   return (

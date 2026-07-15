@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Folder, FolderPlus, X } from 'lucide-react'
+import { Folder, FolderPlus } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { basename } from '@/lib/audio-extensions'
 import { useLibrary } from '@/store/library-store'
@@ -7,11 +7,9 @@ import { usePlayer } from '@/store/player-store'
 import type { TreeNode } from '../../../../preload/soundbox'
 
 export function FileTree({
-  onSelectCollection,
-  onClose
+  onSelectCollection
 }: {
   onSelectCollection?: () => void
-  onClose?: () => void
 }): React.JSX.Element {
   const {
     collections,
@@ -152,34 +150,6 @@ export function FileTree({
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <div className="flex h-10 shrink-0 items-center gap-2 border-b px-3">
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">Folders</p>
-          <p className="text-[10px] leading-none text-muted-foreground">
-            {collections.length} {collections.length === 1 ? 'collection' : 'collections'}
-          </p>
-        </div>
-        <button
-          type="button"
-          className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          onClick={handleAddDefault}
-          aria-label="New collection"
-          title="New collection"
-        >
-          <FolderPlus className="size-4" />
-        </button>
-        {onClose && (
-          <button
-            type="button"
-            className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-            onClick={onClose}
-            aria-label="Close folders"
-            title="Close"
-          >
-            <X className="size-4" />
-          </button>
-        )}
-      </div>
       {isDragOver && (
         <div className="pointer-events-none absolute inset-1.5 z-50 flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-primary/50 bg-background/90 px-4 text-center backdrop-blur-sm">
           <FolderPlus className="h-8 w-8 text-primary/70" strokeWidth={1.75} />
