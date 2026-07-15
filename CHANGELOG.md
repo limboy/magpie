@@ -3,6 +3,18 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [v1.3.7](https://github.com/limboy/soundbox/compare/v1.3.6...v1.3.7) - 2026-07-16
+
+### Documentation
+
+- update CHANGELOG for v1.3.6 ([41e848c](https://github.com/limboy/soundbox/commit/41e848c128e31997ef9612741ad13837222b2b46))
+
+### Other Changes
+
+- Add playback progress indicator to transport controls ([47b5fc7](https://github.com/limboy/soundbox/commit/47b5fc7b0343549a8bfe2f2daff9f59ccb8b2f81))
+- refactor player sidebar controls ([46182b0](https://github.com/limboy/soundbox/commit/46182b07bdc5a2ca384188bdada789912ac85cc1))
+- Simplify player status bar layout ([103d215](https://github.com/limboy/soundbox/commit/103d2150f34c1a8af3edd38e3526861c20355475))
+
 ## [v1.3.6](https://github.com/limboy/soundbox/compare/v1.3.5...v1.3.6) - 2026-07-15
 
 ### Documentation
