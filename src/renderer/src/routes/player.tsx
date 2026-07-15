@@ -205,7 +205,7 @@ function StatusBar(): React.JSX.Element {
   )
 
   return (
-    <footer className="grid h-8 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center border-t bg-muted/55 px-1.5 text-[11px] text-muted-foreground backdrop-blur-xl">
+    <footer className="grid h-8 shrink-0 grid-cols-2 items-center border-t bg-muted/55 px-1.5 text-[11px] text-muted-foreground backdrop-blur-xl">
       <div className="flex min-w-0 items-center">
         {lyricsSidebarOpen ? (
           <Dialog open={foldersOpen} onOpenChange={setFoldersOpen}>
@@ -245,10 +245,6 @@ function StatusBar(): React.JSX.Element {
 
         <span className="min-w-0 truncate pl-1">{collection?.title ?? 'No folder selected'}</span>
       </div>
-
-      <span className="pointer-events-none tabular-nums">
-        {collection ? `${collection.items.length} items` : '0 items'}
-      </span>
 
       <div className="flex items-center gap-1 justify-self-end">
         <UpdateIndicator />
