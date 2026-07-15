@@ -162,6 +162,13 @@ export function AudioPlayer(): React.JSX.Element {
   )
 
   const onPrev = useCallback((): void => {
+    const audio = audioRef.current
+    if (audio && audio.currentTime > 3) {
+      audio.currentTime = 0
+      setCurrentTimeMs(0)
+      return
+    }
+
     let list = orderedPaths.length > 0 ? orderedPaths : (activeCollection?.items ?? [])
     let idx = selectedAudio ? list.indexOf(selectedAudio) : -1
 
@@ -208,7 +215,8 @@ export function AudioPlayer(): React.JSX.Element {
     shuffle,
     isPlaying,
     selectAudio,
-    setPlaying
+    setPlaying,
+    setCurrentTimeMs
   ])
 
   useEffect(() => {
