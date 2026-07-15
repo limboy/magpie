@@ -3,6 +3,16 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [v1.3.5](https://github.com/limboy/soundbox/compare/v1.3.4...v1.3.5) - 2026-07-15
+
+### Documentation
+
+- update CHANGELOG for v1.3.4 ([095341f](https://github.com/limboy/soundbox/commit/095341f07e32d99af3f2d428dfba426b55cc78bf))
+
+### Other Changes
+
+- Track playback-following selection in audio list ([b20ce59](https://github.com/limboy/soundbox/commit/b20ce59dd295e4918ce626bb490229ef9d1c4d40))
+
 ## [v1.3.4](https://github.com/limboy/soundbox/compare/v1.3.3...v1.3.4) - 2026-07-14
 
 ### Features
