@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function UpdateIndicator(): React.JSX.Element | null {
@@ -31,14 +30,14 @@ export function UpdateIndicator(): React.JSX.Element | null {
 
   return (
     <Button
-      size="icon"
-      className="size-6 bg-blue-500 text-white hover:bg-blue-500 hover:text-white"
+      size="xs"
+      className="h-5 bg-blue-500 px-2 text-[11px] text-white hover:bg-blue-600 hover:text-white"
       disabled={applying}
       onClick={handleApply}
       aria-label={applying ? 'Applying update' : `Apply update ${updateVersion}`}
       title={applying ? 'Applying update…' : `Apply update ${updateVersion}`}
     >
-      <Download className="size-3.5" />
+      {applying ? 'Updating…' : 'Update'}
     </Button>
   )
 }

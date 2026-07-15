@@ -160,7 +160,7 @@ function StatusBar(): React.JSX.Element {
   const toggleLyricsSidebar = useUI((s) => s.toggleLyricsSidebar)
 
   return (
-    <footer className="grid h-8 shrink-0 grid-cols-2 items-center border-t bg-muted/55 px-1.5 text-[11px] text-muted-foreground backdrop-blur-xl">
+    <footer className="grid h-8 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center border-t bg-muted/55 px-1.5 text-[11px] text-muted-foreground backdrop-blur-xl">
       <div className="flex items-center">
         <Button
           size="icon"
@@ -175,8 +175,11 @@ function StatusBar(): React.JSX.Element {
         </Button>
       </div>
 
-      <div className="flex items-center gap-1 justify-self-end">
+      <div className="justify-self-center">
         <UpdateIndicator />
+      </div>
+
+      <div className="flex items-center gap-1 justify-self-end">
         <Button
           size="icon"
           variant="ghost"
