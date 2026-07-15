@@ -30,6 +30,8 @@ export function TransportControls({
   const currentTimeMs = usePlayer((state) => state.currentTimeMs)
   const durationMs = usePlayer((state) => state.durationMs)
   const requestSeek = usePlayer((state) => state.requestSeek)
+  const progress =
+    durationMs > 0 ? Math.max(0, Math.min(100, (currentTimeMs / durationMs) * 100)) : 0
   const togglePlayback = (): void => {
     const audio = audioRef.current
     if (!audio || !selectedAudio) return
@@ -43,7 +45,7 @@ export function TransportControls({
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="relative flex flex-col">
       <div className="grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-3 bg-muted/20 px-4">
         <div className="flex justify-start">
           <ShuffleButton />
@@ -103,6 +105,12 @@ export function TransportControls({
         <div className="flex justify-end">
           <RepeatModeButton />
         </div>
+      </div>
+      <div className="pointer-events-none absolute inset-x-0 -bottom-px z-10 h-px overflow-hidden bg-border/40">
+        <div
+          className="h-full bg-foreground/75 transition-[width] duration-150 ease-linear"
+          style={{ width: `${progress}%` }}
+        />
       </div>
     </div>
   )
