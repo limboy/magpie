@@ -3,6 +3,16 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [v1.3.10](https://github.com/limboy/soundbox/compare/v1.3.9...v1.3.10) - 2026-07-16
+
+### Documentation
+
+- update CHANGELOG for v1.3.9 ([993e597](https://github.com/limboy/soundbox/commit/993e597abe25767a81b5b96edbd98f53a9250ec2))
+
+### Other Changes
+
+- Update README screenshot ([4772c56](https://github.com/limboy/soundbox/commit/4772c56db8b5f6265308c5f8e9667867a348cd1b))
+
 ## [v1.3.9](https://github.com/limboy/soundbox/compare/v1.3.8...v1.3.9) - 2026-07-16
 
 ### Documentation
