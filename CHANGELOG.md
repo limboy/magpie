@@ -3,6 +3,16 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [v1.3.9](https://github.com/limboy/soundbox/compare/v1.3.8...v1.3.9) - 2026-07-16
+
+### Documentation
+
+- update CHANGELOG for v1.3.8 ([dd14ea4](https://github.com/limboy/soundbox/commit/dd14ea41417890976bcd06b41a7057ffff915a86))
+
+### Other Changes
+
+- Scroll active audio item into view while playing ([eb34ba4](https://github.com/limboy/soundbox/commit/eb34ba49ce91958595362658b8abd005618af012))
+
 ## [v1.3.8](https://github.com/limboy/soundbox/compare/v1.3.7...v1.3.8) - 2026-07-16
 
 ### Documentation
