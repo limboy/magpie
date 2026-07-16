@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FileAudio, Star } from 'lucide-react'
 import { basename } from '@/lib/audio-extensions'
 import { msToClock } from '@/lib/format-time'
@@ -39,6 +39,7 @@ export function AudioList(): React.JSX.Element {
   const setTrackDuration = useLibrary((state) => state.setTrackDuration)
   const setBulkTrackInfo = useLibrary((state) => state.setBulkTrackInfo)
   const setOrderedPaths = useLibrary((state) => state.setOrderedPaths)
+  const isPlaying = usePlayer((state) => state.isPlaying)
   const setPlaying = usePlayer((state) => state.setPlaying)
   const searchQuery = useUI((state) => state.searchQuery)
   const showStarredOnly = useUI((state) => state.showStarredOnly)
@@ -48,6 +49,7 @@ export function AudioList(): React.JSX.Element {
     anchorPath: null,
     followsPlayback: true
   }))
+  const activeItemRef = useRef<HTMLDivElement | null>(null)
 
   const activeCollection = collections.find((item) => item.id === selectedCollectionId)
   const paths = useMemo(() => activeCollection?.items ?? [], [activeCollection])
@@ -139,6 +141,11 @@ export function AudioList(): React.JSX.Element {
     setOrderedPaths(orderKey ? orderKey.split('\u0000') : [])
   }, [orderKey, setOrderedPaths])
 
+  useEffect(() => {
+    if (!isPlaying || !selectedAudio) return
+    activeItemRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [isPlaying, selectedAudio, orderKey])
+
   const selectedPaths = useMemo(() => {
     const visiblePaths = new Set(items.map((item) => item.path))
     if (selection.followsPlayback) {
@@ -203,6 +210,7 @@ export function AudioList(): React.JSX.Element {
         return (
           <div
             key={item.path}
+            ref={active ? activeItemRef : undefined}
             role="option"
             tabIndex={0}
             aria-selected={selected}
