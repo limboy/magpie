@@ -3,6 +3,28 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [Unreleased](https://github.com/limboy/soundbox/compare/v1.3.12...HEAD)
+
+### Features
+
+- remember last played audio track per collection when switching collections ([61dc08b](https://github.com/limboy/soundbox/commit/61dc08b633ad3d6466d248406e3b74e409d3853a))
+
+## [v1.3.12](https://github.com/limboy/soundbox/compare/v1.3.11...v1.3.12) - 2026-07-27
+
+### Features
+
+- remember last played audio track per collection when switching collections ([d1c7393](https://github.com/limboy/soundbox/commit/d1c73931444f0b2aea06f0dee1ffa7ce8e2f241d))
+
+### Documentation
+
+- update CHANGELOG for v1.3.10 ([329dcba](https://github.com/limboy/soundbox/commit/329dcbacaace1925481a4f43226740c124bae135))
+
+## [v1.3.11](https://github.com/limboy/soundbox/compare/v1.3.10...v1.3.11) - 2026-07-27
+
+### Features
+
+- remember last played audio track per collection when switching collections ([61dc08b](https://github.com/limboy/soundbox/commit/61dc08b633ad3d6466d248406e3b74e409d3853a))
+
 ## [v1.3.10](https://github.com/limboy/soundbox/compare/v1.3.9...v1.3.10) - 2026-07-16
 
 ### Documentation
