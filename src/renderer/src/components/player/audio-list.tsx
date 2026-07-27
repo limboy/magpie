@@ -143,7 +143,7 @@ export function AudioList(): React.JSX.Element {
 
   useEffect(() => {
     if (!isPlaying || !selectedAudio) return
-    activeItemRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    activeItemRef.current?.scrollIntoView({ block: 'center' })
   }, [isPlaying, selectedAudio, orderKey])
 
   const selectedPaths = useMemo(() => {
