@@ -115,8 +115,8 @@ Display the contents of `RELEASENOTES.md` in the chat window, then **call `ask_q
 If the user selected to proceed in the UI modal:
 
 ```bash
-# Commit and tag locally
-git add package.json package-lock.json CHANGELOG.md
+# Commit updated files and release notes locally
+git add package.json package-lock.json CHANGELOG.md RELEASENOTES.md
 git commit -m "release: vX.Y.Z"
 git tag -a vX.Y.Z -m "Release vX.Y.Z"
 
@@ -129,11 +129,12 @@ git push origin vX.Y.Z
 
 Pushing tag `vX.Y.Z` automatically triggers GitHub Actions (`.github/workflows/release.yml`), which:
 
-1. Runs `npm run changelog` to format release notes.
-2. Builds the renderer (`npm run build:renderer`).
-3. Builds macOS binaries (`dmg`, `zip` arm64), signs with Apple Developer certificate, and notarizes via Apple Notary Service.
-4. Creates a new GitHub Release with attached assets (`.dmg`, `.zip`, `latest-mac.yml`).
-5. Updates GitHub Release notes using `RELEASENOTES.md`.
+1. Runs pre-flight typecheck and linting.
+2. Verifies the locally committed `RELEASENOTES.md` (no file modifications happen during CI).
+3. Builds the renderer (`npm run build:renderer`).
+4. Builds macOS binaries (`dmg`, `zip` arm64), signs with Apple Developer certificate, and notarizes via Apple Notary Service.
+5. Creates a new GitHub Release with attached assets (`.dmg`, `.zip`, `latest-mac.yml`).
+6. Updates GitHub Release notes using `RELEASENOTES.md`.
 
 Monitor status using `gh` CLI:
 

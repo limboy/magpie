@@ -28,11 +28,10 @@ jobs:
           npm run typecheck
           npm run lint
 
-      - name: Generate release notes for build
+      - name: Verify release notes file
         run: |
-          npm run changelog
           test -s RELEASENOTES.md || exit 1
-          echo "Release notes generated successfully"
+          echo "RELEASENOTES.md verified from repository"
 
       - name: Build renderer
         run: npm run build:renderer
