@@ -10,56 +10,27 @@ jobs:
     runs-on: macos-14
     permissions:
       contents: write
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Commit CHANGELOG.md to main
+      - name: Pre-flight Quality Checks
         run: |
-          npm run changelog
-          if [ -n "$(git status --porcelain CHANGELOG.md)" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            cp CHANGELOG.md /tmp/CHANGELOG.md
-            cp RELEASENOTES.md /tmp/RELEASENOTES.md
-
-            # Clean up and switch to main
-            git reset --hard
-            git fetch origin main
-            git checkout main
-
-            # Update changelog and commit
-            cp /tmp/CHANGELOG.md CHANGELOG.md
-            git add CHANGELOG.md
-            if git diff --cached --quiet; then
-              echo "CHANGELOG.md already up to date on main; skipping commit"
-            else
-              git commit -m "docs: update CHANGELOG for ${GITHUB_REF_NAME}"
-              git push origin main
-            fi
-          fi
+          npm run typecheck
+          npm run lint
 
       - name: Generate release notes for build
         run: |
-          # Generate fresh release notes - must be on a branch for git log to work correctly
-          # If we're in detached HEAD, switch to main first
-          if git rev-parse --abbrev-ref HEAD | grep -q detached; then
-            git fetch origin main
-            git checkout main
-          fi
           npm run changelog
-          # Verify the file was created and has content
           test -s RELEASENOTES.md || exit 1
           echo "Release notes generated successfully"
 
