@@ -172,6 +172,22 @@ function setupHandlers(getWindow: () => BrowserWindow | null): void {
       changed = true
     }
 
+    let nextLastAudioByCollection = currentState.lastAudioByCollection
+    if (nextLastAudioByCollection) {
+      const updatedMap = { ...nextLastAudioByCollection }
+      let mapChanged = false
+      for (const [cid, path] of Object.entries(updatedMap)) {
+        if (pathIncludes(pathsToProcess, path)) {
+          delete updatedMap[cid]
+          mapChanged = true
+        }
+      }
+      if (mapChanged) {
+        nextLastAudioByCollection = updatedMap
+        changed = true
+      }
+    }
+
     const nextLikedPaths = { ...(currentState.likedPaths || {}) }
     for (const p of pathsToProcess) {
       // Since pathsToProcess are absolute paths and likedPaths keys are normalized
@@ -191,6 +207,7 @@ function setupHandlers(getWindow: () => BrowserWindow | null): void {
       const nextState = await writeState({
         collections: nextCollections,
         lastAudioPath: nextLastAudioPath,
+        lastAudioByCollection: nextLastAudioByCollection,
         likedPaths: nextLikedPaths
       })
       updateWatcher(nextState)
