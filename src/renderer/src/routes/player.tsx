@@ -14,6 +14,7 @@ import { useUI } from '@/store/ui-store'
 
 export function PlayerRoute(): React.JSX.Element {
   const setCollections = useLibrary((s) => s.setCollections)
+  const setLastAudioByCollection = useLibrary((s) => s.setLastAudioByCollection)
   const selectCollection = useLibrary((s) => s.selectCollection)
   const selectAudio = useLibrary((s) => s.selectAudio)
   const setLikedPaths = useLibrary((s) => s.setLikedPaths)
@@ -47,12 +48,13 @@ export function PlayerRoute(): React.JSX.Element {
         setBulkTrackInfo(bulk)
       }
       if (state.collections) setCollections(state.collections)
+      if (state.lastAudioByCollection) setLastAudioByCollection(state.lastAudioByCollection)
       if (state.selectedCollectionId) selectCollection(state.selectedCollectionId)
       if (state.lastAudioPath) selectAudio(state.lastAudioPath)
       if (state.likedPaths) setLikedPaths(state.likedPaths)
       setHydrated(true)
     })()
-  }, [setCollections, selectCollection, selectAudio, setLikedPaths, setBulkTrackInfo, setHydrated])
+  }, [setCollections, setLastAudioByCollection, selectCollection, selectAudio, setLikedPaths, setBulkTrackInfo, setHydrated])
 
   useEffect(() => {
     if (!hydrated) return
@@ -70,13 +72,14 @@ export function PlayerRoute(): React.JSX.Element {
     return window.soundbox.onStateUpdated((state) => {
       const previous = useLibrary.getState()
       setCollections(state.collections)
+      if (state.lastAudioByCollection) setLastAudioByCollection(state.lastAudioByCollection)
       if (state.selectedCollectionId !== previous.selectedCollectionId) {
         useLibrary.setState({ selectedCollectionId: state.selectedCollectionId })
       }
       if (state.lastAudioPath !== previous.selectedAudio) selectAudio(state.lastAudioPath)
       if (state.likedPaths) setLikedPaths(state.likedPaths)
     })
-  }, [setCollections, selectAudio, setLikedPaths])
+  }, [setCollections, setLastAudioByCollection, selectAudio, setLikedPaths])
 
   useLayoutEffect(() => {
     window.soundbox.setLyricsPanelWidth(sidebarPanel ? 320 : 0)

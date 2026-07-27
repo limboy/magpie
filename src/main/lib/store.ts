@@ -16,6 +16,7 @@ export type AppState = {
   collections: Collection[]
   selectedCollectionId: string | null
   lastAudioPath: string | null
+  lastAudioByCollection?: Record<string, string>
   likedPaths?: Record<string, number>
   // Bounds for list mode.
   windowBounds?: {
@@ -36,7 +37,8 @@ export type AppState = {
 const DEFAULT: AppState = {
   collections: [],
   selectedCollectionId: null,
-  lastAudioPath: null
+  lastAudioPath: null,
+  lastAudioByCollection: {}
 }
 
 let cached: AppState | null = null
