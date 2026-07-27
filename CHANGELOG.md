@@ -3,6 +3,22 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [Unreleased](https://github.com/limboy/soundbox/compare/v1.3.12...HEAD)
+
+### Features
+
+- add publish skill for automated release workflow ([0eef3bb](https://github.com/limboy/soundbox/commit/0eef3bb9a75a1bb0d47127537c0fc7c647a5f31e))
+
+### Bug Fixes
+
+- remove scroll animation while reaching target song ([fdd909f](https://github.com/limboy/soundbox/commit/fdd909f085b2b01c200a8ba27e0647d6dd2c74db))
+
+### Documentation
+
+- require interactive UI modal ask_question in publish skill ([c4340b7](https://github.com/limboy/soundbox/commit/c4340b7ed202d3d0e9de545e1d4023b8b7fe1662))
+- update CHANGELOG for v1.3.12 ([3a7faf4](https://github.com/limboy/soundbox/commit/3a7faf4fe8949a5961bba5cc8e115ef56b3518d4))
+- update CHANGELOG for v1.3.11 ([e37ead0](https://github.com/limboy/soundbox/commit/e37ead073b1b08ebdb46a8f1b2c7d16fca91a800))
+
 ## [v1.3.12](https://github.com/limboy/soundbox/compare/v1.3.11...v1.3.12) - 2026-07-27
 
 ### Features
