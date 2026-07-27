@@ -1,10 +1,6 @@
 export type TimedLine = { time: number; text: string }
 
-export function findActiveIndexByStart(
-  lines: TimedLine[],
-  timeMs: number,
-  hint = 0
-): number {
+export function findActiveIndexByStart(lines: TimedLine[], timeMs: number, hint = 0): number {
   if (lines.length === 0) return -1
   if (timeMs < lines[0].time) return -1
   const h = Math.max(0, Math.min(hint, lines.length - 1))

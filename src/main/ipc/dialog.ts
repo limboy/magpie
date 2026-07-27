@@ -7,9 +7,7 @@ export function registerDialogIpc(getWindow: () => BrowserWindow | null): void {
       title: 'Select audio folder',
       properties: ['openDirectory', 'createDirectory']
     }
-    const result = win
-      ? await dialog.showOpenDialog(win, opts)
-      : await dialog.showOpenDialog(opts)
+    const result = win ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts)
     if (result.canceled || result.filePaths.length === 0) return null
     return result.filePaths[0]
   })

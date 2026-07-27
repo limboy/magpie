@@ -4,7 +4,7 @@ const TS_RE =
   /(\d{1,2}):(\d{2})(?::(\d{2}))?[.,](\d{1,3})\s*-->\s*(\d{1,2}):(\d{2})(?::(\d{2}))?[.,](\d{1,3})/
 
 export function parseSubtitle(source: string): Cue[] {
-  const text = source.replace(/^﻿/, '').replace(/\r\n?/g, '\n')
+  const text = source.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n')
   const lines = text.split('\n')
   const cues: Cue[] = []
   let i = 0
@@ -28,12 +28,7 @@ export function parseSubtitle(source: string): Cue[] {
   return cues
 }
 
-function tsToMs(
-  h: string | undefined,
-  m: string,
-  s: string | undefined,
-  ms: string
-): number {
+function tsToMs(h: string | undefined, m: string, s: string | undefined, ms: string): number {
   const hours = s != null ? Number(h) : 0
   const minutes = s != null ? Number(m) : Number(h)
   const seconds = s != null ? Number(s) : Number(m)

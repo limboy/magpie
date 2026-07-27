@@ -85,7 +85,6 @@ export function registerFsIpc(): void {
   })
 
   ipcMain.handle('soundbox:probeMetadata', async (_e, path: string) => {
-
     const cached = await getCachedMetadata(path)
     if (cached !== null) {
       return {
@@ -97,7 +96,7 @@ export function registerFsIpc(): void {
 
     try {
       const meta = await parseFile(path, { duration: true, skipCovers: true })
-      
+
       const artist = (
         meta.common.artist ||
         meta.common.albumartist ||
@@ -108,7 +107,7 @@ export function registerFsIpc(): void {
       const title = (meta.common.title || 'Unknown').trim()
       const ms =
         typeof meta.format.duration === 'number' ? Math.round(meta.format.duration * 1000) : null
-      
+
       await setCachedMetadata(path, {
         duration: ms,
         artist,
@@ -119,14 +118,13 @@ export function registerFsIpc(): void {
       return {
         artist,
         album,
-        title,
+        title
       }
     } catch {
       return null
     }
   })
 }
-
 
 export function clearDurationCache(): void {
   // durationCache.clear()

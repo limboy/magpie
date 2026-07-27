@@ -20,7 +20,7 @@ let saveTimeout: NodeJS.Timeout | null = null
 async function ensureCacheLoaded(): Promise<void> {
   if (cacheLoaded) return
   if (loadPromise) return loadPromise
-  
+
   loadPromise = (async () => {
     const cachePath = join(app.getPath('userData'), CACHE_FILE_NAME)
     try {
@@ -32,7 +32,7 @@ async function ensureCacheLoaded(): Promise<void> {
     cacheLoaded = true
     loadPromise = null
   })()
-  
+
   return loadPromise
 }
 
@@ -82,7 +82,10 @@ export async function getCachedMetadata(path: string): Promise<MetadataCacheEntr
   }
 }
 
-export async function setCachedMetadata(path: string, entry: Omit<MetadataCacheEntry, 'mtime' | 'size'>): Promise<void> {
+export async function setCachedMetadata(
+  path: string,
+  entry: Omit<MetadataCacheEntry, 'mtime' | 'size'>
+): Promise<void> {
   await ensureCacheLoaded()
   try {
     const s = await stat(path)

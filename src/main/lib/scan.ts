@@ -27,9 +27,9 @@ async function walk(node: Extract<TreeNode, { kind: 'dir' }>, depth: number): Pr
   }
   entries.sort((a, b) => {
     if (a.isDirectory() !== b.isDirectory()) return a.isDirectory() ? -1 : 1
-    return a.name.localeCompare(b.name, undefined, { 
+    return a.name.localeCompare(b.name, undefined, {
       numeric: true,
-      sensitivity: 'base' 
+      sensitivity: 'base'
     })
   })
   for (const entry of entries) {
@@ -58,4 +58,3 @@ export function flattenAudio(node: TreeNode): Array<Extract<TreeNode, { kind: 'a
   visit(node)
   return out
 }
-

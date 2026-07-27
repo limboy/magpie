@@ -23,9 +23,17 @@ type LibraryState = {
   addCollectionWithItems: (title: string, items: string[], watchedFolders: string[]) => string
   updateCollectionTitle: (id: string, title: string) => void
   deleteCollection: (id: string) => void
-  setTrackMeta: (path: string, meta: { artist: string; album: string; title: string } | null) => void
+  setTrackMeta: (
+    path: string,
+    meta: { artist: string; album: string; title: string } | null
+  ) => void
   setTrackDuration: (path: string, duration: number | null) => void
-  setBulkTrackInfo: (items: Record<string, { meta?: { artist: string; album: string; title: string }; duration?: number | null }>) => void
+  setBulkTrackInfo: (
+    items: Record<
+      string,
+      { meta?: { artist: string; album: string; title: string }; duration?: number | null }
+    >
+  ) => void
   selectCollection: (id: string | null) => void
   addItemsToSelectedCollection: (paths: string[]) => void
   removeItemsFromSelectedCollection: (paths: string[]) => void
@@ -59,7 +67,11 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     const next = [...get().collections, newCollection]
     set({ collections: next, selectedCollectionId: id, selectedAudio: null })
     usePlayer.getState().setPlaying(false)
-    void window.soundbox.setState({ collections: next, selectedCollectionId: id, lastAudioPath: null })
+    void window.soundbox.setState({
+      collections: next,
+      selectedCollectionId: id,
+      lastAudioPath: null
+    })
     return id
   },
   addCollectionWithItems: (title, items, watchedFolders) => {
@@ -67,8 +79,15 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     const firstAudio = items[0] ?? null
     const newCollection: Collection = { id, title, items, watchedFolders }
     const next = [...get().collections, newCollection]
-    const nextLastAudioMap = firstAudio ? { ...get().lastAudioByCollection, [id]: firstAudio } : get().lastAudioByCollection
-    set({ collections: next, selectedCollectionId: id, selectedAudio: firstAudio, lastAudioByCollection: nextLastAudioMap })
+    const nextLastAudioMap = firstAudio
+      ? { ...get().lastAudioByCollection, [id]: firstAudio }
+      : get().lastAudioByCollection
+    set({
+      collections: next,
+      selectedCollectionId: id,
+      selectedAudio: firstAudio,
+      lastAudioByCollection: nextLastAudioMap
+    })
     usePlayer.getState().setPlaying(false)
     void window.soundbox.setState({
       collections: next,
@@ -108,7 +127,12 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       usePlayer.getState().setPlaying(false)
     }
 
-    set({ collections: next, selectedCollectionId: nextSelectedId, selectedAudio: nextSelectedAudio, lastAudioByCollection: nextLastAudioMap })
+    set({
+      collections: next,
+      selectedCollectionId: nextSelectedId,
+      selectedAudio: nextSelectedAudio,
+      lastAudioByCollection: nextLastAudioMap
+    })
     void window.soundbox.setState({
       collections: next,
       selectedCollectionId: nextSelectedId,
@@ -117,16 +141,18 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     })
   },
   setTrackMeta: (path, meta) => set((s) => ({ trackMeta: { ...s.trackMeta, [path]: meta } })),
-  setTrackDuration: (path, duration) => set((s) => ({ trackDurations: { ...s.trackDurations, [path]: duration } })),
-  setBulkTrackInfo: (items) => set((s) => {
-    const nextMeta = { ...s.trackMeta }
-    const nextDurations = { ...s.trackDurations }
-    for (const [path, info] of Object.entries(items)) {
-      if (info.meta) nextMeta[path] = info.meta
-      if ('duration' in info) nextDurations[path] = info.duration ?? null
-    }
-    return { trackMeta: nextMeta, trackDurations: nextDurations }
-  }),
+  setTrackDuration: (path, duration) =>
+    set((s) => ({ trackDurations: { ...s.trackDurations, [path]: duration } })),
+  setBulkTrackInfo: (items) =>
+    set((s) => {
+      const nextMeta = { ...s.trackMeta }
+      const nextDurations = { ...s.trackDurations }
+      for (const [path, info] of Object.entries(items)) {
+        if (info.meta) nextMeta[path] = info.meta
+        if ('duration' in info) nextDurations[path] = info.duration ?? null
+      }
+      return { trackMeta: nextMeta, trackDurations: nextDurations }
+    }),
   selectCollection: (id) => {
     const { collections, selectedCollectionId, trackMeta, lastAudioByCollection } = get()
     if (selectedCollectionId === id) return
@@ -153,9 +179,14 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       }
     }
 
-    const nextLastAudioMap = id && targetAudio ? { ...lastAudioByCollection, [id]: targetAudio } : lastAudioByCollection
+    const nextLastAudioMap =
+      id && targetAudio ? { ...lastAudioByCollection, [id]: targetAudio } : lastAudioByCollection
 
-    set({ selectedCollectionId: id, selectedAudio: targetAudio, lastAudioByCollection: nextLastAudioMap })
+    set({
+      selectedCollectionId: id,
+      selectedAudio: targetAudio,
+      lastAudioByCollection: nextLastAudioMap
+    })
     usePlayer.getState().setPlaying(false)
     void window.soundbox.setState({
       selectedCollectionId: id,
@@ -167,10 +198,10 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     const { collections, selectedCollectionId } = get()
     if (!selectedCollectionId) return
     const pathSet = new Set(paths)
-    const next = collections.map(c => {
+    const next = collections.map((c) => {
       if (c.id === selectedCollectionId) {
         const items = Array.from(new Set([...c.items, ...paths]))
-        const excludedPaths = (c.excludedPaths || []).filter(p => !pathSet.has(p))
+        const excludedPaths = (c.excludedPaths || []).filter((p) => !pathSet.has(p))
         return { ...c, items, excludedPaths }
       }
       return c
@@ -190,7 +221,11 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     }
 
     const nextLastAudioMap = { ...lastAudioByCollection }
-    if (selectedCollectionId && nextLastAudioMap[selectedCollectionId] && pathSet.has(nextLastAudioMap[selectedCollectionId])) {
+    if (
+      selectedCollectionId &&
+      nextLastAudioMap[selectedCollectionId] &&
+      pathSet.has(nextLastAudioMap[selectedCollectionId])
+    ) {
       if (nextSelectedAudio) {
         nextLastAudioMap[selectedCollectionId] = nextSelectedAudio
       } else {
@@ -198,16 +233,20 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       }
     }
 
-    const next = collections.map(c => {
+    const next = collections.map((c) => {
       if (c.id === selectedCollectionId) {
-        const items = c.items.filter(p => !pathSet.has(p))
+        const items = c.items.filter((p) => !pathSet.has(p))
         const excludedPaths = Array.from(new Set([...(c.excludedPaths || []), ...paths]))
         return { ...c, items, excludedPaths }
       }
       return c
     })
 
-    set({ collections: next, selectedAudio: nextSelectedAudio, lastAudioByCollection: nextLastAudioMap })
+    set({
+      collections: next,
+      selectedAudio: nextSelectedAudio,
+      lastAudioByCollection: nextLastAudioMap
+    })
     void window.soundbox.setState({
       collections: next,
       lastAudioPath: nextSelectedAudio,
@@ -217,7 +256,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   addFoldersToSelectedCollection: (paths) => {
     const { collections, selectedCollectionId } = get()
     if (!selectedCollectionId) return
-    const next = collections.map(c => {
+    const next = collections.map((c) => {
       if (c.id === selectedCollectionId) {
         const folders = new Set([...(c.watchedFolders || []), ...paths])
         return { ...c, watchedFolders: Array.from(folders) }
@@ -232,7 +271,10 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     if (selectedCollectionId && selectedAudio) {
       const nextMap = { ...lastAudioByCollection, [selectedCollectionId]: selectedAudio }
       set({ selectedAudio, lastAudioByCollection: nextMap })
-      void window.soundbox.setState({ lastAudioPath: selectedAudio, lastAudioByCollection: nextMap })
+      void window.soundbox.setState({
+        lastAudioPath: selectedAudio,
+        lastAudioByCollection: nextMap
+      })
     } else {
       set({ selectedAudio })
       void window.soundbox.setState({ lastAudioPath: selectedAudio })

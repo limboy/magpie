@@ -24,7 +24,6 @@ function isAuthorized(absPath: string): boolean {
   return isAuthorizedPath(absPath)
 }
 
-
 export function registerLocalProtocolHandler(): void {
   protocol.handle(LOCAL_SCHEME, async (request) => {
     let absPath: string
@@ -74,7 +73,7 @@ export function registerLocalProtocolHandler(): void {
         if (m) {
           const start = parseInt(m[1], 10)
           const end = m[2] ? parseInt(m[2], 10) : stats.size - 1
-          
+
           if (start < stats.size) {
             const stream = createReadStream(absPath, { start, end })
             // @ts-ignore: ReadableStream and ReadStream are compatible here for Response body

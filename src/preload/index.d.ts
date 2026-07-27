@@ -9,10 +9,4 @@ declare global {
   }
 }
 
-export type {
-  AppState,
-  Companion,
-  LibraryChangedPayload,
-  SoundboxApi,
-  TreeNode
-} from './soundbox'
+export type { AppState, Companion, LibraryChangedPayload, SoundboxApi, TreeNode } from './soundbox'

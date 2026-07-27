@@ -68,9 +68,7 @@ export function TreeNodeView({
         }}
         className={cn(
           'flex cursor-pointer items-center gap-1 rounded-sm px-1.5 py-0.5 text-sm transition-colors',
-          activeFolder
-            ? 'bg-accent text-accent-foreground'
-            : 'text-foreground hover:bg-accent/60'
+          activeFolder ? 'bg-accent text-accent-foreground' : 'text-foreground hover:bg-accent/60'
         )}
         style={{ paddingLeft: depth * 12 + 2 }}
       >

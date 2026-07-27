@@ -37,7 +37,7 @@ function ScrollArea({
 
 function ScrollBar({
   className,
-  orientation = "vertical",
+  orientation = 'vertical',
   ...props
 }: React.ComponentProps<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>): React.JSX.Element {
   return (
@@ -45,11 +45,9 @@ function ScrollBar({
       data-slot="scroll-area-scrollbar"
       orientation={orientation}
       className={cn(
-        "flex touch-none p-px transition-colors select-none",
-        orientation === "vertical" &&
-          "h-full w-1.5 border-l border-l-transparent",
-        orientation === "horizontal" &&
-          "h-1.5 flex-col border-t border-t-transparent",
+        'flex touch-none p-px transition-colors select-none',
+        orientation === 'vertical' && 'h-full w-1.5 border-l border-l-transparent',
+        orientation === 'horizontal' && 'h-1.5 flex-col border-t border-t-transparent',
         className
       )}
       {...props}

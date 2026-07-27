@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/explicit-function-return-type */
 /*
  * Generates CHANGELOG.md from git tags + conventional commits.
  * Run: node scripts/generate-changelog.cjs
@@ -174,7 +175,9 @@ function main() {
     const headerLine = lines[0]
     const body = lines.slice(2).join('\n').trim()
 
-    const compareMatch = headerLine.match(/\((https:\/\/github\.com\/[^/]+\/[^/]+\/compare\/[^)]+)\)/)
+    const compareMatch = headerLine.match(
+      /\((https:\/\/github\.com\/[^/]+\/[^/]+\/compare\/[^)]+)\)/
+    )
     const compareUrl = compareMatch ? compareMatch[1] : null
 
     let finalNotes = body

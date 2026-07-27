@@ -54,7 +54,15 @@ export function PlayerRoute(): React.JSX.Element {
       if (state.likedPaths) setLikedPaths(state.likedPaths)
       setHydrated(true)
     })()
-  }, [setCollections, setLastAudioByCollection, selectCollection, selectAudio, setLikedPaths, setBulkTrackInfo, setHydrated])
+  }, [
+    setCollections,
+    setLastAudioByCollection,
+    selectCollection,
+    selectAudio,
+    setLikedPaths,
+    setBulkTrackInfo,
+    setHydrated
+  ])
 
   useEffect(() => {
     if (!hydrated) return

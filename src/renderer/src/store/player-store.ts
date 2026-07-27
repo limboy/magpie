@@ -45,4 +45,3 @@ export const usePlayer = create<PlayerState>((set) => ({
   requestSeek: (ms) => set({ seekRequestMs: ms }),
   clearSeekRequest: () => set({ seekRequestMs: null })
 }))
-

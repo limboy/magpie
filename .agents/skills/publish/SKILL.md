@@ -22,6 +22,7 @@ This skill provides step-by-step instructions for publishing and releasing a new
 
 > [!IMPORTANT]
 > The agent **MUST** call the `ask_question` tool to pop up an interactive UI modal at two key checkpoints:
+>
 > 1. **Version Selection (Checkpoint 1)**: Present version bump choices (Patch, Minor, Major) as selectable radio options in the modal.
 > 2. **Release Approval (Checkpoint 2)**: Present final release actions (Confirm & Push, Cancel / Abort) as selectable radio options in the modal.
 
@@ -127,6 +128,7 @@ git push origin vX.Y.Z
 ### Step 6: Monitor CI/CD Release Workflow
 
 Pushing tag `vX.Y.Z` automatically triggers GitHub Actions (`.github/workflows/release.yml`), which:
+
 1. Runs `npm run changelog` to format release notes.
 2. Builds the renderer (`npm run build:renderer`).
 3. Builds macOS binaries (`dmg`, `zip` arm64), signs with Apple Developer certificate, and notarizes via Apple Notary Service.
@@ -134,6 +136,7 @@ Pushing tag `vX.Y.Z` automatically triggers GitHub Actions (`.github/workflows/r
 5. Updates GitHub Release notes using `RELEASENOTES.md`.
 
 Monitor status using `gh` CLI:
+
 ```bash
 gh run list --workflow=release.yml
 ```
@@ -148,5 +151,3 @@ If local build testing is requested prior to pushing:
 # Build renderer and package macOS app locally
 npm run build:mac
 ```
-
-

@@ -38,6 +38,7 @@ You can download the latest version from the [Releases](https://github.com/limbo
 ### Setup
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/limboy/soundbox.git
    cd soundbox
