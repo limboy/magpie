@@ -10,20 +10,20 @@ This skill provides step-by-step instructions for publishing and releasing a new
 ## Overview of Release Workflow
 
 1. **Pre-flight Checks**: Verify working directory is clean and quality checks pass.
-2. **Version Selection & User Confirmation**: Determine target version and ask user for explicit approval.
+2. **Version Selection & UI Modal Confirmation**: Determine target version options and prompt user via `ask_question` UI modal.
 3. **Version Bumping & Changelog Generation**: Update `version` in `package.json` and run `npm run changelog`.
-4. **Final Confirmation before Push**: Review commit diff and release notes with user.
+4. **Final Confirmation via UI Modal**: Review release notes and ask for user approval via `ask_question` UI modal.
 5. **Commit, Tag & Push**: Commit changes, tag `vX.Y.Z`, and push branch/tag to GitHub to trigger `.github/workflows/release.yml`.
 6. **Verification**: Confirm GitHub Action workflow execution.
 
 ---
 
-## Mandatory Confirmation Checkpoints
+## Mandatory UI Confirmation Checkpoints (`ask_question` Tool)
 
 > [!IMPORTANT]
-> To prevent unintentional releases, the agent **MUST** seek explicit user confirmation at two key checkpoints:
-> 1. **Before bumping version**: Confirm current version -> target version (e.g., `1.3.12` -> `1.3.13`) and release type (patch/minor/major).
-> 2. **Before pushing tag to origin**: Display generated release notes/commit summary and ask user for final confirmation to execute `git push`.
+> The agent **MUST** call the `ask_question` tool to pop up an interactive UI modal at two key checkpoints:
+> 1. **Version Selection (Checkpoint 1)**: Present version bump choices (Patch, Minor, Major) as selectable radio options in the modal.
+> 2. **Release Approval (Checkpoint 2)**: Present final release actions (Confirm & Push, Cancel / Abort) as selectable radio options in the modal.
 
 ---
 
@@ -43,41 +43,75 @@ npm run lint
 ```
 
 > [!IMPORTANT]
-> If there are uncommitted changes, confirm with the user whether to commit or stash them before proceeding.
+> If there are uncommitted changes, call `ask_question` to ask the user whether to commit, stash, or cancel before proceeding.
 
-### Step 2: Determine Target Version & Request Confirmation (Checkpoint 1)
+### Step 2: Determine Target Version & Prompt UI Modal (Checkpoint 1)
 
-1. Inspect current version in `package.json` (e.g. `"version": "1.3.12"`).
-2. Recommend the target version based on commit history (Patch, Minor, or Major).
-3. **Ask user for confirmation**:
-   > *"Current version is `1.3.12`. I recommend bumping to `1.3.13` (patch). Would you like to proceed with `1.3.13` or specify a different version?"*
+1. Read current version from `package.json` (e.g., `1.3.12`).
+2. Calculate target versions for Patch, Minor, and Major bumps:
+   - Patch: `1.3.13` (Recommended for bug fixes / tweaks)
+   - Minor: `1.4.0` (Recommended for new features)
+   - Major: `2.0.0` (Recommended for breaking changes)
+3. **Call `ask_question` tool** to present an interactive UI popup modal:
+
+```json
+{
+  "questions": [
+    {
+      "question": "Current version is 1.3.12. Which version bump would you like to release?",
+      "options": [
+        "(Recommended) Patch v1.3.13 (Bug fixes and minor tweaks)",
+        "Minor v1.4.0 (New features and enhancements)",
+        "Major v2.0.0 (Breaking changes)"
+      ],
+      "is_multi_select": false
+    }
+  ],
+  "toolAction": "Selecting release version",
+  "toolSummary": "Release version selection modal"
+}
+```
 
 ### Step 3: Bump Version & Generate Changelog
 
-Once approved by the user, update `package.json`:
+Based on the user's selection from the `ask_question` modal:
 
 ```bash
-npm version <patch|minor|major|x.y.z> --no-git-tag-version
+npm version <patch|minor|major|custom-version> --no-git-tag-version
 ```
 
-Run the changelog script:
+Run the changelog script to generate release notes:
 
 ```bash
 npm run changelog
 ```
 
-This script:
-- Updates `CHANGELOG.md` based on Conventional Commits.
-- Generates `RELEASENOTES.md` for GitHub Releases.
+This script updates `CHANGELOG.md` and creates `RELEASENOTES.md`.
 
-### Step 4: Final Release Review & User Approval (Checkpoint 2)
+### Step 4: Final Release Review & Prompt UI Modal (Checkpoint 2)
 
-Show the generated `RELEASENOTES.md` summary and the target tag `vX.Y.Z` to the user, and ask:
-> *"Generated release notes for `vX.Y.Z` are ready. May I proceed with committing, tagging `vX.Y.Z`, and pushing to GitHub to trigger the release pipeline?"*
+Display the contents of `RELEASENOTES.md` in the chat window, then **call `ask_question` tool** to prompt for final confirmation:
+
+```json
+{
+  "questions": [
+    {
+      "question": "Ready to publish vX.Y.Z? This will commit, create tag vX.Y.Z, and push to GitHub to trigger CI/CD build & release.",
+      "options": [
+        "(Recommended) Yes, proceed to commit, tag, and push release vX.Y.Z",
+        "No, cancel the release process"
+      ],
+      "is_multi_select": false
+    }
+  ],
+  "toolAction": "Confirming release deployment",
+  "toolSummary": "Release deployment confirmation modal"
+}
+```
 
 ### Step 5: Commit, Tag, and Push
 
-Upon user approval:
+If the user selected to proceed in the UI modal:
 
 ```bash
 # Commit and tag locally
@@ -85,7 +119,7 @@ git add package.json package-lock.json CHANGELOG.md
 git commit -m "release: vX.Y.Z"
 git tag -a vX.Y.Z -m "Release vX.Y.Z"
 
-# Push to origin (triggers release workflow)
+# Push to origin (triggers GitHub Actions release workflow)
 git push origin main
 git push origin vX.Y.Z
 ```
@@ -99,7 +133,7 @@ Pushing tag `vX.Y.Z` automatically triggers GitHub Actions (`.github/workflows/r
 4. Creates a new GitHub Release with attached assets (`.dmg`, `.zip`, `latest-mac.yml`).
 5. Updates GitHub Release notes using `RELEASENOTES.md`.
 
-You can monitor release status using `gh` CLI:
+Monitor status using `gh` CLI:
 ```bash
 gh run list --workflow=release.yml
 ```
@@ -114,4 +148,5 @@ If local build testing is requested prior to pushing:
 # Build renderer and package macOS app locally
 npm run build:mac
 ```
+
 
