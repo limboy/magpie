@@ -169,7 +169,7 @@ function main() {
   fs.writeFileSync(out, content)
   console.log(`Wrote ${out} (${sections.length} section${sections.length === 1 ? '' : 's'})`)
 
-  const releaseNotesIndex = unreleasedCommits.length && sections.length > 1 ? 1 : 0
+  const releaseNotesIndex = 0
   if (sections[releaseNotesIndex]) {
     const lines = sections[releaseNotesIndex].split('\n')
     const headerLine = lines[0]
