@@ -37,11 +37,14 @@ async function createWindow(): Promise<void> {
   mainWindow = new BrowserWindow({
     x: windowBounds?.x,
     y: windowBounds?.y,
-    width: PLAYER_SIZE.width,
-    height: PLAYER_SIZE.height,
+    width: windowBounds?.width ?? PLAYER_SIZE.width,
+    height: windowBounds?.height ?? PLAYER_SIZE.height,
+    minWidth: 400,
+    minHeight: 400,
+    maxWidth: 800,
     useContentSize: true,
-    resizable: false,
-    maximizable: false,
+    resizable: true,
+    maximizable: true,
     fullscreenable: false,
     show: false,
     autoHideMenuBar: true,
@@ -70,8 +73,8 @@ async function createWindow(): Promise<void> {
         windowBounds: {
           x: bounds.x,
           y: bounds.y,
-          width: PLAYER_SIZE.width,
-          height: PLAYER_SIZE.height
+          width: bounds.width,
+          height: bounds.height
         }
       })
     }
@@ -82,6 +85,7 @@ async function createWindow(): Promise<void> {
   }
 
   mainWindow.on('move', saveBounds)
+  mainWindow.on('resize', saveBounds)
 
   mainWindow.on('close', () => {
     if (saveTimeout) clearTimeout(saveTimeout)
@@ -165,7 +169,7 @@ app.whenReady().then(async () => {
     const x = Math.max(workArea.x, Math.min(bounds.x, workArea.x + workArea.width - width))
 
     currentRightPanelWidth = rightWidth
-    window.setContentSize(contentWidth, PLAYER_SIZE.height)
+    window.setContentSize(contentWidth, contentBounds.height)
     if (x !== bounds.x) window.setPosition(x, bounds.y)
   })
 
