@@ -15,6 +15,7 @@ import { useUI } from '@/store/ui-store'
 export function PlayerRoute(): React.JSX.Element {
   const setCollections = useLibrary((s) => s.setCollections)
   const setLastAudioByCollection = useLibrary((s) => s.setLastAudioByCollection)
+  const setLastAudioPositions = useLibrary((s) => s.setLastAudioPositions)
   const selectCollection = useLibrary((s) => s.selectCollection)
   const selectAudio = useLibrary((s) => s.selectAudio)
   const setLikedPaths = useLibrary((s) => s.setLikedPaths)
@@ -49,6 +50,11 @@ export function PlayerRoute(): React.JSX.Element {
       }
       if (state.collections) setCollections(state.collections)
       if (state.lastAudioByCollection) setLastAudioByCollection(state.lastAudioByCollection)
+      const positions = { ...(state.lastAudioPositions || {}) }
+      if (state.lastAudioPath && typeof state.lastAudioPositionMs === 'number') {
+        positions[state.lastAudioPath] = state.lastAudioPositionMs
+      }
+      setLastAudioPositions(positions)
       if (state.selectedCollectionId) selectCollection(state.selectedCollectionId)
       if (state.lastAudioPath) selectAudio(state.lastAudioPath)
       if (state.likedPaths) setLikedPaths(state.likedPaths)
@@ -57,6 +63,7 @@ export function PlayerRoute(): React.JSX.Element {
   }, [
     setCollections,
     setLastAudioByCollection,
+    setLastAudioPositions,
     selectCollection,
     selectAudio,
     setLikedPaths,

@@ -14,6 +14,8 @@ export type AppState = {
   collections: Collection[]
   selectedCollectionId: string | null
   lastAudioPath: string | null
+  lastAudioPositionMs?: number
+  lastAudioPositions?: Record<string, number>
   lastAudioByCollection?: Record<string, string>
   likedPaths?: Record<string, number>
 }

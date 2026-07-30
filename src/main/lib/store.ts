@@ -16,6 +16,8 @@ export type AppState = {
   collections: Collection[]
   selectedCollectionId: string | null
   lastAudioPath: string | null
+  lastAudioPositionMs?: number
+  lastAudioPositions?: Record<string, number>
   lastAudioByCollection?: Record<string, string>
   likedPaths?: Record<string, number>
   // Bounds for list mode.
@@ -38,6 +40,8 @@ const DEFAULT: AppState = {
   collections: [],
   selectedCollectionId: null,
   lastAudioPath: null,
+  lastAudioPositionMs: 0,
+  lastAudioPositions: {},
   lastAudioByCollection: {}
 }
 

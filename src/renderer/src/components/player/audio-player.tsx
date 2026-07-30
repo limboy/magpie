@@ -56,20 +56,54 @@ export function AudioPlayer(): React.JSX.Element {
     a.playbackRate = rate
   }, [rate])
 
-  useEffect(() => {
-    const a = audioRef.current
-    if (!a || seekRequestMs == null) return
-    a.currentTime = seekRequestMs / 1000
-    setCurrentTimeMs(seekRequestMs)
-    clearSeekRequest()
-  }, [seekRequestMs, clearSeekRequest, setCurrentTimeMs])
+  const lastAudioPositions = useLibrary((s) => s.lastAudioPositions)
+  const saveAudioPosition = useLibrary((s) => s.saveAudioPosition)
+  const lastSavedTimeRef = useRef<number>(0)
+  const initialRestoredRef = useRef<string | null>(null)
 
   useEffect(() => {
     const a = audioRef.current
     if (!a) return
-    setCurrentTimeMs(0)
-    setDurationMs(0)
-  }, [selectedAudio, setCurrentTimeMs, setDurationMs])
+    if (seekRequestMs == null) return
+    a.currentTime = seekRequestMs / 1000
+    setCurrentTimeMs(seekRequestMs)
+    if (selectedAudio) {
+      lastSavedTimeRef.current = seekRequestMs
+      saveAudioPosition(selectedAudio, seekRequestMs)
+    }
+    clearSeekRequest()
+  }, [seekRequestMs, clearSeekRequest, setCurrentTimeMs, selectedAudio, saveAudioPosition])
+
+  useEffect(() => {
+    const a = audioRef.current
+    if (!a || !selectedAudio) return
+
+    const savedPosMs = lastAudioPositions[selectedAudio] ?? 0
+    if (initialRestoredRef.current !== selectedAudio) {
+      initialRestoredRef.current = selectedAudio
+      if (savedPosMs > 0) {
+        a.currentTime = savedPosMs / 1000
+        setCurrentTimeMs(savedPosMs)
+        lastSavedTimeRef.current = savedPosMs
+      } else {
+        setCurrentTimeMs(0)
+        setDurationMs(0)
+        lastSavedTimeRef.current = 0
+      }
+    }
+  }, [selectedAudio, lastAudioPositions, setCurrentTimeMs, setDurationMs])
+
+  useEffect(() => {
+    const handleBeforeUnload = (): void => {
+      const a = audioRef.current
+      if (a && selectedAudio) {
+        const ms = secondsToMs(a.currentTime)
+        saveAudioPosition(selectedAudio, ms)
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [selectedAudio, saveAudioPosition])
 
   useEffect(() => {
     if (!selectedAudio) return
@@ -166,6 +200,7 @@ export function AudioPlayer(): React.JSX.Element {
     if (audio && audio.currentTime > 3) {
       audio.currentTime = 0
       setCurrentTimeMs(0)
+      if (selectedAudio) saveAudioPosition(selectedAudio, 0)
       return
     }
 
@@ -216,7 +251,8 @@ export function AudioPlayer(): React.JSX.Element {
     isPlaying,
     selectAudio,
     setPlaying,
-    setCurrentTimeMs
+    setCurrentTimeMs,
+    saveAudioPosition
   ])
 
   useEffect(() => {
@@ -325,9 +361,18 @@ export function AudioPlayer(): React.JSX.Element {
         onPause={() => {
           console.log('[AudioPlayer] pause')
           setPlaying(false)
+          const a = audioRef.current
+          if (a && selectedAudio) {
+            const ms = secondsToMs(a.currentTime)
+            lastSavedTimeRef.current = ms
+            saveAudioPosition(selectedAudio, ms)
+          }
         }}
         onEnded={() => {
           console.log('[AudioPlayer] ended')
+          if (selectedAudio) {
+            saveAudioPosition(selectedAudio, 0)
+          }
           if (loopMode === 'one') {
             const a = audioRef.current
             if (a) {
@@ -348,14 +393,42 @@ export function AudioPlayer(): React.JSX.Element {
           })
         }}
         onLoadStart={() => console.log('[AudioPlayer] loadstart', selectedAudio)}
-        onLoadedMetadata={() => console.log('[AudioPlayer] loadedmetadata')}
+        onLoadedMetadata={() => {
+          console.log('[AudioPlayer] loadedmetadata')
+          const a = audioRef.current
+          if (a && selectedAudio) {
+            const savedPosMs = lastAudioPositions[selectedAudio] ?? 0
+            if (savedPosMs > 0 && Math.abs(a.currentTime - savedPosMs / 1000) > 0.5) {
+              a.currentTime = savedPosMs / 1000
+              setCurrentTimeMs(savedPosMs)
+            }
+          }
+        }}
         onCanPlay={() => {
           console.log('[AudioPlayer] canplay')
+          const a = audioRef.current
+          if (a && selectedAudio) {
+            const savedPosMs = lastAudioPositions[selectedAudio] ?? 0
+            if (savedPosMs > 0 && Math.abs(a.currentTime - savedPosMs / 1000) > 0.5) {
+              a.currentTime = savedPosMs / 1000
+              setCurrentTimeMs(savedPosMs)
+            }
+          }
           if (isPlaying) {
             audioRef.current?.play().catch(console.error)
           }
         }}
-        onTimeUpdate={(e) => setCurrentTimeMs(secondsToMs(e.currentTarget.currentTime))}
+        onTimeUpdate={(e) => {
+          const sec = e.currentTarget.currentTime
+          const ms = secondsToMs(sec)
+          setCurrentTimeMs(ms)
+          if (selectedAudio && ms > 0) {
+            if (Math.abs(ms - lastSavedTimeRef.current) >= 2000) {
+              lastSavedTimeRef.current = ms
+              saveAudioPosition(selectedAudio, ms)
+            }
+          }
+        }}
         onDurationChange={(e) => {
           const d = e.currentTarget.duration
           console.log('[AudioPlayer] durationchange:', d)
@@ -363,7 +436,12 @@ export function AudioPlayer(): React.JSX.Element {
         }}
         onSeeked={(e) => {
           console.log('[AudioPlayer] seeked:', e.currentTarget.currentTime)
-          setCurrentTimeMs(secondsToMs(e.currentTarget.currentTime))
+          const ms = secondsToMs(e.currentTarget.currentTime)
+          setCurrentTimeMs(ms)
+          if (selectedAudio) {
+            lastSavedTimeRef.current = ms
+            saveAudioPosition(selectedAudio, ms)
+          }
         }}
       />
       <TransportControls

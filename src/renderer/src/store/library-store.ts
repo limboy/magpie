@@ -8,6 +8,7 @@ type LibraryState = {
   selectedCollectionId: string | null
   selectedAudio: string | null
   lastAudioByCollection: Record<string, string>
+  lastAudioPositions: Record<string, number>
   loading: boolean
   hydrated: boolean
   error: string | null
@@ -17,6 +18,8 @@ type LibraryState = {
   orderedPaths: string[]
   setCollections: (collections: Collection[]) => void
   setLastAudioByCollection: (lastAudioByCollection: Record<string, string>) => void
+  setLastAudioPositions: (positions: Record<string, number>) => void
+  saveAudioPosition: (path: string, positionMs: number) => void
   setOrderedPaths: (paths: string[]) => void
   setLikedPaths: (likedPaths: Record<string, number>) => void
   addCollection: (title: string) => string
@@ -50,6 +53,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   selectedCollectionId: null,
   selectedAudio: null,
   lastAudioByCollection: {},
+  lastAudioPositions: {},
   loading: false,
   hydrated: false,
   error: null,
@@ -59,6 +63,19 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   orderedPaths: [],
   setCollections: (collections) => set({ collections }),
   setLastAudioByCollection: (lastAudioByCollection) => set({ lastAudioByCollection }),
+  setLastAudioPositions: (lastAudioPositions) => set({ lastAudioPositions }),
+  saveAudioPosition: (path, positionMs) => {
+    if (!path) return
+    const rounded = Math.round(positionMs)
+    const { lastAudioPositions } = get()
+    if (lastAudioPositions[path] === rounded) return
+    const next = { ...lastAudioPositions, [path]: rounded }
+    set({ lastAudioPositions: next })
+    void window.soundbox.setState({
+      lastAudioPositionMs: rounded,
+      lastAudioPositions: next
+    })
+  },
   setOrderedPaths: (orderedPaths) => set({ orderedPaths }),
   setLikedPaths: (likedPaths) => set({ likedPaths }),
   addCollection: (title) => {
