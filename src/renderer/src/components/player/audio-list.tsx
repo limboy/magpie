@@ -39,7 +39,6 @@ export function AudioList(): React.JSX.Element {
   const setTrackDuration = useLibrary((state) => state.setTrackDuration)
   const setBulkTrackInfo = useLibrary((state) => state.setBulkTrackInfo)
   const setOrderedPaths = useLibrary((state) => state.setOrderedPaths)
-  const isPlaying = usePlayer((state) => state.isPlaying)
   const setPlaying = usePlayer((state) => state.setPlaying)
   const searchQuery = useUI((state) => state.searchQuery)
   const showStarredOnly = useUI((state) => state.showStarredOnly)
@@ -142,9 +141,12 @@ export function AudioList(): React.JSX.Element {
   }, [orderKey, setOrderedPaths])
 
   useEffect(() => {
-    if (!isPlaying || !selectedAudio) return
-    activeItemRef.current?.scrollIntoView({ block: 'center' })
-  }, [isPlaying, selectedAudio, orderKey])
+    if (!selectedAudio) return
+    const frame = requestAnimationFrame(() => {
+      activeItemRef.current?.scrollIntoView({ block: 'center' })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [selectedAudio, orderKey])
 
   const selectedPaths = useMemo(() => {
     const visiblePaths = new Set(items.map((item) => item.path))
