@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Pause,
   Play,
@@ -9,7 +10,9 @@ import {
   SkipBack,
   SkipForward
 } from 'lucide-react'
+import { Slider as SliderPrimitive } from 'radix-ui'
 import { Button } from '@/components/ui/button'
+import { msToClock } from '@/lib/format-time'
 import { cn } from '@/lib/utils'
 import { usePlayer } from '@/store/player-store'
 
@@ -30,8 +33,7 @@ export function TransportControls({
   const currentTimeMs = usePlayer((state) => state.currentTimeMs)
   const durationMs = usePlayer((state) => state.durationMs)
   const requestSeek = usePlayer((state) => state.requestSeek)
-  const progress =
-    durationMs > 0 ? Math.max(0, Math.min(100, (currentTimeMs / durationMs) * 100)) : 0
+
   const togglePlayback = (): void => {
     const audio = audioRef.current
     if (!audio || !selectedAudio) return
@@ -45,8 +47,10 @@ export function TransportControls({
   }
 
   return (
-    <div className="relative flex flex-col">
-      <div className="grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-3 bg-muted/20 px-4">
+    <div className="relative flex flex-col gap-2 rounded-lg bg-muted/20 p-3">
+      <ProgressBar disabled={!selectedAudio} />
+
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
         <div className="flex justify-start">
           <ShuffleButton />
         </div>
@@ -106,12 +110,89 @@ export function TransportControls({
           <RepeatModeButton />
         </div>
       </div>
-      <div className="pointer-events-none absolute inset-x-0 -bottom-px z-10 h-px overflow-hidden bg-border/40">
-        <div
-          className="h-full bg-foreground/75 transition-[width] duration-150 ease-linear"
-          style={{ width: `${progress}%` }}
-        />
+    </div>
+  )
+}
+
+function ProgressBar({ disabled }: { disabled: boolean }): React.JSX.Element {
+  const currentTimeMs = usePlayer((state) => state.currentTimeMs)
+  const durationMs = usePlayer((state) => state.durationMs)
+  const requestSeek = usePlayer((state) => state.requestSeek)
+
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragValueMs, setDragValueMs] = useState(0)
+  const [hoverTimeMs, setHoverTimeMs] = useState<number | null>(null)
+  const [hoverPercent, setHoverPercent] = useState<number>(0)
+
+  const isHovering = hoverTimeMs !== null && !disabled && durationMs > 0
+
+  const displayTimeMs = isDragging ? dragValueMs : currentTimeMs
+
+  const maxMs = durationMs > 0 ? durationMs : 100
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>): void => {
+    if (!durationMs || durationMs <= 0 || disabled) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    if (rect.width <= 0) return
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width))
+    const percent = x / rect.width
+    setHoverPercent(percent * 100)
+    setHoverTimeMs(Math.round(percent * durationMs))
+  }
+
+  const handleMouseLeave = (): void => {
+    setHoverTimeMs(null)
+  }
+
+  return (
+    <div className="flex w-full items-center gap-2.5">
+      <span className="min-w-8 text-right text-[11px] font-medium tabular-nums text-muted-foreground/70 select-none shrink-0">
+        {disabled ? '0:00' : msToClock(displayTimeMs)}
+      </span>
+
+      <div className="relative flex flex-1 items-center">
+        {isHovering && (
+          <div
+            className="pointer-events-none absolute -top-7 z-30 -translate-x-1/2 rounded bg-popover px-1.5 py-0.5 text-[10px] font-medium text-popover-foreground shadow-md ring-1 ring-border/50"
+            style={{ left: `${hoverPercent}%` }}
+          >
+            {msToClock(hoverTimeMs)}
+          </div>
+        )}
+        <SliderPrimitive.Root
+          value={[Math.min(maxMs, Math.max(0, displayTimeMs))]}
+          min={0}
+          max={maxMs}
+          step={100}
+          disabled={disabled || durationMs <= 0}
+          onValueChange={(val) => {
+            setIsDragging(true)
+            setDragValueMs(val[0])
+          }}
+          onValueCommit={(val) => {
+            setIsDragging(false)
+            requestSeek(val[0])
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          className="group relative flex w-full touch-none select-none items-center py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+          aria-label="Audio progress"
+        >
+          <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-muted-foreground/20">
+            <SliderPrimitive.Range className="absolute h-full rounded-full bg-foreground" />
+            {isHovering && (
+              <div
+                className="pointer-events-none absolute inset-y-0 left-0 rounded-full bg-foreground/20"
+                style={{ width: `${hoverPercent}%` }}
+              />
+            )}
+          </SliderPrimitive.Track>
+        </SliderPrimitive.Root>
       </div>
+
+      <span className="min-w-8 text-left text-[11px] font-medium tabular-nums text-muted-foreground/70 select-none shrink-0">
+        {disabled || durationMs <= 0 ? '--:--' : msToClock(durationMs)}
+      </span>
     </div>
   )
 }
