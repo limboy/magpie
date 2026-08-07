@@ -1,9 +1,9 @@
 ---
 name: release
-description: Cut a new SoundBox/magpie release — pre-flight checks, version bump, changelog + release notes generation, commit, tag, push, and CI monitoring. Use when the user asks to release, publish, ship, cut a version, bump the version, or tag a new version of this app.
+description: Cut a new Magpie release — pre-flight checks, version bump, changelog + release notes generation, commit, tag, push, and CI monitoring. Use when the user asks to release, publish, ship, cut a version, bump the version, or tag a new version of this app.
 ---
 
-# Release SoundBox
+# Release Magpie
 
 Releases are tag-driven. Pushing a `v*` tag triggers `.github/workflows/release.yml`, which builds, signs, notarizes, and publishes the macOS app to GitHub Releases. Everything before the tag push happens locally.
 
