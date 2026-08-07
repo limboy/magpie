@@ -24,4 +24,4 @@
 - **player:** add gap to audio list items ([a19d36f](https://github.com/limboy/magpie/commit/a19d36f8201f50792d4cf008d544becaa5308acd))
 - **player:** adjust audio list layout spacing ([449696d](https://github.com/limboy/magpie/commit/449696d859b0237bfc6b29c123148b3d9c0d2a79))
 
-**Full Changelog**: https://github.com/limboy/magpie/compare/v1.5.1...HEAD
+**Full Changelog**: https://github.com/limboy/magpie/compare/v1.5.1...v1.6.0
