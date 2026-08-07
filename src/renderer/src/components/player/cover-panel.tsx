@@ -1,21 +1,34 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { GripHorizontal, Music } from 'lucide-react'
 import { useCoverArt } from '@/hooks/use-cover-art'
 
 const MIN_HEIGHT = 200
 const MAX_HEIGHT = 400
 const DEFAULT_HEIGHT = 260
+const STORAGE_KEY = 'soundbox-cover-panel-height'
+
+function readStoredHeight(): number {
+  const stored = Number(localStorage.getItem(STORAGE_KEY))
+  return Number.isFinite(stored)
+    ? Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, stored))
+    : DEFAULT_HEIGHT
+}
 
 type Props = {
   selectedAudio: string | null
 }
 
 // Cover art shown above the transport controller. Drag the handle at the
-// bottom edge (or use arrow keys while it's focused) to resize it.
+// bottom edge (or use arrow keys while it's focused) to resize it; the
+// chosen height is remembered across sessions.
 export function CoverPanel({ selectedAudio }: Props): React.JSX.Element {
   const cover = useCoverArt(selectedAudio)
-  const [height, setHeight] = useState(DEFAULT_HEIGHT)
+  const [height, setHeight] = useState(readStoredHeight)
   const dragStart = useRef<{ y: number; height: number } | null>(null)
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, String(height))
+  }, [height])
 
   const handlePointerDown = useCallback(
     (event: React.PointerEvent<HTMLDivElement>): void => {
