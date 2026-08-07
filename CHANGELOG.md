@@ -3,7 +3,7 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
-## [Unreleased](https://github.com/limboy/magpie/compare/v1.4.0...HEAD)
+## [v1.5.0](https://github.com/limboy/magpie/compare/v1.4.0...v1.5.0) - 2026-08-07
 
 ### Features
 
@@ -14,6 +14,10 @@ This file is generated automatically from [Conventional Commits](https://www.con
 
 - replace publish skill with release skill ([3032cd3](https://github.com/limboy/magpie/commit/3032cd39df3c1929b28d1cb1c7e8339524593591))
 - point repo references at limboy/magpie ([4703e5f](https://github.com/limboy/magpie/commit/4703e5f392b77a25540f6cfbcc7d632e606d9ba1))
+
+### Other Changes
+
+- v1.5.0 ([64f6e9c](https://github.com/limboy/magpie/commit/64f6e9cf92cee5e824cb424602f9c1376083c459))
 
 ## [v1.4.0](https://github.com/limboy/magpie/compare/v1.3.13...v1.4.0) - 2026-07-30
 
