@@ -12,6 +12,7 @@ type AudioItem = {
   index: number
   title: string
   artist: string
+  album: string
   duration: number | null
   liked: boolean
 }
@@ -122,6 +123,7 @@ export function AudioList(): React.JSX.Element {
           title: metadata?.title && metadata.title !== 'Unknown' ? metadata.title : basename(path),
           artist:
             metadata?.artist && metadata.artist !== 'Unknown' ? metadata.artist : 'Unknown Artist',
+          album: metadata?.album && metadata.album !== 'Unknown' ? metadata.album : '',
           duration: trackDurations[path] ?? null,
           liked: Boolean(likedPaths[path])
         }
@@ -299,6 +301,9 @@ export function AudioList(): React.JSX.Element {
               <p className="truncate">
                 <span className={cn('font-medium', active && 'font-semibold')}>{item.title}</span>
                 <span className="text-muted-foreground"> — {item.artist}</span>
+                {item.album && (
+                  <span className="text-muted-foreground/60"> · {item.album}</span>
+                )}
               </p>
             </div>
             <span className="text-right text-xs tabular-nums text-muted-foreground">
