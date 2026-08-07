@@ -132,7 +132,7 @@ function initAutoUpdater(): void {
 }
 
 app.whenReady().then(async () => {
-  electronApp.setAppUserModelId('com.electron')
+  electronApp.setAppUserModelId('me.limboy.magpie')
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)

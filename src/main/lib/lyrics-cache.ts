@@ -20,7 +20,7 @@ export interface LyricsQuery {
   durationMs: number | null
 }
 
-const UA = 'SoundBox (https://github.com/limboy/soundbox)'
+const UA = 'SoundBox (https://github.com/limboy/magpie)'
 
 const memCache = new Map<string, LyricsResult | null>()
 

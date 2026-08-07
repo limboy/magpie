@@ -8,7 +8,7 @@ const { execSync } = require('child_process')
 const fs = require('fs')
 const path = require('path')
 
-const REPO_URL = 'https://github.com/limboy/soundbox'
+const REPO_URL = 'https://github.com/limboy/magpie'
 
 const GROUPS = [
   { type: 'feat', title: 'Features' },

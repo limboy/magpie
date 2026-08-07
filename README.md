@@ -25,7 +25,7 @@ SoundBox is a modern, minimalist audio player for macOS (and more). Built with a
 
 ## 🚀 Installation
 
-You can download the latest version from the [Releases](https://github.com/limboy/soundbox/releases/latest) page.
+You can download the latest version from the [Releases](https://github.com/limboy/magpie/releases/latest) page.
 
 ## 🛠 Development
 
@@ -40,8 +40,8 @@ You can download the latest version from the [Releases](https://github.com/limbo
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/limboy/soundbox.git
-   cd soundbox
+   git clone https://github.com/limboy/magpie.git
+   cd magpie
    ```
 
 2. Install dependencies:

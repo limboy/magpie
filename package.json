@@ -23,7 +23,7 @@
     "changelog": "node scripts/generate-changelog.cjs"
   },
   "build": {
-    "appId": "me.limboy.soundbox",
+    "appId": "me.limboy.magpie",
     "productName": "SoundBox",
     "directories": {
       "buildResources": "build"
@@ -60,7 +60,7 @@
       {
         "provider": "github",
         "owner": "limboy",
-        "repo": "soundbox",
+        "repo": "magpie",
         "releaseType": "release"
       }
     ],
