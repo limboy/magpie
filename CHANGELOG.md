@@ -5,6 +5,10 @@ This file is generated automatically from [Conventional Commits](https://www.con
 
 ## [Unreleased](https://github.com/limboy/magpie/compare/v1.5.0...HEAD)
 
+### Bug Fixes
+
+- **changelog:** drop release commits from generated output ([bae8357](https://github.com/limboy/magpie/commit/bae835793929e83a4edf5c60c7bee431853d9253))
+
 ### Refactoring
 
 - rename app from SoundBox to Magpie ([f892082](https://github.com/limboy/magpie/commit/f892082015e5d7ebf4576e317f076ddbc824dfbd))
