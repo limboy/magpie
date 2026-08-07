@@ -1,11 +1,11 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Folder, FolderPlus, MessageSquareQuote, Search, Star, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { FileTree } from '@/components/file-tree/file-tree'
 import { AudioList } from '@/components/player/audio-list'
 import { AudioPlayer } from '@/components/player/audio-player'
-import { LyricsSidebar } from '@/components/player/lyrics-sidebar'
+import { LyricsView } from '@/components/player/lyrics-view'
 import { UpdateIndicator } from '@/components/update-indicator'
 import { basename } from '@/lib/audio-extensions'
 import { cn } from '@/lib/utils'
@@ -25,7 +25,6 @@ export function PlayerRoute(): React.JSX.Element {
   const selectedAudio = useLibrary((s) => s.selectedAudio)
   const trackMeta = useLibrary((s) => s.trackMeta)
 
-  const sidebarPanel = useUI((s) => s.sidebarPanel)
   const isSearchOpen = useUI((s) => s.isSearchOpen)
   const searchQuery = useUI((s) => s.searchQuery)
   const setIsSearchOpen = useUI((s) => s.setIsSearchOpen)
@@ -96,10 +95,6 @@ export function PlayerRoute(): React.JSX.Element {
     })
   }, [setCollections, setLastAudioByCollection, selectAudio, setLikedPaths])
 
-  useLayoutEffect(() => {
-    window.soundbox.setLyricsPanelWidth(sidebarPanel ? 320 : 0)
-  }, [sidebarPanel])
-
   useEffect(() => {
     if (isSearchOpen) searchInputRef.current?.focus()
   }, [isSearchOpen])
@@ -160,22 +155,16 @@ export function PlayerRoute(): React.JSX.Element {
         </div>
         <StatusBar />
       </div>
-      {sidebarPanel === 'lyrics' && <LyricsSidebar />}
-      {sidebarPanel === 'folders' && (
-        <aside className="flex w-80 shrink-0 flex-col border-l">
-          <FileTree />
-        </aside>
-      )}
     </div>
   )
 }
 
 function StatusBar(): React.JSX.Element {
-  const sidebarPanel = useUI((s) => s.sidebarPanel)
+  const mainView = useUI((s) => s.mainView)
   const showStarredOnly = useUI((s) => s.showStarredOnly)
   const toggleStarredOnly = useUI((s) => s.toggleStarredOnly)
-  const toggleFoldersSidebar = useUI((s) => s.toggleFoldersSidebar)
-  const toggleLyricsSidebar = useUI((s) => s.toggleLyricsSidebar)
+  const toggleFoldersView = useUI((s) => s.toggleFoldersView)
+  const toggleLyricsView = useUI((s) => s.toggleLyricsView)
 
   return (
     <footer className="grid h-8 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center border-t bg-muted/55 px-1.5 text-[11px] text-muted-foreground backdrop-blur-xl">
@@ -201,10 +190,10 @@ function StatusBar(): React.JSX.Element {
         <Button
           size="icon"
           variant="ghost"
-          className={cn('size-6', sidebarPanel === 'folders' && 'bg-accent text-foreground')}
-          onClick={toggleFoldersSidebar}
-          aria-label={sidebarPanel === 'folders' ? 'Hide folders' : 'Show folders'}
-          aria-pressed={sidebarPanel === 'folders'}
+          className={cn('size-6', mainView === 'folders' && 'bg-accent text-foreground')}
+          onClick={toggleFoldersView}
+          aria-label={mainView === 'folders' ? 'Show playlist' : 'Show folders'}
+          aria-pressed={mainView === 'folders'}
           title="Folders"
         >
           <Folder className="size-3.5" />
@@ -212,10 +201,10 @@ function StatusBar(): React.JSX.Element {
         <Button
           size="icon"
           variant="ghost"
-          className={cn('size-6', sidebarPanel === 'lyrics' && 'bg-accent text-foreground')}
-          onClick={toggleLyricsSidebar}
-          aria-label={sidebarPanel === 'lyrics' ? 'Hide lyrics' : 'Show lyrics'}
-          aria-pressed={sidebarPanel === 'lyrics'}
+          className={cn('size-6', mainView === 'lyrics' && 'bg-accent text-foreground')}
+          onClick={toggleLyricsView}
+          aria-label={mainView === 'lyrics' ? 'Show playlist' : 'Show lyrics'}
+          aria-pressed={mainView === 'lyrics'}
           title="Lyrics"
         >
           <MessageSquareQuote className="size-3.5" />
@@ -229,6 +218,8 @@ function PlayerCenter(): React.JSX.Element {
   const selectedCollectionId = useLibrary((s) => s.selectedCollectionId)
   const addItemsToSelectedCollection = useLibrary((s) => s.addItemsToSelectedCollection)
   const addCollectionWithItems = useLibrary((s) => s.addCollectionWithItems)
+  const mainView = useUI((s) => s.mainView)
+  const setMainView = useUI((s) => s.setMainView)
   const [isDragOver, setIsDragOver] = useState(false)
   const dragCounter = useRef(0)
 
@@ -295,19 +286,31 @@ function PlayerCenter(): React.JSX.Element {
     }
   }
 
+  // The folders view brings its own drop target, and lyrics accepts none —
+  // only the playlist wires up the drop handlers below.
+  const dropHandlers =
+    mainView === 'list'
+      ? {
+          onDragEnter: handleDragEnter,
+          onDragLeave: handleDragLeave,
+          onDragOver: (event: React.DragEvent) => event.preventDefault(),
+          onDrop: handleDrop
+        }
+      : {}
+
   return (
-    <main
-      className="relative flex min-h-0 min-w-0 flex-1 flex-col"
-      onDragEnter={handleDragEnter}
-      onDragLeave={handleDragLeave}
-      onDragOver={(event) => event.preventDefault()}
-      onDrop={handleDrop}
-    >
+    <main className="relative flex min-h-0 min-w-0 flex-1 flex-col" {...dropHandlers}>
       <AudioPlayer />
-      <div className="relative flex min-h-0 flex-1">
-        <ScrollArea className="min-h-0 flex-1 bg-background">
-          <AudioList />
-        </ScrollArea>
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        {mainView === 'folders' ? (
+          <FileTree onSelectCollection={() => setMainView('list')} />
+        ) : mainView === 'lyrics' ? (
+          <LyricsView />
+        ) : (
+          <ScrollArea className="min-h-0 flex-1 bg-background">
+            <AudioList />
+          </ScrollArea>
+        )}
         {isDragOver && (
           <div className="pointer-events-none absolute inset-1.5 z-40 flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-primary/50 bg-background/90 px-4 text-center backdrop-blur-sm">
             <FolderPlus className="h-8 w-8 text-primary/70" strokeWidth={1.75} />

@@ -29,8 +29,6 @@ const soundbox = {
     >,
   signalReady: () => ipcRenderer.send('soundbox:renderer-ready'),
   setFullPlayer: (full: boolean) => ipcRenderer.send('soundbox:set-full-player', full),
-  setLyricsPanelWidth: (rightWidth: number) =>
-    ipcRenderer.send('soundbox:set-lyrics-panel-width', rightWidth),
   getState: () => ipcRenderer.invoke('soundbox:getState'),
   setState: (patch: Partial<import('./soundbox').AppState>) =>
     ipcRenderer.invoke('soundbox:setState', patch),

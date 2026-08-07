@@ -4,7 +4,7 @@ import { usePlayer } from '@/store/player-store'
 import { useLyrics } from '@/hooks/use-lyrics'
 import { LyricsPanel } from './lyrics-panel'
 
-export function LyricsSidebar(): React.JSX.Element {
+export function LyricsView(): React.JSX.Element {
   const selectedAudio = useLibrary((s) => s.selectedAudio)
   const trackMeta = useLibrary((s) => s.trackMeta)
   const trackDurations = useLibrary((s) => s.trackDurations)
@@ -29,8 +29,8 @@ export function LyricsSidebar(): React.JSX.Element {
   const lyrics = useLyrics(selectedAudio, title, artist, album, effectiveDuration)
 
   return (
-    <aside className="flex w-80 shrink-0 flex-col border-l bg-muted/40 backdrop-blur-sm">
+    <div className="flex min-h-0 flex-1 flex-col bg-background">
       <LyricsPanel state={lyrics} currentTimeMs={currentTimeMs} onSeek={requestSeek} />
-    </aside>
+    </div>
   )
 }

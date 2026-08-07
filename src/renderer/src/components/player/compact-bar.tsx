@@ -145,8 +145,8 @@ export function CompactBar({ audioRef, selectedAudio, onPrev, onNext }: Props): 
 }
 
 function LyricsButton(): React.JSX.Element {
-  const lyricsSidebarOpen = useUI((s) => s.sidebarPanel === 'lyrics')
-  const toggleLyricsSidebar = useUI((s) => s.toggleLyricsSidebar)
+  const lyricsOpen = useUI((s) => s.mainView === 'lyrics')
+  const toggleLyricsView = useUI((s) => s.toggleLyricsView)
 
   return (
     <Button
@@ -154,11 +154,11 @@ function LyricsButton(): React.JSX.Element {
       variant="ghost"
       className={cn(
         'h-8 w-8 transition-colors',
-        lyricsSidebarOpen ? 'text-primary' : 'text-muted-foreground/60 hover:text-foreground'
+        lyricsOpen ? 'text-primary' : 'text-muted-foreground/60 hover:text-foreground'
       )}
-      onClick={toggleLyricsSidebar}
+      onClick={toggleLyricsView}
       title="Lyrics"
-      aria-pressed={lyricsSidebarOpen}
+      aria-pressed={lyricsOpen}
     >
       <MessageSquareQuote className="h-4.5 w-4.5" strokeWidth={2} />
     </Button>

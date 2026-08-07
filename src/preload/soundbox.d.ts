@@ -51,7 +51,6 @@ export interface SoundboxApi {
   getLyrics(query: LyricsQuery): Promise<LyricsResult | null>
   signalReady(): void
   setFullPlayer(full: boolean): void
-  setLyricsPanelWidth(rightWidth: number): void
   getState(): Promise<AppState>
   setState(patch: Partial<AppState>): Promise<AppState>
   onLibraryChanged(cb: (payload: LibraryChangedPayload) => void): () => void
