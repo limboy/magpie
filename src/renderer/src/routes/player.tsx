@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Folder, FolderPlus, Search, X } from 'lucide-react'
+import { Folder, FolderPlus, Moon, Search, Sun, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { FileTree } from '@/components/file-tree/file-tree'
@@ -11,6 +11,7 @@ import { basename } from '@/lib/audio-extensions'
 import { cn } from '@/lib/utils'
 import { useLibrary } from '@/store/library-store'
 import { useUI } from '@/store/ui-store'
+import { useTheme } from '@/hooks/use-theme'
 
 export function PlayerRoute(): React.JSX.Element {
   const setCollections = useLibrary((s) => s.setCollections)
@@ -165,7 +166,9 @@ function StatusBar(): React.JSX.Element {
 
   return (
     <footer className="grid h-8 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center border-t bg-muted/55 px-1.5 text-[11px] text-muted-foreground backdrop-blur-xl">
-      <div />
+      <div className="flex items-center gap-1 justify-self-start">
+        <ThemeToggleButton />
+      </div>
 
       <div className="justify-self-center">
         <UpdateIndicator />
@@ -185,6 +188,26 @@ function StatusBar(): React.JSX.Element {
         </Button>
       </div>
     </footer>
+  )
+}
+
+// Reflects the resolved (light/dark) appearance and toggles between the two.
+// The initial value comes from the OS preference (theme defaults to 'system').
+function ThemeToggleButton(): React.JSX.Element {
+  const { resolvedTheme, setTheme } = useTheme()
+  const isDark = resolvedTheme === 'dark'
+
+  return (
+    <Button
+      size="icon"
+      variant="ghost"
+      className="size-6"
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+      title={isDark ? 'Light theme' : 'Dark theme'}
+    >
+      {isDark ? <Moon className="size-3.5" /> : <Sun className="size-3.5" />}
+    </Button>
   )
 }
 
