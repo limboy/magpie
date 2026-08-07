@@ -3,6 +3,16 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [Unreleased](https://github.com/limboy/magpie/compare/v1.5.0...HEAD)
+
+### Refactoring
+
+- rename app from SoundBox to Magpie ([f892082](https://github.com/limboy/magpie/commit/f892082015e5d7ebf4576e317f076ddbc824dfbd))
+
+### Documentation
+
+- update CHANGELOG for v1.5.0 ([92198a4](https://github.com/limboy/magpie/commit/92198a4286d3ab56ec83547b3a04f053c55e32a3))
+
 ## [v1.5.0](https://github.com/limboy/magpie/compare/v1.4.0...v1.5.0) - 2026-08-07
 
 ### Features
@@ -14,10 +24,6 @@ This file is generated automatically from [Conventional Commits](https://www.con
 
 - replace publish skill with release skill ([3032cd3](https://github.com/limboy/magpie/commit/3032cd39df3c1929b28d1cb1c7e8339524593591))
 - point repo references at limboy/magpie ([4703e5f](https://github.com/limboy/magpie/commit/4703e5f392b77a25540f6cfbcc7d632e606d9ba1))
-
-### Other Changes
-
-- v1.5.0 ([64f6e9c](https://github.com/limboy/magpie/commit/64f6e9cf92cee5e824cb424602f9c1376083c459))
 
 ## [v1.4.0](https://github.com/limboy/magpie/compare/v1.3.13...v1.4.0) - 2026-07-30
 
@@ -41,10 +47,6 @@ This file is generated automatically from [Conventional Commits](https://www.con
 - eliminate CI file mutations and track release notes locally ([665c3f1](https://github.com/limboy/magpie/commit/665c3f1fe6bbad148961d2bcf04ae20e60eab5b2))
 - add PR validation workflow and streamline release pipeline pre-checks ([34275a4](https://github.com/limboy/magpie/commit/34275a4c6dc1f0456c0a53d5db5c5bdd2cb52aab))
 
-### Other Changes
-
-- v1.4.0 ([93e71fa](https://github.com/limboy/magpie/commit/93e71fa35f6080978f9b172086916b16020be4ff))
-
 ## [v1.3.13](https://github.com/limboy/magpie/compare/v1.3.12...v1.3.13) - 2026-07-27
 
 ### Features
@@ -60,10 +62,6 @@ This file is generated automatically from [Conventional Commits](https://www.con
 - require interactive UI modal ask_question in publish skill ([c4340b7](https://github.com/limboy/magpie/commit/c4340b7ed202d3d0e9de545e1d4023b8b7fe1662))
 - update CHANGELOG for v1.3.12 ([3a7faf4](https://github.com/limboy/magpie/commit/3a7faf4fe8949a5961bba5cc8e115ef56b3518d4))
 - update CHANGELOG for v1.3.11 ([e37ead0](https://github.com/limboy/magpie/commit/e37ead073b1b08ebdb46a8f1b2c7d16fca91a800))
-
-### Other Changes
-
-- v1.3.13 ([77d207e](https://github.com/limboy/magpie/commit/77d207e7a1518412926f9c0a033d9fa4deda9059))
 
 ## [v1.3.12](https://github.com/limboy/magpie/compare/v1.3.11...v1.3.12) - 2026-07-27
 

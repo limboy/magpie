@@ -59,6 +59,13 @@ function parseCommit(c) {
   return { type: type.toLowerCase(), scope, desc, breaking, hash: c.hash }
 }
 
+// Release plumbing is noise in the changelog: the `release: vX.Y.Z` commit the
+// publish flow creates, and the bare `X.Y.Z` subjects `npm version` used to
+// write before that convention.
+function isReleaseChore(p) {
+  return p.type === 'release' || /^v?\d+\.\d+\.\d+$/.test(p.desc)
+}
+
 function formatCommit(p) {
   const short = p.hash.slice(0, 7)
   const scope = p.scope ? `**${p.scope}:** ` : ''
@@ -74,6 +81,7 @@ function renderSection(header, dateStr, commits) {
   for (const c of commits) {
     const p = parseCommit(c)
     if (p) {
+      if (isReleaseChore(p)) continue
       if (p.breaking) breaking.push(p)
       if (!KNOWN_TYPES.has(p.type)) {
         others.push(p)
@@ -82,11 +90,9 @@ function renderSection(header, dateStr, commits) {
         itemsByType.get(p.type).push(p)
       }
     } else {
-      others.push({
-        desc: c.subject,
-        hash: c.hash,
-        breaking: false
-      })
+      const o = { desc: c.subject, hash: c.hash, breaking: false }
+      if (isReleaseChore(o)) continue
+      others.push(o)
     }
   }
 
@@ -109,15 +115,12 @@ function renderSection(header, dateStr, commits) {
   }
 
   if (others.length > 0) {
-    const filteredOthers = others.filter((o) => !/^\d+\.\d+\.\d+$/.test(o.desc))
-    if (filteredOthers.length > 0) {
-      lines.push('### Other Changes', '')
-      for (const o of filteredOthers) {
-        const short = o.hash.slice(0, 7)
-        lines.push(`- ${o.desc} ([${short}](${REPO_URL}/commit/${o.hash}))`)
-      }
-      lines.push('')
+    lines.push('### Other Changes', '')
+    for (const o of others) {
+      const short = o.hash.slice(0, 7)
+      lines.push(`- ${o.desc} ([${short}](${REPO_URL}/commit/${o.hash}))`)
     }
+    lines.push('')
   }
 
   return lines.join('\n')
@@ -186,7 +189,7 @@ function main() {
     }
 
     const notesPath = path.resolve(__dirname, '..', 'RELEASENOTES.md')
-    fs.writeFileSync(notesPath, finalNotes)
+    fs.writeFileSync(notesPath, `${finalNotes}\n`)
     console.log(`Wrote ${notesPath}`)
   }
 }
