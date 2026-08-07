@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Folder, FolderPlus, MessageSquareQuote, Search, X } from 'lucide-react'
+import { Folder, FolderPlus, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { FileTree } from '@/components/file-tree/file-tree'
@@ -162,7 +162,6 @@ export function PlayerRoute(): React.JSX.Element {
 function StatusBar(): React.JSX.Element {
   const mainView = useUI((s) => s.mainView)
   const toggleFoldersView = useUI((s) => s.toggleFoldersView)
-  const toggleLyricsView = useUI((s) => s.toggleLyricsView)
 
   return (
     <footer className="grid h-8 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center border-t bg-muted/55 px-1.5 text-[11px] text-muted-foreground backdrop-blur-xl">
@@ -183,17 +182,6 @@ function StatusBar(): React.JSX.Element {
           title="Folders"
         >
           <Folder className="size-3.5" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          className={cn('size-6', mainView === 'lyrics' && 'bg-accent text-foreground')}
-          onClick={toggleLyricsView}
-          aria-label={mainView === 'lyrics' ? 'Show playlist' : 'Show lyrics'}
-          aria-pressed={mainView === 'lyrics'}
-          title="Lyrics"
-        >
-          <MessageSquareQuote className="size-3.5" />
         </Button>
       </div>
     </footer>
