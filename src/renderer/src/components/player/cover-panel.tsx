@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { GripHorizontal, Music } from 'lucide-react'
 import { useCoverArt } from '@/hooks/use-cover-art'
+import { useLyrics } from '@/hooks/use-lyrics'
+import { useLibrary } from '@/store/library-store'
+import { usePlayer } from '@/store/player-store'
+import { basename } from '@/lib/audio-extensions'
+import type { CoverPanelView } from '@/store/ui-store'
+import { LyricsPanel } from './lyrics-panel'
 
 const MIN_HEIGHT = 200
 const MAX_HEIGHT = 400
@@ -16,15 +22,42 @@ function readStoredHeight(): number {
 
 type Props = {
   selectedAudio: string | null
+  view: Extract<CoverPanelView, 'cover' | 'lyrics'>
 }
 
-// Cover art shown above the transport controller. Drag the handle at the
-// bottom edge (or use arrow keys while it's focused) to resize it; the
-// chosen height is remembered across sessions.
-export function CoverPanel({ selectedAudio }: Props): React.JSX.Element {
+// Cover art (or, toggled from the transport controller, lyrics) shown above
+// the transport controls — the two share this space and only one shows at a
+// time. Drag the handle at the bottom edge (or use arrow keys while it's
+// focused) to resize it; the chosen height is remembered across sessions.
+export function CoverPanel({ selectedAudio, view }: Props): React.JSX.Element {
   const cover = useCoverArt(selectedAudio)
   const [height, setHeight] = useState(readStoredHeight)
   const dragStart = useRef<{ y: number; height: number } | null>(null)
+
+  const trackMeta = useLibrary((s) => s.trackMeta)
+  const trackDurations = useLibrary((s) => s.trackDurations)
+  const durationMs = usePlayer((s) => s.durationMs)
+  const currentTimeMs = usePlayer((s) => s.currentTimeMs)
+  const requestSeek = usePlayer((s) => s.requestSeek)
+
+  const meta = selectedAudio ? trackMeta[selectedAudio] : null
+  const title =
+    meta?.title && meta.title !== 'Unknown'
+      ? meta.title
+      : selectedAudio
+        ? basename(selectedAudio)
+        : ''
+  const artist = meta?.artist && meta.artist !== 'Unknown' ? meta.artist : ''
+  const album = meta?.album && meta.album !== 'Unknown' ? meta.album : ''
+  const effectiveDuration =
+    durationMs || (selectedAudio ? (trackDurations[selectedAudio] ?? null) : null)
+  const lyrics = useLyrics(
+    view === 'lyrics' ? selectedAudio : null,
+    title,
+    artist,
+    album,
+    effectiveDuration
+  )
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, String(height))
@@ -68,26 +101,32 @@ export function CoverPanel({ selectedAudio }: Props): React.JSX.Element {
 
   return (
     <div className="relative shrink-0 border-b bg-muted/10" style={{ height }}>
-      <div className="flex h-full w-full items-center justify-center overflow-hidden p-3">
-        {cover ? (
-          <img
-            key={cover}
-            src={cover}
-            alt=""
-            className="max-h-full max-w-full rounded-xl object-contain shadow-lg ring-1 ring-black/5 animate-in fade-in duration-500"
-          />
-        ) : (
-          <div className="flex size-20 items-center justify-center rounded-xl bg-muted text-muted-foreground/30">
-            <Music className="h-8 w-8" strokeWidth={1.5} />
-          </div>
-        )}
-      </div>
+      {view === 'lyrics' ? (
+        <div className="flex h-full w-full flex-col overflow-hidden">
+          <LyricsPanel state={lyrics} currentTimeMs={currentTimeMs} onSeek={requestSeek} />
+        </div>
+      ) : (
+        <div className="flex h-full w-full items-center justify-center overflow-hidden p-3">
+          {cover ? (
+            <img
+              key={cover}
+              src={cover}
+              alt=""
+              className="max-h-full max-w-full rounded-xl object-contain shadow-lg ring-1 ring-black/5 animate-in fade-in duration-500"
+            />
+          ) : (
+            <div className="flex size-20 items-center justify-center rounded-xl bg-muted text-muted-foreground/30">
+              <Music className="h-8 w-8" strokeWidth={1.5} />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Drag (or arrow-key) to resize the cover */}
       <div
         role="separator"
         aria-orientation="horizontal"
-        aria-label="Resize cover art"
+        aria-label={view === 'lyrics' ? 'Resize lyrics panel' : 'Resize cover art'}
         aria-valuenow={height}
         aria-valuemin={MIN_HEIGHT}
         aria-valuemax={MAX_HEIGHT}

@@ -2,13 +2,17 @@ import { create } from 'zustand'
 
 export type MainView = 'list' | 'folders' | 'lyrics'
 
+// What the cover panel (above the transport controls) is currently showing.
+// Cover art and lyrics share the same panel, so only one can be active.
+export type CoverPanelView = 'cover' | 'lyrics' | 'hidden'
+
 type UIState = {
   isSearchOpen: boolean
   searchQuery: string
   showStarredOnly: boolean
   mainView: MainView
   fullPlayer: boolean
-  showCover: boolean
+  coverPanelView: CoverPanelView
   setIsSearchOpen: (open: boolean) => void
   setSearchQuery: (query: string) => void
   toggleStarredOnly: () => void
@@ -17,7 +21,8 @@ type UIState = {
   toggleLyricsView: () => void
   toggleFullPlayer: () => void
   setFullPlayer: (full: boolean) => void
-  toggleShowCover: () => void
+  toggleCoverPanelCover: () => void
+  toggleCoverPanelLyrics: () => void
 }
 
 export const useUI = create<UIState>((set) => ({
@@ -26,7 +31,7 @@ export const useUI = create<UIState>((set) => ({
   showStarredOnly: false,
   mainView: 'list',
   fullPlayer: false,
-  showCover: true,
+  coverPanelView: 'cover',
   setIsSearchOpen: (isSearchOpen) => set({ isSearchOpen, searchQuery: isSearchOpen ? '' : '' }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
   toggleStarredOnly: () => set((s) => ({ showStarredOnly: !s.showStarredOnly })),
@@ -36,5 +41,8 @@ export const useUI = create<UIState>((set) => ({
   toggleLyricsView: () => set((s) => ({ mainView: s.mainView === 'lyrics' ? 'list' : 'lyrics' })),
   toggleFullPlayer: () => set((s) => ({ fullPlayer: !s.fullPlayer })),
   setFullPlayer: (fullPlayer) => set({ fullPlayer }),
-  toggleShowCover: () => set((s) => ({ showCover: !s.showCover }))
+  toggleCoverPanelCover: () =>
+    set((s) => ({ coverPanelView: s.coverPanelView === 'cover' ? 'hidden' : 'cover' })),
+  toggleCoverPanelLyrics: () =>
+    set((s) => ({ coverPanelView: s.coverPanelView === 'lyrics' ? 'hidden' : 'lyrics' }))
 }))

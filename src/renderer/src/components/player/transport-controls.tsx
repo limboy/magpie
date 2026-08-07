@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
   Image,
-  ImageOff,
+  MessageSquareQuote,
   Pause,
   Play,
   Repeat,
@@ -110,7 +110,8 @@ export function TransportControls({
           />
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-1">
+          <LyricsButton />
           <ToggleCoverButton />
         </div>
       </div>
@@ -260,9 +261,9 @@ function RepeatModeButton(): React.JSX.Element {
 }
 
 function ToggleCoverButton(): React.JSX.Element {
-  const showCover = useUI((state) => state.showCover)
-  const toggleShowCover = useUI((state) => state.toggleShowCover)
-  const Icon = showCover ? Image : ImageOff
+  const coverPanelView = useUI((state) => state.coverPanelView)
+  const toggleCoverPanelCover = useUI((state) => state.toggleCoverPanelCover)
+  const active = coverPanelView === 'cover'
 
   return (
     <Button
@@ -270,14 +271,39 @@ function ToggleCoverButton(): React.JSX.Element {
       variant="ghost"
       className={cn(
         'relative size-8 rounded-full',
-        showCover ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+        active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
       )}
-      onClick={toggleShowCover}
-      aria-label={showCover ? 'Hide cover art' : 'Show cover art'}
-      aria-pressed={showCover}
-      title={showCover ? 'Hide cover' : 'Show cover'}
+      onClick={toggleCoverPanelCover}
+      aria-label={active ? 'Hide cover art' : 'Show cover art'}
+      aria-pressed={active}
+      title={active ? 'Hide cover' : 'Show cover'}
     >
-      <Icon className="size-4" />
+      <Image className="size-4" />
+    </Button>
+  )
+}
+
+// Cover art and lyrics share the panel above the transport controls, so
+// switching one on switches the other off.
+function LyricsButton(): React.JSX.Element {
+  const coverPanelView = useUI((state) => state.coverPanelView)
+  const toggleCoverPanelLyrics = useUI((state) => state.toggleCoverPanelLyrics)
+  const active = coverPanelView === 'lyrics'
+
+  return (
+    <Button
+      size="icon"
+      variant="ghost"
+      className={cn(
+        'relative size-8 rounded-full',
+        active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+      )}
+      onClick={toggleCoverPanelLyrics}
+      aria-label={active ? 'Hide lyrics' : 'Show lyrics'}
+      aria-pressed={active}
+      title={active ? 'Hide lyrics' : 'Show lyrics'}
+    >
+      <MessageSquareQuote className="size-4" />
     </Button>
   )
 }

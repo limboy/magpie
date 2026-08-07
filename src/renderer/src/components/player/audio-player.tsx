@@ -28,7 +28,7 @@ export function AudioPlayer(): React.JSX.Element {
   const seekRequestMs = usePlayer((s) => s.seekRequestMs)
   const clearSeekRequest = usePlayer((s) => s.clearSeekRequest)
   const trackMeta = useLibrary((s) => s.trackMeta)
-  const showCover = useUI((s) => s.showCover)
+  const coverPanelView = useUI((s) => s.coverPanelView)
 
   useEffect(() => {
     const a = audioRef.current
@@ -446,7 +446,9 @@ export function AudioPlayer(): React.JSX.Element {
           }
         }}
       />
-      {showCover && <CoverPanel selectedAudio={selectedAudio} />}
+      {coverPanelView !== 'hidden' && (
+        <CoverPanel selectedAudio={selectedAudio} view={coverPanelView} />
+      )}
       <TransportControls
         audioRef={audioRef}
         selectedAudio={selectedAudio}

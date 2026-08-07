@@ -18,7 +18,7 @@ type Props = {
 
 export function FullPlayer({ audioRef, selectedAudio, onPrev, onNext }: Props): React.JSX.Element {
   const cover = useCoverArt(selectedAudio)
-  const showCover = useUI((s) => s.showCover)
+  const showCover = useUI((s) => s.coverPanelView !== 'hidden')
   const trackMeta = useLibrary((s) => s.trackMeta)
   const hydrated = useLibrary((s) => s.hydrated)
   const trackDurations = useLibrary((s) => s.trackDurations)
