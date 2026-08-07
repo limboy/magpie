@@ -43,6 +43,7 @@ export function AudioList(): React.JSX.Element {
   const setPlaying = usePlayer((state) => state.setPlaying)
   const searchQuery = useUI((state) => state.searchQuery)
   const showStarredOnly = useUI((state) => state.showStarredOnly)
+  const toggleStarredOnly = useUI((state) => state.toggleStarredOnly)
   const [selection, setSelection] = useState<ListSelection>(() => ({
     collectionId: null,
     paths: new Set(),
@@ -203,11 +204,35 @@ export function AudioList(): React.JSX.Element {
 
   return (
     <div
-      className="flex flex-col gap-0.5 py-2 pl-1 pr-2"
+      className="flex flex-col gap-0.5"
       role="listbox"
       aria-label="Playlist"
       aria-multiselectable="true"
     >
+      <div
+        className="sticky top-0 z-10 grid shrink-0 grid-cols-[38px_minmax(0,1fr)_56px_34px] items-center border-b bg-background text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70"
+      >
+        <span aria-hidden="true" className="text-right text-xs">
+          #
+        </span>
+        <span aria-hidden="true" className="pl-2">
+          Title
+        </span>
+        <span aria-hidden="true" />
+        <button
+          type="button"
+          className={cn(
+            'ml-[2px] flex size-7 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:text-foreground',
+            showStarredOnly && 'text-foreground'
+          )}
+          onClick={toggleStarredOnly}
+          aria-label={showStarredOnly ? 'Show all songs' : 'Show starred songs only'}
+          aria-pressed={showStarredOnly}
+          title={showStarredOnly ? 'Show all' : 'Starred only'}
+        >
+          <Star className={cn('size-3.5', showStarredOnly && 'fill-current')} />
+        </button>
+      </div>
       {items.map((item) => {
         const active = item.path === selectedAudio
         const selected = selectedPaths.has(item.path)
@@ -301,9 +326,7 @@ export function AudioList(): React.JSX.Element {
               <p className="truncate">
                 <span className={cn('font-medium', active && 'font-semibold')}>{item.title}</span>
                 <span className="text-muted-foreground"> — {item.artist}</span>
-                {item.album && (
-                  <span className="text-muted-foreground/60"> · {item.album}</span>
-                )}
+                {item.album && <span className="text-muted-foreground/60"> · {item.album}</span>}
               </p>
             </div>
             <span className="text-right text-xs tabular-nums text-muted-foreground">
