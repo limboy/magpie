@@ -3,7 +3,19 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
-## [Unreleased](https://github.com/limboy/magpie/compare/v1.3.13...HEAD)
+## [Unreleased](https://github.com/limboy/magpie/compare/v1.4.0...HEAD)
+
+### Features
+
+- **ui:** open folders and lyrics in the main area ([f71e7cf](https://github.com/limboy/magpie/commit/f71e7cff102b828c03fe18b6319005d9a52b0f04))
+- **assets:** update application icon assets from assets/logo.icon ([d6ae40e](https://github.com/limboy/magpie/commit/d6ae40e3eaa2fae01f8312af2d324fb56e29f968))
+
+### Chores
+
+- replace publish skill with release skill ([3032cd3](https://github.com/limboy/magpie/commit/3032cd39df3c1929b28d1cb1c7e8339524593591))
+- point repo references at limboy/magpie ([4703e5f](https://github.com/limboy/magpie/commit/4703e5f392b77a25540f6cfbcc7d632e606d9ba1))
+
+## [v1.4.0](https://github.com/limboy/magpie/compare/v1.3.13...v1.4.0) - 2026-07-30
 
 ### Features
 
@@ -24,6 +36,10 @@ This file is generated automatically from [Conventional Commits](https://www.con
 
 - eliminate CI file mutations and track release notes locally ([665c3f1](https://github.com/limboy/magpie/commit/665c3f1fe6bbad148961d2bcf04ae20e60eab5b2))
 - add PR validation workflow and streamline release pipeline pre-checks ([34275a4](https://github.com/limboy/magpie/commit/34275a4c6dc1f0456c0a53d5db5c5bdd2cb52aab))
+
+### Other Changes
+
+- v1.4.0 ([93e71fa](https://github.com/limboy/magpie/commit/93e71fa35f6080978f9b172086916b16020be4ff))
 
 ## [v1.3.13](https://github.com/limboy/magpie/compare/v1.3.12...v1.3.13) - 2026-07-27
 
