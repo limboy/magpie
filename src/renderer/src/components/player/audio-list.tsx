@@ -51,6 +51,7 @@ export function AudioList(): React.JSX.Element {
     followsPlayback: true
   }))
   const activeItemRef = useRef<HTMLDivElement | null>(null)
+  const suppressScrollRef = useRef(false)
 
   const activeCollection = collections.find((item) => item.id === selectedCollectionId)
   const paths = useMemo(() => activeCollection?.items ?? [], [activeCollection])
@@ -145,6 +146,10 @@ export function AudioList(): React.JSX.Element {
 
   useEffect(() => {
     if (!selectedAudio) return
+    if (suppressScrollRef.current) {
+      suppressScrollRef.current = false
+      return
+    }
     const frame = requestAnimationFrame(() => {
       activeItemRef.current?.scrollIntoView({ block: 'center' })
     })
@@ -280,6 +285,7 @@ export function AudioList(): React.JSX.Element {
                 anchorPath: item.path,
                 followsPlayback: true
               })
+              suppressScrollRef.current = true
               selectAudio(item.path)
               void window.soundbox.setState({ lastAudioPath: item.path })
               setPlaying(true)
