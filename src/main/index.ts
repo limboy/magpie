@@ -38,7 +38,7 @@ async function createWindow(): Promise<void> {
     width: windowBounds?.width ?? PLAYER_SIZE.width,
     height: windowBounds?.height ?? PLAYER_SIZE.height,
     minWidth: 400,
-    minHeight: 563,
+    minHeight: 562,
     maxWidth: 800,
     useContentSize: true,
     resizable: true,
