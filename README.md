@@ -2,9 +2,7 @@
 
 Magpie is a modern, minimalist audio player for macOS (and more). Built with a focus on simplicity and efficiency, it helps you organize and enjoy your local audio collection.
 
-<p>
-  <img src="./assets/screenshot.webp" style="max-width: 400px" />
-</p>
+![](./assets/screenshot.webp | width=400)
 
 ## 💻 Requirements
 
