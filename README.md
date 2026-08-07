@@ -1,6 +1,6 @@
-# SoundBox — A Smooth Audio Player for Your Local Library
+# Magpie — A Smooth Audio Player for Your Local Library
 
-SoundBox is a modern, minimalist audio player for macOS (and more). Built with a focus on simplicity and efficiency, it helps you organize and enjoy your local audio collection.
+Magpie is a modern, minimalist audio player for macOS (and more). Built with a focus on simplicity and efficiency, it helps you organize and enjoy your local audio collection.
 
 ![](./assets/screenshot5.webp)
 

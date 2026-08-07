@@ -35,7 +35,7 @@ export function PlayerRoute(): React.JSX.Element {
     ? metadata?.title && metadata.title !== 'Unknown'
       ? metadata.title
       : basename(selectedAudio)
-    : 'SoundBox'
+    : 'Magpie'
 
   useEffect(() => {
     void (async () => {

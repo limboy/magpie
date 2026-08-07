@@ -1,5 +1,5 @@
 {
-  "name": "soundbox",
+  "name": "magpie",
   "version": "1.5.0",
   "description": "An Electron application with React and TypeScript",
   "main": "./out/main/index.js",
@@ -24,7 +24,7 @@
   },
   "build": {
     "appId": "me.limboy.magpie",
-    "productName": "SoundBox",
+    "productName": "Magpie",
     "directories": {
       "buildResources": "build"
     },
