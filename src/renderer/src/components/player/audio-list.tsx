@@ -204,18 +204,18 @@ export function AudioList(): React.JSX.Element {
 
   return (
     <div
-      className="flex flex-col gap-0.5"
+      className="flex flex-col mb-2"
       role="listbox"
       aria-label="Playlist"
       aria-multiselectable="true"
     >
       <div
-        className="sticky top-0 z-10 grid shrink-0 grid-cols-[38px_minmax(0,1fr)_56px_34px] items-center border-b bg-background text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70"
+        className="sticky top-0 z-10 grid shrink-0 grid-cols-[38px_minmax(0,1fr)_56px_34px] items-center border-b bg-background px-1 mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70"
       >
         <span aria-hidden="true" className="text-right text-xs">
           #
         </span>
-        <span aria-hidden="true" className="pl-2">
+        <span aria-hidden="true" className="pl-3">
           Title
         </span>
         <span aria-hidden="true" />
@@ -244,7 +244,7 @@ export function AudioList(): React.JSX.Element {
             tabIndex={0}
             aria-selected={selected}
             className={cn(
-              'group grid h-9 cursor-default grid-cols-[38px_minmax(0,1fr)_56px_34px] items-center rounded-md px-1 text-sm transition-colors',
+              'group grid h-9 cursor-default grid-cols-[38px_minmax(0,1fr)_56px_34px] items-center rounded-md mx-2 text-sm transition-colors',
               selected
                 ? 'bg-muted text-foreground'
                 : active
