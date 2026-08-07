@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import {
+  Image,
+  ImageOff,
   Pause,
   Play,
   Repeat,
@@ -15,6 +17,7 @@ import { Button } from '@/components/ui/button'
 import { msToClock } from '@/lib/format-time'
 import { cn } from '@/lib/utils'
 import { usePlayer } from '@/store/player-store'
+import { useUI } from '@/store/ui-store'
 
 type Props = {
   audioRef: React.RefObject<HTMLAudioElement | null>
@@ -51,8 +54,9 @@ export function TransportControls({
       <ProgressBar disabled={!selectedAudio} />
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-        <div className="flex justify-start">
+        <div className="flex justify-start gap-1">
           <ShuffleButton />
+          <RepeatModeButton />
         </div>
 
         <div className="flex items-center justify-center gap-3">
@@ -107,7 +111,7 @@ export function TransportControls({
         </div>
 
         <div className="flex justify-end">
-          <RepeatModeButton />
+          <ToggleCoverButton />
         </div>
       </div>
     </div>
@@ -251,6 +255,29 @@ function RepeatModeButton(): React.JSX.Element {
       {loopMode !== 'off' && (
         <span className="absolute bottom-0.5 left-1/2 size-1 -translate-x-1/2 rounded-full bg-current" />
       )}
+    </Button>
+  )
+}
+
+function ToggleCoverButton(): React.JSX.Element {
+  const showCover = useUI((state) => state.showCover)
+  const toggleShowCover = useUI((state) => state.toggleShowCover)
+  const Icon = showCover ? Image : ImageOff
+
+  return (
+    <Button
+      size="icon"
+      variant="ghost"
+      className={cn(
+        'relative size-8 rounded-full',
+        showCover ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+      )}
+      onClick={toggleShowCover}
+      aria-label={showCover ? 'Hide cover art' : 'Show cover art'}
+      aria-pressed={showCover}
+      title={showCover ? 'Hide cover' : 'Show cover'}
+    >
+      <Icon className="size-4" />
     </Button>
   )
 }

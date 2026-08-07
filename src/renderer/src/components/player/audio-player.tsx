@@ -4,6 +4,7 @@ import { secondsToMs } from '@/lib/format-time'
 import { useLibrary } from '@/store/library-store'
 import { usePlayer } from '@/store/player-store'
 import { useUI } from '@/store/ui-store'
+import { CoverPanel } from './cover-panel'
 import { TransportControls } from './transport-controls'
 
 export function AudioPlayer(): React.JSX.Element {
@@ -27,6 +28,7 @@ export function AudioPlayer(): React.JSX.Element {
   const seekRequestMs = usePlayer((s) => s.seekRequestMs)
   const clearSeekRequest = usePlayer((s) => s.clearSeekRequest)
   const trackMeta = useLibrary((s) => s.trackMeta)
+  const showCover = useUI((s) => s.showCover)
 
   useEffect(() => {
     const a = audioRef.current
@@ -444,6 +446,7 @@ export function AudioPlayer(): React.JSX.Element {
           }
         }}
       />
+      {showCover && <CoverPanel selectedAudio={selectedAudio} />}
       <TransportControls
         audioRef={audioRef}
         selectedAudio={selectedAudio}

@@ -8,6 +8,7 @@ type UIState = {
   showStarredOnly: boolean
   mainView: MainView
   fullPlayer: boolean
+  showCover: boolean
   setIsSearchOpen: (open: boolean) => void
   setSearchQuery: (query: string) => void
   toggleStarredOnly: () => void
@@ -16,6 +17,7 @@ type UIState = {
   toggleLyricsView: () => void
   toggleFullPlayer: () => void
   setFullPlayer: (full: boolean) => void
+  toggleShowCover: () => void
 }
 
 export const useUI = create<UIState>((set) => ({
@@ -24,6 +26,7 @@ export const useUI = create<UIState>((set) => ({
   showStarredOnly: false,
   mainView: 'list',
   fullPlayer: false,
+  showCover: true,
   setIsSearchOpen: (isSearchOpen) => set({ isSearchOpen, searchQuery: isSearchOpen ? '' : '' }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
   toggleStarredOnly: () => set((s) => ({ showStarredOnly: !s.showStarredOnly })),
@@ -32,5 +35,6 @@ export const useUI = create<UIState>((set) => ({
     set((s) => ({ mainView: s.mainView === 'folders' ? 'list' : 'folders' })),
   toggleLyricsView: () => set((s) => ({ mainView: s.mainView === 'lyrics' ? 'list' : 'lyrics' })),
   toggleFullPlayer: () => set((s) => ({ fullPlayer: !s.fullPlayer })),
-  setFullPlayer: (fullPlayer) => set({ fullPlayer })
+  setFullPlayer: (fullPlayer) => set({ fullPlayer }),
+  toggleShowCover: () => set((s) => ({ showCover: !s.showCover }))
 }))
