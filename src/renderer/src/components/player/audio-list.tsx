@@ -204,7 +204,7 @@ export function AudioList(): React.JSX.Element {
 
   return (
     <div
-      className="flex flex-col mb-2"
+      className="flex flex-col mb-2 gap-0.5"
       role="listbox"
       aria-label="Playlist"
       aria-multiselectable="true"
