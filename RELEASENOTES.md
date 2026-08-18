@@ -17,4 +17,4 @@
 - Add cycling audio marks and migrate legacy stars ([ca57cc6](https://github.com/limboy/magpie/commit/ca57cc6841f2dce70448696b8e9e7683f261d982))
 - Add duration column header icon to audio list ([a8e69a5](https://github.com/limboy/magpie/commit/a8e69a5d68a32e7448caa134c5fe4b72de69432c))
 
-**Full Changelog**: https://github.com/limboy/magpie/compare/v1.6.0...HEAD
+**Full Changelog**: https://github.com/limboy/magpie/compare/v1.6.0...v1.7.0
