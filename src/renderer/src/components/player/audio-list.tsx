@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowDown, ArrowUp, ArrowUpDown, CalendarPlus, FileAudio, Star } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  CalendarPlus,
+  Clock3,
+  FileAudio,
+  Star
+} from 'lucide-react'
 import {
   ContextMenu,
   ContextMenuCheckboxItem,
@@ -374,7 +382,15 @@ export function AudioList(): React.JSX.Element {
               <span className="truncate">Title</span>
               <SortIndicator column="title" sort={preferences.sort} />
             </button>
-            {preferences.columns.duration && <span aria-hidden="true" />}
+            {preferences.columns.duration && (
+              <span
+                className="flex items-center justify-end pr-1"
+                aria-label="Duration"
+                title="Duration"
+              >
+                <Clock3 className="size-3.5" aria-hidden="true" />
+              </span>
+            )}
             {preferences.columns.dateAdded && (
               <button
                 type="button"
