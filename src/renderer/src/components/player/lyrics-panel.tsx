@@ -104,7 +104,7 @@ function TimedTextList({
               ref={active ? activeRef : undefined}
               onClick={() => onSeek(line.time)}
               className={cn(
-                'block w-full origin-left px-6 py-1.5 text-left text-base leading-5.5 transition-all duration-300',
+                'block w-full origin-left whitespace-pre-wrap px-6 py-1.5 text-left text-base leading-5.5 transition-all duration-300',
                 active
                   ? 'scale-[1.03] font-semibold text-foreground'
                   : 'text-muted-foreground/50 hover:text-muted-foreground'
