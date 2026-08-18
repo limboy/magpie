@@ -6,4 +6,4 @@
 
 - Preserve line breaks in timed lyrics content ([eb51efb](https://github.com/limboy/magpie/commit/eb51efbff3a598903eeee42b0f5d02b026e6c12e))
 
-**Full Changelog**: https://github.com/limboy/magpie/compare/v1.7.0...HEAD
+**Full Changelog**: https://github.com/limboy/magpie/compare/v1.7.0...v1.7.1
