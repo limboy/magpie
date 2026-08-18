@@ -27,6 +27,10 @@ const soundbox = {
         { meta: { artist: string; album: string; title: string }; duration: number | null }
       >
     >,
+  getBulkDateAdded: (paths: string[]) =>
+    ipcRenderer.invoke('soundbox:getBulkDateAdded', paths) as Promise<
+      Record<string, number | null>
+    >,
   signalReady: () => ipcRenderer.send('soundbox:renderer-ready'),
   setFullPlayer: (full: boolean) => ipcRenderer.send('soundbox:set-full-player', full),
   getState: () => ipcRenderer.invoke('soundbox:getState'),

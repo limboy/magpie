@@ -1,12 +1,41 @@
 import { ipcMain } from 'electron'
+import { execFile } from 'node:child_process'
 import { stat } from 'node:fs/promises'
 import { extname } from 'node:path'
+import { promisify } from 'node:util'
 import { parseFile } from 'music-metadata'
 import { readTree } from '../lib/scan'
 
 import { getCachedMetadata, setCachedMetadata } from '../lib/metadata-cache'
 import { getCoverArt } from '../lib/cover-cache'
 import { getLyrics, type LyricsQuery } from '../lib/lyrics-cache'
+
+const execFileAsync = promisify(execFile)
+
+async function getDateAdded(path: string): Promise<number | null> {
+  let fallback: number | null = null
+
+  try {
+    const fileStat = await stat(path)
+    fallback = fileStat.birthtimeMs > 0 ? fileStat.birthtimeMs : fileStat.ctimeMs
+  } catch {
+    return null
+  }
+
+  if (process.platform !== 'darwin') return fallback
+
+  try {
+    const { stdout } = await execFileAsync(
+      '/usr/bin/mdls',
+      ['-raw', '-nullMarker', '', '-name', 'kMDItemDateAdded', path],
+      { encoding: 'utf8', timeout: 3000 }
+    )
+    const value = Date.parse(stdout.trim())
+    return Number.isFinite(value) ? value : fallback
+  } catch {
+    return fallback
+  }
+}
 
 export function registerFsIpc(): void {
   ipcMain.handle('soundbox:readTree', async (_e, root: string) => {
@@ -81,6 +110,22 @@ export function registerFsIpc(): void {
         }
       }
     }
+    return result
+  })
+
+  ipcMain.handle('soundbox:getBulkDateAdded', async (_e, paths: string[]) => {
+    const uniquePaths = Array.from(new Set(paths))
+    const result: Record<string, number | null> = {}
+    let nextIndex = 0
+
+    const workers = Array.from({ length: Math.min(8, uniquePaths.length) }, async () => {
+      while (nextIndex < uniquePaths.length) {
+        const path = uniquePaths[nextIndex++]
+        result[path] = await getDateAdded(path)
+      }
+    })
+
+    await Promise.all(workers)
     return result
   })
 

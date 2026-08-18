@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { FileAudio, Star } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, CalendarPlus, FileAudio, Star } from 'lucide-react'
+import {
+  ContextMenu,
+  ContextMenuCheckboxItem,
+  ContextMenuContent,
+  ContextMenuLabel,
+  ContextMenuTrigger
+} from '@/components/ui/context-menu'
 import { basename } from '@/lib/audio-extensions'
 import { msToClock } from '@/lib/format-time'
 import { cn } from '@/lib/utils'
@@ -14,7 +21,61 @@ type AudioItem = {
   artist: string
   album: string
   duration: number | null
+  dateAdded: number | null
   liked: boolean
+}
+
+type SortKey = 'title' | 'dateAdded'
+type SortDirection = 'asc' | 'desc'
+type OptionalColumn = 'number' | 'duration' | 'dateAdded' | 'starred'
+type ColumnVisibility = Record<OptionalColumn, boolean>
+
+type ListPreferences = {
+  sort: { key: SortKey; direction: SortDirection }
+  columns: ColumnVisibility
+}
+
+const PREFERENCES_KEY = 'magpie-song-list-preferences'
+const DEFAULT_PREFERENCES: ListPreferences = {
+  sort: { key: 'title', direction: 'asc' },
+  columns: { number: true, duration: true, dateAdded: true, starred: true }
+}
+const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric'
+})
+
+function loadPreferences(): ListPreferences {
+  try {
+    const parsed = JSON.parse(
+      localStorage.getItem(PREFERENCES_KEY) ?? '{}'
+    ) as Partial<ListPreferences>
+    const key = parsed.sort?.key
+    const direction = parsed.sort?.direction
+    return {
+      sort: {
+        key: key === 'dateAdded' ? 'dateAdded' : 'title',
+        direction: direction === 'desc' ? 'desc' : 'asc'
+      },
+      columns: {
+        number: parsed.columns?.number ?? DEFAULT_PREFERENCES.columns.number,
+        duration: parsed.columns?.duration ?? DEFAULT_PREFERENCES.columns.duration,
+        dateAdded: parsed.columns?.dateAdded ?? DEFAULT_PREFERENCES.columns.dateAdded,
+        starred: parsed.columns?.starred ?? DEFAULT_PREFERENCES.columns.starred
+      }
+    }
+  } catch {
+    return DEFAULT_PREFERENCES
+  }
+}
+
+function compareTitles(a: string, b: string): number {
+  return a.localeCompare(b, undefined, {
+    numeric: true,
+    sensitivity: 'base',
+    usage: 'sort'
+  })
 }
 
 type ListSelection = {
@@ -36,14 +97,17 @@ export function AudioList(): React.JSX.Element {
   const likedPaths = useLibrary((state) => state.likedPaths)
   const trackMeta = useLibrary((state) => state.trackMeta)
   const trackDurations = useLibrary((state) => state.trackDurations)
+  const trackDatesAdded = useLibrary((state) => state.trackDatesAdded)
   const setTrackMeta = useLibrary((state) => state.setTrackMeta)
   const setTrackDuration = useLibrary((state) => state.setTrackDuration)
   const setBulkTrackInfo = useLibrary((state) => state.setBulkTrackInfo)
+  const setBulkDatesAdded = useLibrary((state) => state.setBulkDatesAdded)
   const setOrderedPaths = useLibrary((state) => state.setOrderedPaths)
   const setPlaying = usePlayer((state) => state.setPlaying)
   const searchQuery = useUI((state) => state.searchQuery)
   const showStarredOnly = useUI((state) => state.showStarredOnly)
   const toggleStarredOnly = useUI((state) => state.toggleStarredOnly)
+  const [preferences, setPreferences] = useState(loadPreferences)
   const [selection, setSelection] = useState<ListSelection>(() => ({
     collectionId: null,
     paths: new Set(),
@@ -55,6 +119,10 @@ export function AudioList(): React.JSX.Element {
 
   const activeCollection = collections.find((item) => item.id === selectedCollectionId)
   const paths = useMemo(() => activeCollection?.items ?? [], [activeCollection])
+
+  useEffect(() => {
+    localStorage.setItem(PREFERENCES_KEY, JSON.stringify(preferences))
+  }, [preferences])
 
   useEffect(() => {
     let cancelled = false
@@ -92,13 +160,25 @@ export function AudioList(): React.JSX.Element {
     }
 
     void loadMetadata()
+    const loadDatesAdded = async (): Promise<void> => {
+      const current = useLibrary.getState()
+      const missing = paths.filter((path) => !(path in current.trackDatesAdded))
+      if (missing.length === 0) return
+      const dates = await window.soundbox.getBulkDateAdded(missing).catch(() => ({}))
+      if (!cancelled) setBulkDatesAdded(dates)
+    }
+
+    void loadDatesAdded()
     const handleFocus = (): void => void loadMetadata()
+    const handleDateFocus = (): void => void loadDatesAdded()
     window.addEventListener('focus', handleFocus)
+    window.addEventListener('focus', handleDateFocus)
     return () => {
       cancelled = true
       window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('focus', handleDateFocus)
     }
-  }, [paths, setBulkTrackInfo, setTrackDuration, setTrackMeta])
+  }, [paths, setBulkDatesAdded, setBulkTrackInfo, setTrackDuration, setTrackMeta])
 
   useEffect(() => {
     return window.soundbox.onPlaySong((path) => {
@@ -116,17 +196,18 @@ export function AudioList(): React.JSX.Element {
 
   const items = useMemo<AudioItem[]>(() => {
     const normalizedQuery = searchQuery.trim().toLocaleLowerCase()
-    return paths
+    const filtered = paths
       .map((path, index) => {
         const metadata = trackMeta[path]
         return {
           path,
-          index: index + 1,
+          index,
           title: metadata?.title && metadata.title !== 'Unknown' ? metadata.title : basename(path),
           artist:
             metadata?.artist && metadata.artist !== 'Unknown' ? metadata.artist : 'Unknown Artist',
           album: metadata?.album && metadata.album !== 'Unknown' ? metadata.album : '',
           duration: trackDurations[path] ?? null,
+          dateAdded: trackDatesAdded[path] ?? null,
           liked: Boolean(likedPaths[path])
         }
       })
@@ -137,7 +218,65 @@ export function AudioList(): React.JSX.Element {
           item.title.toLocaleLowerCase().includes(normalizedQuery) ||
           item.artist.toLocaleLowerCase().includes(normalizedQuery)
       )
-  }, [paths, trackMeta, trackDurations, likedPaths, searchQuery, showStarredOnly])
+
+    filtered.sort((a, b) => {
+      let comparison = 0
+      if (preferences.sort.key === 'title') {
+        comparison = compareTitles(a.title, b.title)
+      } else if (a.dateAdded === null || b.dateAdded === null) {
+        if (a.dateAdded === null && b.dateAdded !== null) return 1
+        if (a.dateAdded !== null && b.dateAdded === null) return -1
+      } else {
+        comparison = a.dateAdded - b.dateAdded
+      }
+
+      if (comparison === 0) comparison = a.index - b.index
+      return preferences.sort.direction === 'asc' ? comparison : -comparison
+    })
+
+    return filtered.map((item, index) => ({ ...item, index: index + 1 }))
+  }, [
+    paths,
+    trackMeta,
+    trackDurations,
+    trackDatesAdded,
+    likedPaths,
+    searchQuery,
+    showStarredOnly,
+    preferences.sort
+  ])
+
+  const gridTemplateColumns = useMemo(
+    () =>
+      [
+        preferences.columns.number && '38px',
+        'minmax(0, 1fr)',
+        preferences.columns.duration && '56px',
+        preferences.columns.dateAdded && '126px',
+        preferences.columns.starred && '34px'
+      ]
+        .filter(Boolean)
+        .join(' '),
+    [preferences.columns]
+  )
+
+  const toggleSort = (key: SortKey): void => {
+    setPreferences((current) => ({
+      ...current,
+      sort: {
+        key,
+        direction: current.sort.key === key && current.sort.direction === 'asc' ? 'desc' : 'asc'
+      }
+    }))
+  }
+
+  const setColumnVisible = (column: OptionalColumn, visible: boolean): void => {
+    if (column === 'starred' && !visible && showStarredOnly) toggleStarredOnly()
+    setPreferences((current) => ({
+      ...current,
+      columns: { ...current.columns, [column]: visible }
+    }))
+  }
 
   const orderKey = items.map((item) => item.path).join('\u0000')
   useEffect(() => {
@@ -214,30 +353,85 @@ export function AudioList(): React.JSX.Element {
       aria-label="Playlist"
       aria-multiselectable="true"
     >
-      <div
-        className="sticky top-0 z-10 grid shrink-0 grid-cols-[38px_minmax(0,1fr)_56px_34px] items-center border-b bg-background px-1 mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70"
-      >
-        <span aria-hidden="true" className="text-right text-xs">
-          #
-        </span>
-        <span aria-hidden="true" className="pl-3">
-          Title
-        </span>
-        <span aria-hidden="true" />
-        <button
-          type="button"
-          className={cn(
-            'ml-[2px] flex size-7 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:text-foreground',
-            showStarredOnly && 'text-foreground'
-          )}
-          onClick={toggleStarredOnly}
-          aria-label={showStarredOnly ? 'Show all songs' : 'Show starred songs only'}
-          aria-pressed={showStarredOnly}
-          title={showStarredOnly ? 'Show all' : 'Starred only'}
-        >
-          <Star className={cn('size-3.5', showStarredOnly && 'fill-current')} />
-        </button>
-      </div>
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <div
+            className="sticky top-0 z-10 mb-2 grid h-9 shrink-0 items-center border-b bg-background px-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70"
+            style={{ gridTemplateColumns }}
+          >
+            {preferences.columns.number && (
+              <span aria-hidden="true" className="text-right text-xs">
+                #
+              </span>
+            )}
+            <button
+              type="button"
+              className="flex h-full min-w-0 items-center gap-1 pl-3 text-left transition-colors hover:text-foreground"
+              onClick={() => toggleSort('title')}
+              aria-label={`Sort by title ${preferences.sort.key === 'title' && preferences.sort.direction === 'asc' ? 'descending' : 'ascending'}`}
+              title="Sort by title"
+            >
+              <span className="truncate">Title</span>
+              <SortIndicator column="title" sort={preferences.sort} />
+            </button>
+            {preferences.columns.duration && <span aria-hidden="true" />}
+            {preferences.columns.dateAdded && (
+              <button
+                type="button"
+                className="flex h-full items-center justify-end gap-1 pr-1 text-right transition-colors hover:text-foreground"
+                onClick={() => toggleSort('dateAdded')}
+                aria-label={`Sort by date added ${preferences.sort.key === 'dateAdded' && preferences.sort.direction === 'asc' ? 'descending' : 'ascending'}`}
+                title="Sort by date added"
+              >
+                <CalendarPlus className="size-3.5" />
+                <span>Date Added</span>
+                <SortIndicator column="dateAdded" sort={preferences.sort} />
+              </button>
+            )}
+            {preferences.columns.starred && (
+              <button
+                type="button"
+                className={cn(
+                  'ml-[2px] flex size-7 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:text-foreground',
+                  showStarredOnly && 'text-foreground'
+                )}
+                onClick={toggleStarredOnly}
+                aria-label={showStarredOnly ? 'Show all songs' : 'Show starred songs only'}
+                aria-pressed={showStarredOnly}
+                title={showStarredOnly ? 'Show all' : 'Starred only'}
+              >
+                <Star className={cn('size-3.5', showStarredOnly && 'fill-current')} />
+              </button>
+            )}
+          </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent className="min-w-44">
+          <ContextMenuLabel>Show Columns</ContextMenuLabel>
+          <ContextMenuCheckboxItem checked disabled>
+            Title
+          </ContextMenuCheckboxItem>
+          <ColumnMenuItem
+            label="Number"
+            checked={preferences.columns.number}
+            onCheckedChange={(checked) => setColumnVisible('number', checked)}
+          />
+          <ColumnMenuItem
+            label="Duration"
+            checked={preferences.columns.duration}
+            onCheckedChange={(checked) => setColumnVisible('duration', checked)}
+          />
+          <ColumnMenuItem
+            label="Date Added"
+            checked={preferences.columns.dateAdded}
+            onCheckedChange={(checked) => setColumnVisible('dateAdded', checked)}
+          />
+          <ColumnMenuItem
+            label="Starred"
+            checked={preferences.columns.starred}
+            onCheckedChange={(checked) => setColumnVisible('starred', checked)}
+          />
+        </ContextMenuContent>
+      </ContextMenu>
       {items.map((item) => {
         const active = item.path === selectedAudio
         const selected = selectedPaths.has(item.path)
@@ -249,13 +443,14 @@ export function AudioList(): React.JSX.Element {
             tabIndex={0}
             aria-selected={selected}
             className={cn(
-              'group grid h-9 cursor-default grid-cols-[38px_minmax(0,1fr)_56px_34px] items-center rounded-md mx-2 text-sm transition-colors',
+              'group mx-2 grid h-9 cursor-default items-center rounded-md text-sm transition-colors',
               selected
                 ? 'bg-muted text-foreground'
                 : active
                   ? 'bg-muted/70 text-foreground'
                   : 'hover:bg-muted/70'
             )}
+            style={{ gridTemplateColumns }}
             onClick={(event) => {
               if (event.shiftKey) {
                 const anchorPath =
@@ -320,44 +515,96 @@ export function AudioList(): React.JSX.Element {
               void window.soundbox.showSongContextMenu(item.path, contextSelection)
             }}
           >
-            <span
-              className={cn(
-                'text-right text-xs tabular-nums text-muted-foreground/60',
-                active && 'font-medium text-foreground'
-              )}
-            >
-              {item.index}.
-            </span>
-            <div className="min-w-0 pl-2">
+            {preferences.columns.number && (
+              <span
+                className={cn(
+                  'text-right text-xs tabular-nums text-muted-foreground/60',
+                  active && 'font-medium text-foreground'
+                )}
+              >
+                {item.index}.
+              </span>
+            )}
+            <div className={cn('min-w-0', preferences.columns.number ? 'pl-2' : 'pl-3')}>
               <p className="truncate">
                 <span className={cn('font-medium', active && 'font-semibold')}>{item.title}</span>
                 <span className="text-muted-foreground"> — {item.artist}</span>
                 {item.album && <span className="text-muted-foreground/60"> · {item.album}</span>}
               </p>
             </div>
-            <span className="text-right text-xs tabular-nums text-muted-foreground">
-              {msToClock(item.duration)}
-            </span>
-            <button
-              type="button"
-              className={cn(
-                'ml-auto flex size-7 items-center justify-center rounded-md text-muted-foreground/35 transition-all hover:text-foreground',
-                item.liked && 'text-foreground'
-              )}
-              onClick={(event) => {
-                event.stopPropagation()
-                toggleLike(item.path)
-              }}
-              aria-label={item.liked ? 'Unstar song' : 'Star song'}
-              aria-pressed={item.liked}
-              title={item.liked ? 'Unstar' : 'Star'}
-            >
-              <Star className={cn('size-3.5', item.liked && 'fill-current')} />
-            </button>
+            {preferences.columns.duration && (
+              <span className="text-right text-xs tabular-nums text-muted-foreground">
+                {msToClock(item.duration)}
+              </span>
+            )}
+            {preferences.columns.dateAdded && (
+              <span
+                className="truncate pr-1 text-right text-xs tabular-nums text-muted-foreground"
+                title={
+                  item.dateAdded === null
+                    ? 'Date added unavailable'
+                    : DATE_FORMATTER.format(item.dateAdded)
+                }
+              >
+                {item.dateAdded === null ? '—' : DATE_FORMATTER.format(item.dateAdded)}
+              </span>
+            )}
+            {preferences.columns.starred && (
+              <button
+                type="button"
+                className={cn(
+                  'ml-auto flex size-7 items-center justify-center rounded-md text-muted-foreground/35 transition-all hover:text-foreground',
+                  item.liked && 'text-foreground'
+                )}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  toggleLike(item.path)
+                }}
+                aria-label={item.liked ? 'Unstar song' : 'Star song'}
+                aria-pressed={item.liked}
+                title={item.liked ? 'Unstar' : 'Star'}
+              >
+                <Star className={cn('size-3.5', item.liked && 'fill-current')} />
+              </button>
+            )}
           </div>
         )
       })}
     </div>
+  )
+}
+
+function SortIndicator({
+  column,
+  sort
+}: {
+  column: SortKey
+  sort: ListPreferences['sort']
+}): React.JSX.Element {
+  if (sort.key !== column) return <ArrowUpDown className="size-3 opacity-35" aria-hidden="true" />
+  return sort.direction === 'asc' ? (
+    <ArrowUp className="size-3 text-foreground" aria-hidden="true" />
+  ) : (
+    <ArrowDown className="size-3 text-foreground" aria-hidden="true" />
+  )
+}
+
+function ColumnMenuItem({
+  label,
+  checked,
+  onCheckedChange
+}: {
+  label: string
+  checked: boolean
+  onCheckedChange: (checked: boolean) => void
+}): React.JSX.Element {
+  return (
+    <ContextMenuCheckboxItem
+      checked={checked}
+      onCheckedChange={(next) => onCheckedChange(next === true)}
+    >
+      {label}
+    </ContextMenuCheckboxItem>
   )
 }
 

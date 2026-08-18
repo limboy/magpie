@@ -14,6 +14,7 @@ type LibraryState = {
   error: string | null
   trackMeta: Record<string, { artist: string; album: string; title: string } | null>
   trackDurations: Record<string, number | null>
+  trackDatesAdded: Record<string, number | null>
   likedPaths: Record<string, number>
   orderedPaths: string[]
   setCollections: (collections: Collection[]) => void
@@ -37,6 +38,7 @@ type LibraryState = {
       { meta?: { artist: string; album: string; title: string }; duration?: number | null }
     >
   ) => void
+  setBulkDatesAdded: (items: Record<string, number | null>) => void
   selectCollection: (id: string | null) => void
   addItemsToSelectedCollection: (paths: string[]) => void
   removeItemsFromSelectedCollection: (paths: string[]) => void
@@ -59,6 +61,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   error: null,
   trackMeta: {},
   trackDurations: {},
+  trackDatesAdded: {},
   likedPaths: {},
   orderedPaths: [],
   setCollections: (collections) => set({ collections }),
@@ -170,6 +173,8 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       }
       return { trackMeta: nextMeta, trackDurations: nextDurations }
     }),
+  setBulkDatesAdded: (items) =>
+    set((s) => ({ trackDatesAdded: { ...s.trackDatesAdded, ...items } })),
   selectCollection: (id) => {
     const { collections, selectedCollectionId, trackMeta, lastAudioByCollection } = get()
     if (selectedCollectionId === id) return

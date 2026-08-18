@@ -47,6 +47,7 @@ export interface SoundboxApi {
       { meta: { artist: string; album: string; title: string }; duration: number | null }
     >
   >
+  getBulkDateAdded(paths: string[]): Promise<Record<string, number | null>>
   getCoverArt(path: string): Promise<string | null>
   getLyrics(query: LyricsQuery): Promise<LyricsResult | null>
   signalReady(): void
