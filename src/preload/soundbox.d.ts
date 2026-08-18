@@ -26,7 +26,14 @@ export type AppState = {
 
 export type LibraryChangedPayload = { kind: 'tree'; path: string }
 
-export type LyricsResult = { synced: string | null; plain: string | null }
+export type LyricsResult = {
+  synced: string | null
+  plain: string | null
+  subtitle?: {
+    format: 'srt' | 'vtt'
+    content: string
+  }
+}
 
 export type LyricsQuery = {
   path: string

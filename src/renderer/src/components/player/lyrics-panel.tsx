@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Loader2, Music2 } from 'lucide-react'
-import { findActiveIndexByStart } from '@/lib/active-line'
+import { findActiveCueIndex, findActiveIndexByStart } from '@/lib/active-line'
 import { cn } from '@/lib/utils'
 import type { LyricsState } from '@/hooks/use-lyrics'
 
@@ -38,6 +38,17 @@ export function LyricsPanel({ state, currentTimeMs, onSeek }: Props): React.JSX.
     return <SyncedLyrics lines={state.lines} currentTimeMs={currentTimeMs} onSeek={onSeek} />
   }
 
+  if (state.status === 'subtitles') {
+    const activeIndex = findActiveCueIndex(state.cues, currentTimeMs)
+    return (
+      <TimedTextList
+        lines={state.cues.map((cue) => ({ time: cue.start, text: cue.text }))}
+        activeIndex={activeIndex}
+        onSeek={onSeek}
+      />
+    )
+  }
+
   return (
     <Centered>
       <Music2 className="h-6 w-6 text-muted-foreground/30" strokeWidth={1.75} />
@@ -63,9 +74,20 @@ function SyncedLyrics({
   currentTimeMs: number
   onSeek: (ms: number) => void
 }): React.JSX.Element {
-  const activeRef = useRef<HTMLButtonElement>(null)
-
   const activeIndex = findActiveIndexByStart(lines, currentTimeMs)
+  return <TimedTextList lines={lines} activeIndex={activeIndex} onSeek={onSeek} />
+}
+
+function TimedTextList({
+  lines,
+  activeIndex,
+  onSeek
+}: {
+  lines: { time: number; text: string }[]
+  activeIndex: number
+  onSeek: (ms: number) => void
+}): React.JSX.Element {
+  const activeRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     activeRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })

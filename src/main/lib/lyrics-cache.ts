@@ -1,5 +1,5 @@
 import { app } from 'electron'
-import { join } from 'node:path'
+import { join, parse } from 'node:path'
 import { createHash } from 'node:crypto'
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
 
@@ -10,6 +10,10 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises'
 export interface LyricsResult {
   synced: string | null
   plain: string | null
+  subtitle?: {
+    format: 'srt' | 'vtt'
+    content: string
+  }
 }
 
 export interface LyricsQuery {
@@ -23,6 +27,28 @@ export interface LyricsQuery {
 const UA = 'SoundBox (https://github.com/limboy/magpie)'
 
 const memCache = new Map<string, LyricsResult | null>()
+
+const SIDECAR_EXTENSIONS = ['lrc', 'srt', 'vtt'] as const
+
+async function readSidecar(path: string): Promise<LyricsResult | null> {
+  const { dir, name } = parse(path)
+
+  for (const extension of SIDECAR_EXTENSIONS) {
+    try {
+      const content = await readFile(join(dir, `${name}.${extension}`), 'utf8')
+      if (extension === 'lrc') {
+        return { synced: content, plain: null }
+      }
+      return { synced: null, plain: null, subtitle: { format: extension, content } }
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        console.error(`Failed to read ${extension.toUpperCase()} sidecar for ${path}:`, error)
+      }
+    }
+  }
+
+  return null
+}
 
 function lyricsDir(): string {
   return join(app.getPath('userData'), 'lyrics')
@@ -99,6 +125,12 @@ async function fetchFromLrclib(q: LyricsQuery): Promise<LyricsResult | null> {
 }
 
 export async function getLyrics(q: LyricsQuery): Promise<LyricsResult | null> {
+  // Prefer a subtitle/lyrics file beside the audio over any cached or remote result.
+  // Sidecars are intentionally not cached here so a changed file is picked up on
+  // the next renderer request.
+  const sidecar = await readSidecar(q.path)
+  if (sidecar) return sidecar
+
   if (!q.title) return null
 
   const key = signature(q)
