@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { basename } from '@/lib/audio-extensions'
-import type { Collection } from '../../../preload/soundbox'
+import type { AudioMark, Collection } from '../../../preload/soundbox'
+import { nextAudioMark } from '@/lib/audio-mark'
 import { usePlayer } from './player-store'
 
 type LibraryState = {
@@ -15,14 +16,14 @@ type LibraryState = {
   trackMeta: Record<string, { artist: string; album: string; title: string } | null>
   trackDurations: Record<string, number | null>
   trackDatesAdded: Record<string, number | null>
-  likedPaths: Record<string, number>
+  audioMarks: Record<string, AudioMark>
   orderedPaths: string[]
   setCollections: (collections: Collection[]) => void
   setLastAudioByCollection: (lastAudioByCollection: Record<string, string>) => void
   setLastAudioPositions: (positions: Record<string, number>) => void
   saveAudioPosition: (path: string, positionMs: number) => void
   setOrderedPaths: (paths: string[]) => void
-  setLikedPaths: (likedPaths: Record<string, number>) => void
+  setAudioMarks: (audioMarks: Record<string, AudioMark>) => void
   addCollection: (title: string) => string
   addCollectionWithItems: (title: string, items: string[], watchedFolders: string[]) => string
   updateCollectionTitle: (id: string, title: string) => void
@@ -44,7 +45,7 @@ type LibraryState = {
   removeItemsFromSelectedCollection: (paths: string[]) => void
   addFoldersToSelectedCollection: (paths: string[]) => void
   selectAudio: (path: string | null) => void
-  toggleLike: (path: string) => void
+  cycleAudioMark: (path: string) => void
   setLoading: (loading: boolean) => void
   setHydrated: (hydrated: boolean) => void
   setError: (err: string | null) => void
@@ -62,7 +63,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   trackMeta: {},
   trackDurations: {},
   trackDatesAdded: {},
-  likedPaths: {},
+  audioMarks: {},
   orderedPaths: [],
   setCollections: (collections) => set({ collections }),
   setLastAudioByCollection: (lastAudioByCollection) => set({ lastAudioByCollection }),
@@ -80,7 +81,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     })
   },
   setOrderedPaths: (orderedPaths) => set({ orderedPaths }),
-  setLikedPaths: (likedPaths) => set({ likedPaths }),
+  setAudioMarks: (audioMarks) => set({ audioMarks }),
   addCollection: (title) => {
     const id = Date.now().toString()
     const newCollection: Collection = { id, title, items: [] }
@@ -302,16 +303,17 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       void window.soundbox.setState({ lastAudioPath: selectedAudio })
     }
   },
-  toggleLike: (path) => {
-    const { likedPaths } = get()
-    const next = { ...likedPaths }
-    if (next[path]) {
+  cycleAudioMark: (path) => {
+    const { audioMarks } = get()
+    const next = { ...audioMarks }
+    const mark = nextAudioMark(next[path] ?? null)
+    if (mark === null) {
       delete next[path]
     } else {
-      next[path] = Date.now()
+      next[path] = mark
     }
-    set({ likedPaths: next })
-    void window.soundbox.setState({ likedPaths: next })
+    set({ audioMarks: next })
+    void window.soundbox.setState({ audioMarks: next, likedPaths: {} })
   },
   setLoading: (loading) => set({ loading }),
   setHydrated: (hydrated) => set({ hydrated }),

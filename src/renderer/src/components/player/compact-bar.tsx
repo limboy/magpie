@@ -7,7 +7,6 @@ import {
   Repeat,
   Repeat1,
   Music,
-  Star,
   Volume2,
   Volume1,
   VolumeX,
@@ -21,6 +20,8 @@ import { useLibrary } from '@/store/library-store'
 import { useUI } from '@/store/ui-store'
 import { useCoverArt } from '@/hooks/use-cover-art'
 import { cn } from '@/lib/utils'
+import { audioMarkLabel, nextAudioMark } from '@/lib/audio-mark'
+import { AudioMarkIcon } from './audio-mark-icon'
 
 type Props = {
   audioRef: React.RefObject<HTMLAudioElement | null>
@@ -211,8 +212,8 @@ function NowPlaying({ selectedAudio }: { selectedAudio: string | null }): React.
   const durationMs = usePlayer((s) => s.durationMs)
   const trackMeta = useLibrary((s) => s.trackMeta)
   const hydrated = useLibrary((s) => s.hydrated)
-  const likedPaths = useLibrary((s) => s.likedPaths)
-  const toggleLike = useLibrary((s) => s.toggleLike)
+  const audioMarks = useLibrary((s) => s.audioMarks)
+  const cycleAudioMark = useLibrary((s) => s.cycleAudioMark)
   const toggleFullPlayer = useUI((s) => s.toggleFullPlayer)
   const cover = useCoverArt(selectedAudio)
 
@@ -225,7 +226,7 @@ function NowPlaying({ selectedAudio }: { selectedAudio: string | null }): React.
       ? 'Ready to play'
       : ''
   const artist = m?.artist && m.artist !== 'Unknown' ? m.artist : null
-  const liked = selectedAudio ? !!likedPaths[selectedAudio] : false
+  const mark = selectedAudio ? (audioMarks[selectedAudio] ?? null) : null
 
   const progress = durationMs > 0 ? Math.min(100, (currentTimeMs / durationMs) * 100) : 0
 
@@ -262,17 +263,18 @@ function NowPlaying({ selectedAudio }: { selectedAudio: string | null }): React.
           )}
         </div>
 
-        {/* Star */}
+        {/* Audio mark */}
         <button
           className={cn(
             'shrink-0 rounded-full p-1 transition-colors',
-            liked ? 'text-primary' : 'text-muted-foreground/40 hover:text-foreground'
+            mark ? 'text-primary' : 'text-muted-foreground/40 hover:text-foreground'
           )}
-          onClick={() => selectedAudio && toggleLike(selectedAudio)}
+          onClick={() => selectedAudio && cycleAudioMark(selectedAudio)}
           disabled={!selectedAudio}
-          title={liked ? 'Unstar' : 'Star'}
+          aria-label={`${audioMarkLabel(mark)} song; click for ${audioMarkLabel(nextAudioMark(mark))}`}
+          title={`${audioMarkLabel(mark)} · Next: ${audioMarkLabel(nextAudioMark(mark))}`}
         >
-          <Star className={cn('h-4 w-4', liked && 'fill-primary')} />
+          <AudioMarkIcon mark={mark} className="h-4 w-4" />
         </button>
 
         {/* Thin progress indicator near the bottom edge (non-interactive),

@@ -320,7 +320,7 @@ export function AudioPlayer(): React.JSX.Element {
         }
         case 'l':
         case 'L':
-          if (selectedAudio) useLibrary.getState().toggleLike(selectedAudio)
+          if (selectedAudio) useLibrary.getState().cycleAudioMark(selectedAudio)
           break
         case '/':
           e.preventDefault()

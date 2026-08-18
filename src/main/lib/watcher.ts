@@ -189,15 +189,18 @@ function setupHandlers(getWindow: () => BrowserWindow | null): void {
     }
 
     const nextLikedPaths = { ...(currentState.likedPaths || {}) }
+    const nextAudioMarks = { ...(currentState.audioMarks || {}) }
     for (const p of pathsToProcess) {
-      // Since pathsToProcess are absolute paths and likedPaths keys are normalized
-      // we should be careful. store.ts uses normalizePath which resolves and lowercases (except linux).
-      // pathIncludes also uses normalize.
-      // Let's just iterate and check.
       const np = normalize(p)
       for (const likedPath of Object.keys(nextLikedPaths)) {
         if (normalize(likedPath) === np) {
           delete nextLikedPaths[likedPath]
+          changed = true
+        }
+      }
+      for (const markedPath of Object.keys(nextAudioMarks)) {
+        if (normalize(markedPath) === np) {
+          delete nextAudioMarks[markedPath]
           changed = true
         }
       }
@@ -208,6 +211,7 @@ function setupHandlers(getWindow: () => BrowserWindow | null): void {
         collections: nextCollections,
         lastAudioPath: nextLastAudioPath,
         lastAudioByCollection: nextLastAudioByCollection,
+        audioMarks: nextAudioMarks,
         likedPaths: nextLikedPaths
       })
       updateWatcher(nextState)

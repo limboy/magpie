@@ -10,6 +10,8 @@ export type Collection = {
   excludedPaths?: string[]
 }
 
+export type AudioMark = 'star' | 'triangle' | 'circle' | 'square'
+
 export type AppState = {
   collections: Collection[]
   selectedCollectionId: string | null
@@ -17,6 +19,8 @@ export type AppState = {
   lastAudioPositionMs?: number
   lastAudioPositions?: Record<string, number>
   lastAudioByCollection?: Record<string, string>
+  audioMarks?: Record<string, AudioMark>
+  /** @deprecated Legacy star-only data. */
   likedPaths?: Record<string, number>
 }
 

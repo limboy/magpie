@@ -1,13 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  CalendarPlus,
-  Clock3,
-  FileAudio,
-  Star
-} from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, CalendarPlus, Clock3, FileAudio } from 'lucide-react'
 import {
   ContextMenu,
   ContextMenuCheckboxItem,
@@ -16,11 +8,14 @@ import {
   ContextMenuTrigger
 } from '@/components/ui/context-menu'
 import { basename } from '@/lib/audio-extensions'
+import { audioMarkLabel, nextAudioMark } from '@/lib/audio-mark'
 import { msToClock } from '@/lib/format-time'
 import { cn } from '@/lib/utils'
 import { useLibrary } from '@/store/library-store'
 import { usePlayer } from '@/store/player-store'
 import { useUI } from '@/store/ui-store'
+import { AudioMarkIcon } from './audio-mark-icon'
+import type { AudioMark } from '../../../../preload/soundbox'
 
 type AudioItem = {
   path: string
@@ -30,7 +25,7 @@ type AudioItem = {
   album: string
   duration: number | null
   dateAdded: number | null
-  liked: boolean
+  mark: AudioMark | null
 }
 
 type SortKey = 'title' | 'dateAdded'
@@ -101,8 +96,8 @@ export function AudioList(): React.JSX.Element {
   const removeItemsFromSelectedCollection = useLibrary(
     (state) => state.removeItemsFromSelectedCollection
   )
-  const toggleLike = useLibrary((state) => state.toggleLike)
-  const likedPaths = useLibrary((state) => state.likedPaths)
+  const cycleAudioMark = useLibrary((state) => state.cycleAudioMark)
+  const audioMarks = useLibrary((state) => state.audioMarks)
   const trackMeta = useLibrary((state) => state.trackMeta)
   const trackDurations = useLibrary((state) => state.trackDurations)
   const trackDatesAdded = useLibrary((state) => state.trackDatesAdded)
@@ -113,8 +108,8 @@ export function AudioList(): React.JSX.Element {
   const setOrderedPaths = useLibrary((state) => state.setOrderedPaths)
   const setPlaying = usePlayer((state) => state.setPlaying)
   const searchQuery = useUI((state) => state.searchQuery)
-  const showStarredOnly = useUI((state) => state.showStarredOnly)
-  const toggleStarredOnly = useUI((state) => state.toggleStarredOnly)
+  const markFilter = useUI((state) => state.markFilter)
+  const cycleMarkFilter = useUI((state) => state.cycleMarkFilter)
   const [preferences, setPreferences] = useState(loadPreferences)
   const [selection, setSelection] = useState<ListSelection>(() => ({
     collectionId: null,
@@ -216,10 +211,10 @@ export function AudioList(): React.JSX.Element {
           album: metadata?.album && metadata.album !== 'Unknown' ? metadata.album : '',
           duration: trackDurations[path] ?? null,
           dateAdded: trackDatesAdded[path] ?? null,
-          liked: Boolean(likedPaths[path])
+          mark: audioMarks[path] ?? null
         }
       })
-      .filter((item) => !showStarredOnly || item.liked)
+      .filter((item) => markFilter === null || item.mark === markFilter)
       .filter(
         (item) =>
           !normalizedQuery ||
@@ -248,9 +243,9 @@ export function AudioList(): React.JSX.Element {
     trackMeta,
     trackDurations,
     trackDatesAdded,
-    likedPaths,
+    audioMarks,
     searchQuery,
-    showStarredOnly,
+    markFilter,
     preferences.sort
   ])
 
@@ -279,7 +274,9 @@ export function AudioList(): React.JSX.Element {
   }
 
   const setColumnVisible = (column: OptionalColumn, visible: boolean): void => {
-    if (column === 'starred' && !visible && showStarredOnly) toggleStarredOnly()
+    if (column === 'starred' && !visible && markFilter !== null) {
+      useUI.setState({ markFilter: null })
+    }
     setPreferences((current) => ({
       ...current,
       columns: { ...current.columns, [column]: visible }
@@ -409,14 +406,22 @@ export function AudioList(): React.JSX.Element {
                 type="button"
                 className={cn(
                   'ml-[2px] flex size-7 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:text-foreground',
-                  showStarredOnly && 'text-foreground'
+                  markFilter !== null && 'text-foreground'
                 )}
-                onClick={toggleStarredOnly}
-                aria-label={showStarredOnly ? 'Show all songs' : 'Show starred songs only'}
-                aria-pressed={showStarredOnly}
-                title={showStarredOnly ? 'Show all' : 'Starred only'}
+                onClick={cycleMarkFilter}
+                aria-label={
+                  markFilter === null
+                    ? 'Showing all songs; click to show Star songs'
+                    : `Showing ${audioMarkLabel(markFilter)} songs; click for ${nextAudioMark(markFilter) === null ? 'all songs' : `${audioMarkLabel(nextAudioMark(markFilter))} songs`}`
+                }
+                aria-pressed={markFilter !== null}
+                title={
+                  markFilter === null
+                    ? 'All songs · Next: Star'
+                    : `${audioMarkLabel(markFilter)} only · Next: ${nextAudioMark(markFilter) === null ? 'All songs' : audioMarkLabel(nextAudioMark(markFilter))}`
+                }
               >
-                <Star className={cn('size-3.5', showStarredOnly && 'fill-current')} />
+                <AudioMarkIcon mark={markFilter} className="size-3.5" />
               </button>
             )}
           </div>
@@ -442,7 +447,7 @@ export function AudioList(): React.JSX.Element {
             onCheckedChange={(checked) => setColumnVisible('dateAdded', checked)}
           />
           <ColumnMenuItem
-            label="Starred"
+            label="Marks"
             checked={preferences.columns.starred}
             onCheckedChange={(checked) => setColumnVisible('starred', checked)}
           />
@@ -570,17 +575,16 @@ export function AudioList(): React.JSX.Element {
                 type="button"
                 className={cn(
                   'ml-auto flex size-7 items-center justify-center rounded-md text-muted-foreground/35 transition-all hover:text-foreground',
-                  item.liked && 'text-foreground'
+                  item.mark && 'text-foreground'
                 )}
                 onClick={(event) => {
                   event.stopPropagation()
-                  toggleLike(item.path)
+                  cycleAudioMark(item.path)
                 }}
-                aria-label={item.liked ? 'Unstar song' : 'Star song'}
-                aria-pressed={item.liked}
-                title={item.liked ? 'Unstar' : 'Star'}
+                aria-label={`${audioMarkLabel(item.mark)} song; click for ${audioMarkLabel(nextAudioMark(item.mark))}`}
+                title={`${audioMarkLabel(item.mark)} · Next: ${audioMarkLabel(nextAudioMark(item.mark))}`}
               >
-                <Star className={cn('size-3.5', item.liked && 'fill-current')} />
+                <AudioMarkIcon mark={item.mark} className="size-3.5" />
               </button>
             )}
           </div>

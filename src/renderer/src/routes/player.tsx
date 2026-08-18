@@ -19,7 +19,7 @@ export function PlayerRoute(): React.JSX.Element {
   const setLastAudioPositions = useLibrary((s) => s.setLastAudioPositions)
   const selectCollection = useLibrary((s) => s.selectCollection)
   const selectAudio = useLibrary((s) => s.selectAudio)
-  const setLikedPaths = useLibrary((s) => s.setLikedPaths)
+  const setAudioMarks = useLibrary((s) => s.setAudioMarks)
   const setBulkTrackInfo = useLibrary((s) => s.setBulkTrackInfo)
   const setHydrated = useLibrary((s) => s.setHydrated)
   const hydrated = useLibrary((s) => s.hydrated)
@@ -57,7 +57,13 @@ export function PlayerRoute(): React.JSX.Element {
       setLastAudioPositions(positions)
       if (state.selectedCollectionId) selectCollection(state.selectedCollectionId)
       if (state.lastAudioPath) selectAudio(state.lastAudioPath)
-      if (state.likedPaths) setLikedPaths(state.likedPaths)
+      const legacyStarPaths = Object.keys(state.likedPaths ?? {})
+      const legacyStars = Object.fromEntries(legacyStarPaths.map((path) => [path, 'star' as const]))
+      const audioMarks = { ...legacyStars, ...(state.audioMarks ?? {}) }
+      setAudioMarks(audioMarks)
+      if (legacyStarPaths.length > 0) {
+        void window.soundbox.setState({ audioMarks, likedPaths: {} })
+      }
       setHydrated(true)
     })()
   }, [
@@ -66,7 +72,7 @@ export function PlayerRoute(): React.JSX.Element {
     setLastAudioPositions,
     selectCollection,
     selectAudio,
-    setLikedPaths,
+    setAudioMarks,
     setBulkTrackInfo,
     setHydrated
   ])
@@ -92,9 +98,12 @@ export function PlayerRoute(): React.JSX.Element {
         useLibrary.setState({ selectedCollectionId: state.selectedCollectionId })
       }
       if (state.lastAudioPath !== previous.selectedAudio) selectAudio(state.lastAudioPath)
-      if (state.likedPaths) setLikedPaths(state.likedPaths)
+      const legacyStars = Object.fromEntries(
+        Object.keys(state.likedPaths ?? {}).map((path) => [path, 'star' as const])
+      )
+      setAudioMarks({ ...legacyStars, ...(state.audioMarks ?? {}) })
     })
-  }, [setCollections, setLastAudioByCollection, selectAudio, setLikedPaths])
+  }, [setCollections, setLastAudioByCollection, selectAudio, setAudioMarks])
 
   useEffect(() => {
     if (isSearchOpen) searchInputRef.current?.focus()

@@ -1,4 +1,6 @@
 import { create } from 'zustand'
+import type { AudioMark } from '../../../preload/soundbox'
+import { nextAudioMark } from '@/lib/audio-mark'
 
 export type MainView = 'list' | 'folders' | 'lyrics'
 
@@ -9,13 +11,13 @@ export type CoverPanelView = 'cover' | 'lyrics' | 'hidden'
 type UIState = {
   isSearchOpen: boolean
   searchQuery: string
-  showStarredOnly: boolean
+  markFilter: AudioMark | null
   mainView: MainView
   fullPlayer: boolean
   coverPanelView: CoverPanelView
   setIsSearchOpen: (open: boolean) => void
   setSearchQuery: (query: string) => void
-  toggleStarredOnly: () => void
+  cycleMarkFilter: () => void
   setMainView: (view: MainView) => void
   toggleFoldersView: () => void
   toggleLyricsView: () => void
@@ -28,13 +30,13 @@ type UIState = {
 export const useUI = create<UIState>((set) => ({
   isSearchOpen: false,
   searchQuery: '',
-  showStarredOnly: false,
+  markFilter: null,
   mainView: 'list',
   fullPlayer: false,
   coverPanelView: 'cover',
   setIsSearchOpen: (isSearchOpen) => set({ isSearchOpen, searchQuery: isSearchOpen ? '' : '' }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
-  toggleStarredOnly: () => set((s) => ({ showStarredOnly: !s.showStarredOnly })),
+  cycleMarkFilter: () => set((s) => ({ markFilter: nextAudioMark(s.markFilter) })),
   setMainView: (mainView) => set({ mainView }),
   toggleFoldersView: () =>
     set((s) => ({ mainView: s.mainView === 'folders' ? 'list' : 'folders' })),

@@ -3,6 +3,7 @@ import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 
 export type CollectionType = 'Music' | 'Audio Book'
+export type AudioMark = 'star' | 'triangle' | 'circle' | 'square'
 export type Collection = {
   id: string
   title: string
@@ -19,6 +20,8 @@ export type AppState = {
   lastAudioPositionMs?: number
   lastAudioPositions?: Record<string, number>
   lastAudioByCollection?: Record<string, string>
+  audioMarks?: Record<string, AudioMark>
+  // Legacy star-only data. Kept so existing libraries can migrate in the renderer.
   likedPaths?: Record<string, number>
   // Bounds for list mode.
   windowBounds?: {
@@ -42,7 +45,8 @@ const DEFAULT: AppState = {
   lastAudioPath: null,
   lastAudioPositionMs: 0,
   lastAudioPositions: {},
-  lastAudioByCollection: {}
+  lastAudioByCollection: {},
+  audioMarks: {}
 }
 
 let cached: AppState | null = null
