@@ -11,12 +11,8 @@ export function AudioPlayer(): React.JSX.Element {
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const selectedAudio = useLibrary((s) => s.selectedAudio)
-  const collections = useLibrary((s) => s.collections)
-  const selectedCollectionId = useLibrary((s) => s.selectedCollectionId)
   const selectAudio = useLibrary((s) => s.selectAudio)
   const orderedPaths = useLibrary((s) => s.orderedPaths)
-
-  const activeCollection = collections.find((c) => c.id === selectedCollectionId)
 
   const isPlaying = usePlayer((s) => s.isPlaying)
   const setPlaying = usePlayer((s) => s.setPlaying)
@@ -128,29 +124,15 @@ export function AudioPlayer(): React.JSX.Element {
 
   const onNext = useCallback(
     (forcePlay = false): void => {
-      // Navigate the visible (sorted + filtered) order the user sees.
-      let list = orderedPaths.length > 0 ? orderedPaths : (activeCollection?.items ?? [])
-      let idx = selectedAudio ? list.indexOf(selectedAudio) : -1
-
-      // Fall back to the raw collection order if the current track isn't visible.
-      if (idx === -1 && selectedAudio) {
-        list = activeCollection?.items ?? []
-        idx = list.indexOf(selectedAudio)
+      // orderedPaths is the sorted list after search and mark filters are applied.
+      // Never fall back to the raw collection: hidden tracks are outside the
+      // active playback list.
+      const list = orderedPaths
+      if (list.length === 0) {
+        if (forcePlay) setPlaying(false)
+        return
       }
-
-      // If still not found, search other collections.
-      if (idx === -1 && selectedAudio) {
-        for (const c of collections) {
-          const i = c.items.indexOf(selectedAudio)
-          if (i !== -1) {
-            list = c.items
-            idx = i
-            break
-          }
-        }
-      }
-
-      if (idx === -1 || list.length === 0) return
+      const idx = selectedAudio ? list.indexOf(selectedAudio) : -1
 
       let nextIdx: number
       if (shuffle) {
@@ -158,6 +140,9 @@ export function AudioPlayer(): React.JSX.Element {
         if (nextIdx === idx && list.length > 1) {
           nextIdx = (nextIdx + 1) % list.length
         }
+      } else if (idx === -1) {
+        // The current track was filtered out. Enter the visible list at its start.
+        nextIdx = 0
       } else {
         nextIdx = idx + 1
         if (nextIdx >= list.length) {
@@ -184,48 +169,21 @@ export function AudioPlayer(): React.JSX.Element {
         setPlaying(true)
       }
     },
-    [
-      orderedPaths,
-      activeCollection,
-      collections,
-      selectedAudio,
-      shuffle,
-      loopMode,
-      isPlaying,
-      selectAudio,
-      setPlaying
-    ]
+    [orderedPaths, selectedAudio, shuffle, loopMode, isPlaying, selectAudio, setPlaying]
   )
 
   const onPrev = useCallback((): void => {
+    const list = orderedPaths
+    const idx = selectedAudio ? list.indexOf(selectedAudio) : -1
     const audio = audioRef.current
-    if (audio && audio.currentTime > 3) {
+    if (idx !== -1 && audio && audio.currentTime > 3) {
       audio.currentTime = 0
       setCurrentTimeMs(0)
       if (selectedAudio) saveAudioPosition(selectedAudio, 0)
       return
     }
 
-    let list = orderedPaths.length > 0 ? orderedPaths : (activeCollection?.items ?? [])
-    let idx = selectedAudio ? list.indexOf(selectedAudio) : -1
-
-    if (idx === -1 && selectedAudio) {
-      list = activeCollection?.items ?? []
-      idx = list.indexOf(selectedAudio)
-    }
-
-    if (idx === -1 && selectedAudio) {
-      for (const c of collections) {
-        const i = c.items.indexOf(selectedAudio)
-        if (i !== -1) {
-          list = c.items
-          idx = i
-          break
-        }
-      }
-    }
-
-    if (idx === -1 || list.length === 0) return
+    if (list.length === 0) return
 
     let prevIdx: number
     if (shuffle) {
@@ -233,6 +191,9 @@ export function AudioPlayer(): React.JSX.Element {
       if (prevIdx === idx && list.length > 1) {
         prevIdx = (prevIdx + 1) % list.length
       }
+    } else if (idx === -1) {
+      // The current track was filtered out. Enter the visible list at its end.
+      prevIdx = list.length - 1
     } else {
       prevIdx = (idx - 1 + list.length) % list.length
     }
@@ -246,8 +207,6 @@ export function AudioPlayer(): React.JSX.Element {
     }
   }, [
     orderedPaths,
-    activeCollection,
-    collections,
     selectedAudio,
     shuffle,
     isPlaying,
@@ -375,7 +334,7 @@ export function AudioPlayer(): React.JSX.Element {
           if (selectedAudio) {
             saveAudioPosition(selectedAudio, 0)
           }
-          if (loopMode === 'one') {
+          if (loopMode === 'one' && orderedPaths.includes(selectedAudio ?? '')) {
             const a = audioRef.current
             if (a) {
               a.currentTime = 0
