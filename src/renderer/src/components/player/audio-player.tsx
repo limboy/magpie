@@ -229,7 +229,10 @@ export function AudioPlayer(): React.JSX.Element {
       switch (e.key) {
         case ' ':
           e.preventDefault()
-          setPlaying(!isPlaying)
+          if (!e.repeat) {
+            const player = usePlayer.getState()
+            player.setPlaying(!player.isPlaying)
+          }
           break
         case ',':
         case '<':
@@ -290,7 +293,7 @@ export function AudioPlayer(): React.JSX.Element {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isPlaying, setPlaying, onPrev, onNext, selectedAudio])
+  }, [onPrev, onNext, selectedAudio])
 
   useEffect(() => {
     if ('mediaSession' in navigator && selectedAudio) {
