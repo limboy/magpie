@@ -3,6 +3,16 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [Unreleased](https://github.com/limboy/magpie/compare/v1.7.2...HEAD)
+
+### Documentation
+
+- update CHANGELOG for v1.7.2 ([51ad04c](https://github.com/limboy/magpie/commit/51ad04c297bb020787775764b4090f3202e785e2))
+
+### Other Changes
+
+- Prevent spacebar conflicts in audio player ([5e1b327](https://github.com/limboy/magpie/commit/5e1b327e6d7ae7d6120ac62b5a60a574cc29c64f))
+
 ## [v1.7.2](https://github.com/limboy/magpie/compare/v1.7.1...v1.7.2) - 2026-08-19
 
 ### Documentation

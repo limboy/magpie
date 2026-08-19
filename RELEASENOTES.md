@@ -1,9 +1,9 @@
 ### Documentation
 
-- update CHANGELOG for v1.7.1 ([7e5918a](https://github.com/limboy/magpie/commit/7e5918a95d4301d350b20fde86936d633d694ddc))
+- update CHANGELOG for v1.7.2 ([51ad04c](https://github.com/limboy/magpie/commit/51ad04c297bb020787775764b4090f3202e785e2))
 
 ### Other Changes
 
-- Prevent repeated spacebar toggles in audio player ([0d54908](https://github.com/limboy/magpie/commit/0d54908bdf6e0e63dcf7af84d8542aa6b7b54c93))
+- Prevent spacebar conflicts in audio player ([5e1b327](https://github.com/limboy/magpie/commit/5e1b327e6d7ae7d6120ac62b5a60a574cc29c64f))
 
-**Full Changelog**: https://github.com/limboy/magpie/compare/v1.7.1...v1.7.2
+**Full Changelog**: https://github.com/limboy/magpie/compare/v1.7.2...HEAD
