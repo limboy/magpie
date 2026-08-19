@@ -507,7 +507,7 @@ export function AudioList(): React.JSX.Element {
               setPlaying(true)
             }}
             onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
+              if (event.key === 'Enter') {
                 event.preventDefault()
                 setSelection({
                   collectionId: selectedCollectionId,
