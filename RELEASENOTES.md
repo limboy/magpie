@@ -6,4 +6,4 @@
 
 - Prevent repeated spacebar toggles in audio player ([0d54908](https://github.com/limboy/magpie/commit/0d54908bdf6e0e63dcf7af84d8542aa6b7b54c93))
 
-**Full Changelog**: https://github.com/limboy/magpie/compare/v1.7.1...HEAD
+**Full Changelog**: https://github.com/limboy/magpie/compare/v1.7.1...v1.7.2
