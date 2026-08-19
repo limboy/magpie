@@ -3,6 +3,16 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [Unreleased](https://github.com/limboy/magpie/compare/v1.7.1...HEAD)
+
+### Documentation
+
+- update CHANGELOG for v1.7.1 ([7e5918a](https://github.com/limboy/magpie/commit/7e5918a95d4301d350b20fde86936d633d694ddc))
+
+### Other Changes
+
+- Prevent repeated spacebar toggles in audio player ([0d54908](https://github.com/limboy/magpie/commit/0d54908bdf6e0e63dcf7af84d8542aa6b7b54c93))
+
 ## [v1.7.1](https://github.com/limboy/magpie/compare/v1.7.0...v1.7.1) - 2026-08-18
 
 ### Documentation

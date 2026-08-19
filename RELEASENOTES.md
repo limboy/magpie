@@ -1,9 +1,9 @@
 ### Documentation
 
-- update CHANGELOG for v1.7.0 ([4d48b31](https://github.com/limboy/magpie/commit/4d48b317c730f99fd2b48bb6361ef2d18f18cfeb))
+- update CHANGELOG for v1.7.1 ([7e5918a](https://github.com/limboy/magpie/commit/7e5918a95d4301d350b20fde86936d633d694ddc))
 
 ### Other Changes
 
-- Preserve line breaks in timed lyrics content ([eb51efb](https://github.com/limboy/magpie/commit/eb51efbff3a598903eeee42b0f5d02b026e6c12e))
+- Prevent repeated spacebar toggles in audio player ([0d54908](https://github.com/limboy/magpie/commit/0d54908bdf6e0e63dcf7af84d8542aa6b7b54c93))
 
-**Full Changelog**: https://github.com/limboy/magpie/compare/v1.7.0...v1.7.1
+**Full Changelog**: https://github.com/limboy/magpie/compare/v1.7.1...HEAD
