@@ -6,4 +6,4 @@
 
 - Prevent spacebar conflicts in audio player ([5e1b327](https://github.com/limboy/magpie/commit/5e1b327e6d7ae7d6120ac62b5a60a574cc29c64f))
 
-**Full Changelog**: https://github.com/limboy/magpie/compare/v1.7.2...HEAD
+**Full Changelog**: https://github.com/limboy/magpie/compare/v1.7.2...v1.7.3
