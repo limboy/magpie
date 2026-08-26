@@ -89,15 +89,28 @@ export function PlayerRoute(): React.JSX.Element {
     }
   }, [hydrated])
 
+  // The library is shared across windows (the watcher and sibling windows both
+  // push updates), but what this window is browsing and playing is its own.
+  // Selection only follows the shared state when what it pointed at is gone.
   useEffect(() => {
     return window.soundbox.onStateUpdated((state) => {
       const previous = useLibrary.getState()
       setCollections(state.collections)
       if (state.lastAudioByCollection) setLastAudioByCollection(state.lastAudioByCollection)
-      if (state.selectedCollectionId !== previous.selectedCollectionId) {
+
+      const collections = state.collections ?? []
+      const collectionGone =
+        previous.selectedCollectionId !== null &&
+        !collections.some((c) => c.id === previous.selectedCollectionId)
+      if (collectionGone) {
         useLibrary.setState({ selectedCollectionId: state.selectedCollectionId })
       }
-      if (state.lastAudioPath !== previous.selectedAudio) selectAudio(state.lastAudioPath)
+
+      const audioGone =
+        previous.selectedAudio !== null &&
+        !collections.some((c) => c.items.includes(previous.selectedAudio as string))
+      if (audioGone) selectAudio(state.lastAudioPath)
+
       const legacyStars = Object.fromEntries(
         Object.keys(state.likedPaths ?? {}).map((path) => [path, 'star' as const])
       )

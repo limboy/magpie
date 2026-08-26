@@ -1,15 +1,15 @@
 import { ipcMain, Menu, shell, BrowserWindow } from 'electron'
 import { resolve, normalize } from 'node:path'
 
-export function registerMenuIpc(getWindow: () => BrowserWindow | null): void {
+export function registerMenuIpc(): void {
   ipcMain.handle('soundbox:revealInFinder', async (_e, path: string) => {
     shell.showItemInFolder(normalize(resolve(path)))
   })
 
   ipcMain.handle(
     'soundbox:showSongContextMenu',
-    async (_e, path: string, selectedPaths: string[]) => {
-      const win = getWindow()
+    async (event, path: string, selectedPaths: string[]) => {
+      const win = BrowserWindow.fromWebContents(event.sender)
       if (!win) return
 
       const normalizedPath = normalize(resolve(path))
@@ -50,8 +50,8 @@ export function registerMenuIpc(getWindow: () => BrowserWindow | null): void {
     }
   )
 
-  ipcMain.handle('soundbox:showSidebarContextMenu', async () => {
-    const win = getWindow()
+  ipcMain.handle('soundbox:showSidebarContextMenu', async (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
     if (!win) return
 
     const menu = Menu.buildFromTemplate([
@@ -66,8 +66,8 @@ export function registerMenuIpc(getWindow: () => BrowserWindow | null): void {
     menu.popup({ window: win })
   })
 
-  ipcMain.handle('soundbox:showCollectionContextMenu', async (_e, id: string, title: string) => {
-    const win = getWindow()
+  ipcMain.handle('soundbox:showCollectionContextMenu', async (event, id: string, title: string) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
     if (!win) return
 
     const menu = Menu.buildFromTemplate([

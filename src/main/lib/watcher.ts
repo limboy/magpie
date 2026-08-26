@@ -1,9 +1,9 @@
 import { watch, FSWatcher } from 'chokidar'
-import { BrowserWindow } from 'electron'
 import { existsSync } from 'node:fs'
 import { extname, sep } from 'node:path'
 import { AppState, readState, writeState } from './store'
 import { AUDIO_EXTS, TreeNode, readTree } from './scan'
+import { broadcast } from './windows'
 
 const isMac = process.platform === 'darwin'
 const isWin = process.platform === 'win32'
@@ -28,7 +28,7 @@ let watcher: FSWatcher | null = null
 let watchedPaths = new Set<string>()
 const folderToCollections = new Map<string, string[]>()
 
-export async function setupWatcher(getWindow: () => BrowserWindow | null): Promise<void> {
+export async function setupWatcher(): Promise<void> {
   const state = await readState()
 
   if (!watcher) {
@@ -36,11 +36,11 @@ export async function setupWatcher(getWindow: () => BrowserWindow | null): Promi
       persistent: true,
       ignoreInitial: true
     })
-    setupHandlers(getWindow)
+    setupHandlers()
   }
 
   updateWatcher(state)
-  await syncWatchedFolders(getWindow)
+  await syncWatchedFolders()
 }
 
 export async function closeWatcher(): Promise<void> {
@@ -51,7 +51,7 @@ export async function closeWatcher(): Promise<void> {
   folderToCollections.clear()
 }
 
-async function syncWatchedFolders(getWindow: () => BrowserWindow | null): Promise<void> {
+async function syncWatchedFolders(): Promise<void> {
   const state = await readState()
   let changed = false
   const nextCollections = [...state.collections]
@@ -88,10 +88,7 @@ async function syncWatchedFolders(getWindow: () => BrowserWindow | null): Promis
   if (changed) {
     const nextState = await writeState({ collections: nextCollections })
     updateWatcher(nextState)
-    const win = getWindow()
-    if (win) {
-      win.webContents.send('soundbox:state-updated', nextState)
-    }
+    broadcast('soundbox:state-updated', nextState)
   }
 }
 
@@ -131,7 +128,7 @@ export function updateWatcher(state: AppState): void {
   watchedPaths = allPaths
 }
 
-function setupHandlers(getWindow: () => BrowserWindow | null): void {
+function setupHandlers(): void {
   if (!watcher) return
 
   const removedPaths = new Set<string>()
@@ -215,10 +212,7 @@ function setupHandlers(getWindow: () => BrowserWindow | null): void {
         likedPaths: nextLikedPaths
       })
       updateWatcher(nextState)
-      const win = getWindow()
-      if (win) {
-        win.webContents.send('soundbox:state-updated', nextState)
-      }
+      broadcast('soundbox:state-updated', nextState)
     }
   }
 
@@ -265,10 +259,7 @@ function setupHandlers(getWindow: () => BrowserWindow | null): void {
     if (changed) {
       const nextState = await writeState({ collections: nextCollections })
       updateWatcher(nextState)
-      const win = getWindow()
-      if (win) {
-        win.webContents.send('soundbox:state-updated', nextState)
-      }
+      broadcast('soundbox:state-updated', nextState)
     }
   })
 }

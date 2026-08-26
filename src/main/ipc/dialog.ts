@@ -1,8 +1,8 @@
 import { BrowserWindow, dialog, ipcMain } from 'electron'
 
-export function registerDialogIpc(getWindow: () => BrowserWindow | null): void {
-  ipcMain.handle('soundbox:openFolder', async () => {
-    const win = getWindow()
+export function registerDialogIpc(): void {
+  ipcMain.handle('soundbox:openFolder', async (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
     const opts: Electron.OpenDialogOptions = {
       title: 'Select audio folder',
       properties: ['openDirectory', 'createDirectory']
