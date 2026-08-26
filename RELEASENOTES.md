@@ -14,4 +14,4 @@
 
 - update CHANGELOG for v1.7.3 ([e1ab9ea](https://github.com/limboy/magpie/commit/e1ab9eaddbc0aaab4c93e159c3ded40e6c3d74c8))
 
-**Full Changelog**: https://github.com/limboy/magpie/compare/v1.7.3...HEAD
+**Full Changelog**: https://github.com/limboy/magpie/compare/v1.7.3...v1.8.0
