@@ -21,18 +21,20 @@ export function setupApplicationMenu(onNewWindow: () => void): void {
       ]
     },
     { role: 'editMenu' },
-    ...(is.dev
-      ? [
-          {
-            label: 'View',
-            submenu: [
+    {
+      label: 'View',
+      submenu: [
+        ...(is.dev
+          ? ([
               { role: 'reload' },
               { role: 'forceReload' },
-              { role: 'toggleDevTools' }
-            ] as MenuItemConstructorOptions[]
-          }
-        ]
-      : []),
+              { role: 'toggleDevTools' },
+              { type: 'separator' }
+            ] as MenuItemConstructorOptions[])
+          : []),
+        { role: 'togglefullscreen' }
+      ]
+    },
     { role: 'windowMenu' }
   ]
 
