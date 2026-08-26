@@ -66,7 +66,8 @@ export function CompactBar({ audioRef, selectedAudio, onPrev, onNext }: Props): 
             shuffle ? 'text-primary' : 'text-muted-foreground/70 hover:text-foreground'
           )}
           onClick={toggleShuffle}
-          title="Shuffle"
+          aria-label={shuffle ? 'Disable shuffle' : 'Enable shuffle'}
+          aria-pressed={shuffle}
         >
           <Shuffle className="h-4 w-4" strokeWidth={2} />
           {shuffle && (
@@ -80,7 +81,7 @@ export function CompactBar({ audioRef, selectedAudio, onPrev, onNext }: Props): 
           className="h-9 w-9 text-foreground hover:bg-transparent active:scale-90"
           onClick={onPrev}
           disabled={!selectedAudio}
-          title="Previous"
+          aria-label="Previous song"
         >
           <SkipBack className="h-5 w-5 fill-current" />
         </Button>
@@ -90,7 +91,7 @@ export function CompactBar({ audioRef, selectedAudio, onPrev, onNext }: Props): 
           className="h-9 w-9 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all active:scale-95 shadow-lg"
           onClick={toggle}
           disabled={!selectedAudio}
-          title={isPlaying ? 'Pause' : 'Play'}
+          aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? (
             <Pause className="h-6 w-6 fill-current" />
@@ -105,7 +106,7 @@ export function CompactBar({ audioRef, selectedAudio, onPrev, onNext }: Props): 
           className="h-9 w-9 text-foreground hover:bg-transparent active:scale-90"
           onClick={onNext}
           disabled={!selectedAudio}
-          title="Next"
+          aria-label="Next song"
         >
           <SkipForward className="h-5 w-5 fill-current" />
         </Button>
@@ -118,9 +119,10 @@ export function CompactBar({ audioRef, selectedAudio, onPrev, onNext }: Props): 
             loopMode !== 'off' ? 'text-primary' : 'text-muted-foreground/70 hover:text-foreground'
           )}
           onClick={toggleLoop}
-          title={
-            loopMode === 'one' ? 'Repeat One' : loopMode === 'all' ? 'Repeat All' : 'Repeat Off'
+          aria-label={
+            loopMode === 'one' ? 'Repeat one' : loopMode === 'all' ? 'Repeat all' : 'Repeat off'
           }
+          aria-pressed={loopMode !== 'off'}
         >
           {loopMode === 'one' ? (
             <Repeat1 className="h-4 w-4" strokeWidth={2} />
@@ -158,7 +160,7 @@ function LyricsButton(): React.JSX.Element {
         lyricsOpen ? 'text-primary' : 'text-muted-foreground/60 hover:text-foreground'
       )}
       onClick={toggleLyricsView}
-      title="Lyrics"
+      aria-label={lyricsOpen ? 'Hide lyrics' : 'Show lyrics'}
       aria-pressed={lyricsOpen}
     >
       <MessageSquareQuote className="h-4.5 w-4.5" strokeWidth={2} />
@@ -200,7 +202,7 @@ export function CycleVolumeButton(): React.JSX.Element {
       variant="ghost"
       className="h-8 w-8 text-muted-foreground/60 transition-colors hover:text-foreground"
       onClick={cycle}
-      title={`Volume ${Math.round(effective * 100)}%`}
+      aria-label={`Volume ${Math.round(effective * 100)}%`}
     >
       <Icon className="h-4.5 w-4.5" strokeWidth={2} />
     </Button>
@@ -238,7 +240,6 @@ function NowPlaying({ selectedAudio }: { selectedAudio: string | null }): React.
           type="button"
           className="group/cover relative size-8 shrink-0 overflow-hidden rounded-md bg-muted"
           onClick={toggleFullPlayer}
-          title="Full player"
           aria-label="Full player"
         >
           {cover ? (
@@ -272,7 +273,6 @@ function NowPlaying({ selectedAudio }: { selectedAudio: string | null }): React.
           onClick={() => selectedAudio && cycleAudioMark(selectedAudio)}
           disabled={!selectedAudio}
           aria-label={`${audioMarkLabel(mark)} song; click for ${audioMarkLabel(nextAudioMark(mark))}`}
-          title={`${audioMarkLabel(mark)} · Next: ${audioMarkLabel(nextAudioMark(mark))}`}
         >
           <AudioMarkIcon mark={mark} className="h-4 w-4" />
         </button>

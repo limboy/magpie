@@ -35,7 +35,6 @@ export function UpdateIndicator(): React.JSX.Element | null {
       disabled={applying}
       onClick={handleApply}
       aria-label={applying ? 'Applying update' : `Apply update ${updateVersion}`}
-      title={applying ? 'Applying update…' : `Apply update ${updateVersion}`}
     >
       {applying ? 'Updating…' : 'Update'}
     </Button>

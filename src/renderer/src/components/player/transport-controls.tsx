@@ -73,7 +73,6 @@ export function TransportControls({
             onClick={onPrev}
             disabled={!selectedAudio}
             aria-label="Previous song"
-            title="Previous"
           >
             <SkipBack className="size-4.5 fill-current" />
           </Button>
@@ -83,7 +82,6 @@ export function TransportControls({
             onClick={togglePlayback}
             disabled={!selectedAudio}
             aria-label={isPlaying ? 'Pause' : 'Play'}
-            title={isPlaying ? 'Pause' : 'Play'}
           >
             {isPlaying ? (
               <Pause className="size-5 fill-current" />
@@ -98,7 +96,6 @@ export function TransportControls({
             onClick={onNext}
             disabled={!selectedAudio}
             aria-label="Next song"
-            title="Next"
           >
             <SkipForward className="size-4.5 fill-current" />
           </Button>
@@ -217,7 +214,6 @@ function ShuffleButton(): React.JSX.Element {
       onClick={() => setShuffle(!shuffle)}
       aria-label={shuffle ? 'Disable shuffle' : 'Enable shuffle'}
       aria-pressed={shuffle}
-      title={shuffle ? 'Shuffle on' : 'Shuffle off'}
     >
       <Shuffle className="size-4" />
       {shuffle && (
@@ -250,7 +246,6 @@ function RepeatModeButton(): React.JSX.Element {
       onClick={cycleRepeat}
       aria-label={`${label}; click to switch repeat mode`}
       aria-pressed={loopMode !== 'off'}
-      title={label}
     >
       <Icon className="size-4" />
       {loopMode !== 'off' && (
@@ -276,7 +271,6 @@ function ToggleCoverButton(): React.JSX.Element {
       onClick={toggleCoverPanelCover}
       aria-label={active ? 'Hide cover art' : 'Show cover art'}
       aria-pressed={active}
-      title={active ? 'Hide cover' : 'Show cover'}
     >
       <Image className="size-4" />
     </Button>
@@ -301,7 +295,6 @@ function LyricsButton(): React.JSX.Element {
       onClick={toggleCoverPanelLyrics}
       aria-label={active ? 'Hide lyrics' : 'Show lyrics'}
       aria-pressed={active}
-      title={active ? 'Hide lyrics' : 'Show lyrics'}
     >
       <MessageSquareQuote className="size-4" />
     </Button>
@@ -329,7 +322,6 @@ function SeekButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={`${direction === 'back' ? 'Back' : 'Forward'} ${seconds} seconds`}
-      title={`${direction === 'back' ? 'Back' : 'Forward'} ${seconds} seconds`}
     >
       <Icon className="size-4.5" strokeWidth={1.8} />
       <span className="pointer-events-none absolute inset-0 flex items-center justify-center pt-px text-[7px] font-semibold tabular-nums">

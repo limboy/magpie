@@ -152,7 +152,6 @@ export function PlayerRoute(): React.JSX.Element {
                 className="size-7"
                 onClick={() => setIsSearchOpen(true)}
                 aria-label="Search songs"
-                title="Search"
               >
                 <Search className="size-3.5" />
               </Button>
@@ -191,7 +190,6 @@ function StatusBar(): React.JSX.Element {
           onClick={toggleFoldersView}
           aria-label={mainView === 'folders' ? 'Show playlist' : 'Show folders'}
           aria-pressed={mainView === 'folders'}
-          title="Folders"
         >
           <Folder className="size-3.5" />
         </Button>
@@ -213,7 +211,6 @@ function ThemeToggleButton(): React.JSX.Element {
       className="size-6"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-      title={isDark ? 'Light theme' : 'Dark theme'}
     >
       {isDark ? <Moon className="size-3.5" /> : <Sun className="size-3.5" />}
     </Button>

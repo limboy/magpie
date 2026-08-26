@@ -374,17 +374,12 @@ export function AudioList(): React.JSX.Element {
               className="flex h-full min-w-0 items-center gap-1 pl-3 text-left transition-colors hover:text-foreground"
               onClick={() => toggleSort('title')}
               aria-label={`Sort by title ${preferences.sort.key === 'title' && preferences.sort.direction === 'asc' ? 'descending' : 'ascending'}`}
-              title="Sort by title"
             >
               <span className="truncate">Title</span>
               <SortIndicator column="title" sort={preferences.sort} />
             </button>
             {preferences.columns.duration && (
-              <span
-                className="flex items-center justify-end pr-1"
-                aria-label="Duration"
-                title="Duration"
-              >
+              <span className="flex items-center justify-end pr-1" aria-label="Duration">
                 <Clock3 className="size-3.5" aria-hidden="true" />
               </span>
             )}
@@ -394,7 +389,6 @@ export function AudioList(): React.JSX.Element {
                 className="flex h-full items-center justify-end gap-1 pr-1 text-right transition-colors hover:text-foreground"
                 onClick={() => toggleSort('dateAdded')}
                 aria-label={`Sort by date added ${preferences.sort.key === 'dateAdded' && preferences.sort.direction === 'asc' ? 'descending' : 'ascending'}`}
-                title="Sort by date added"
               >
                 <CalendarPlus className="size-3.5" />
                 <span>Date Added</span>
@@ -415,11 +409,6 @@ export function AudioList(): React.JSX.Element {
                     : `Showing ${audioMarkLabel(markFilter)} songs; click for ${nextAudioMark(markFilter) === null ? 'all songs' : `${audioMarkLabel(nextAudioMark(markFilter))} songs`}`
                 }
                 aria-pressed={markFilter !== null}
-                title={
-                  markFilter === null
-                    ? 'All songs · Next: Star'
-                    : `${audioMarkLabel(markFilter)} only · Next: ${nextAudioMark(markFilter) === null ? 'All songs' : audioMarkLabel(nextAudioMark(markFilter))}`
-                }
               >
                 <AudioMarkIcon mark={markFilter} className="size-3.5" />
               </button>
@@ -582,7 +571,6 @@ export function AudioList(): React.JSX.Element {
                   cycleAudioMark(item.path)
                 }}
                 aria-label={`${audioMarkLabel(item.mark)} song; click for ${audioMarkLabel(nextAudioMark(item.mark))}`}
-                title={`${audioMarkLabel(item.mark)} · Next: ${audioMarkLabel(nextAudioMark(item.mark))}`}
               >
                 <AudioMarkIcon mark={item.mark} className="size-3.5" />
               </button>
