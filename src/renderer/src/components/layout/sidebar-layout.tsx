@@ -34,7 +34,10 @@ export function SidebarLayout({
   }, [width])
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground">
+    <div
+      className="flex h-screen overflow-hidden bg-background text-foreground"
+      style={{ '--sidebar-width': `${width}px` } as React.CSSProperties}
+    >
       <aside
         className="flex min-h-0 shrink-0 flex-col overflow-hidden bg-sidebar transition-[width] duration-200 ease-out motion-reduce:transition-none"
         style={{ width: open ? width : 0 }}

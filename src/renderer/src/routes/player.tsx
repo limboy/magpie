@@ -14,9 +14,10 @@ import { cn } from '@/lib/utils'
 import { useLibrary } from '@/store/library-store'
 import { useUI } from '@/store/ui-store'
 
-// How far the sidebar toggle steps right to clear the traffic lights once the
-// sidebar is collapsed and they land on the content pane's header.
-const COLLAPSED_TOGGLE_OFFSET = 80
+// The toggle clears the traffic lights while the sidebar is collapsed. Its
+// expanded position includes the sidebar's one-pixel divider.
+const COLLAPSED_TOGGLE_LEFT = 88
+const EXPANDED_TOGGLE_GAP = 9
 
 export function PlayerRoute(): React.JSX.Element {
   const setCollections = useLibrary((s) => s.setCollections)
@@ -186,16 +187,16 @@ function ContentHeader(): React.JSX.Element {
 
   return (
     <header className="app-drag relative flex h-10 shrink-0 items-center justify-center border-b bg-muted/35">
-      {/* Collapsing the sidebar puts the traffic lights on this strip, so the
-          toggle steps aside to clear them. The header's own left edge is
-          sliding at the same time, so the shift has to run on the same 200ms
-          curve — snapping it would fling the button across before it settled.
-          The offset is a literal transform rather than a translate-x utility:
-          those resolve through a `syntax: "*"` custom property, which browsers
-          cannot interpolate, so the utility would snap however it's timed. */}
+      {/* Keep the toggle in viewport coordinates while the sidebar animates.
+          Animating it relative to this moving header combines two transitions
+          and can briefly send it left when the sidebar starts opening. */}
       <div
-        className="app-no-drag absolute left-2 top-1/2 transition-transform duration-200 ease-out motion-reduce:transition-none"
-        style={{ transform: `translate(${sidebarOpen ? 0 : COLLAPSED_TOGGLE_OFFSET}px, -50%)` }}
+        className="app-no-drag fixed top-5 z-40 -translate-y-1/2 transition-[left] duration-200 ease-out motion-reduce:transition-none"
+        style={{
+          left: sidebarOpen
+            ? `calc(var(--sidebar-width) + ${EXPANDED_TOGGLE_GAP}px)`
+            : COLLAPSED_TOGGLE_LEFT
+        }}
       >
         <Button
           size="icon"
