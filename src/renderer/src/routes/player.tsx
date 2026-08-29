@@ -9,6 +9,7 @@ import { AudioPlayer } from '@/components/player/audio-player'
 import { LyricsView } from '@/components/player/lyrics-view'
 import { UpdateIndicator } from '@/components/update-indicator'
 import { basename } from '@/lib/audio-extensions'
+import { createCollectionFromFolder } from '@/lib/collections'
 import { cn } from '@/lib/utils'
 import { useLibrary } from '@/store/library-store'
 import { useUI } from '@/store/ui-store'
@@ -114,8 +115,7 @@ export function PlayerRoute(): React.JSX.Element {
       open={sidebarOpen}
       sidebar={
         <>
-          {/* Clears the traffic lights and keeps the window draggable here. */}
-          <div className="app-drag h-10 shrink-0 border-b" />
+          <SidebarHeader />
           <FileTree onSelectCollection={() => setMainView('list')} />
         </>
       }
@@ -126,6 +126,39 @@ export function PlayerRoute(): React.JSX.Element {
         </>
       }
     />
+  )
+}
+
+// Clears the traffic lights and keeps the window draggable here; the
+// add-folder button sits on the far right, well away from them.
+function SidebarHeader(): React.JSX.Element {
+  const [isPicking, setIsPicking] = useState(false)
+
+  const handleAddFolder = async (): Promise<void> => {
+    if (isPicking) return
+    setIsPicking(true)
+    try {
+      const path = await window.soundbox.openFolder()
+      if (path) await createCollectionFromFolder(path)
+    } finally {
+      setIsPicking(false)
+    }
+  }
+
+  return (
+    <div className="app-drag flex h-10 shrink-0 items-center justify-end border-b px-2">
+      <Button
+        size="icon"
+        variant="ghost"
+        className="app-no-drag size-7"
+        onClick={() => void handleAddFolder()}
+        disabled={isPicking}
+        aria-label="Add folder as collection"
+        title="Add folder as collection"
+      >
+        <FolderPlus className="size-3.5" />
+      </Button>
+    </div>
   )
 }
 

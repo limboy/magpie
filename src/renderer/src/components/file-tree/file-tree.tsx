@@ -1,10 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Folder, FolderPlus } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { basename } from '@/lib/audio-extensions'
+import { createCollectionFromFolder } from '@/lib/collections'
 import { useLibrary } from '@/store/library-store'
 import { usePlayer } from '@/store/player-store'
-import type { TreeNode } from '../../../../preload/soundbox'
 
 export function FileTree({
   onSelectCollection
@@ -16,7 +15,6 @@ export function FileTree({
     selectedCollectionId,
     selectCollection,
     addCollection,
-    addCollectionWithItems,
     updateCollectionTitle,
     deleteCollection
   } = useLibrary()
@@ -110,36 +108,24 @@ export function FileTree({
     e.preventDefault()
   }, [])
 
-  const handleDrop = useCallback(
-    async (e: React.DragEvent): Promise<void> => {
-      e.preventDefault()
-      e.stopPropagation()
-      dragCounter.current = 0
-      setIsDragOver(false)
+  const handleDrop = useCallback(async (e: React.DragEvent): Promise<void> => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounter.current = 0
+    setIsDragOver(false)
 
-      const files = Array.from(e.dataTransfer.files)
+    const files = Array.from(e.dataTransfer.files)
 
-      for (const file of files) {
-        const path = window.soundbox.getPathForFile(file)
-        if (!path) continue
-        const info = await window.soundbox.getPathInfo(path)
-        if (!info?.isDirectory) continue // only folders create collections
+    for (const file of files) {
+      const path = window.soundbox.getPathForFile(file)
+      if (!path) continue
+      const info = await window.soundbox.getPathInfo(path)
+      if (!info?.isDirectory) continue // only folders create collections
 
-        const tree = await window.soundbox.readTree(path)
-        const paths: string[] = []
-        const flatten = (n: TreeNode): void => {
-          if (n.kind === 'audio') paths.push(n.path)
-          else n.children.forEach(flatten)
-        }
-        flatten(tree)
-        if (paths.length === 0) continue
-
-        // Creates the collection (named after the folder) and selects it.
-        addCollectionWithItems(basename(path), paths, [path])
-      }
-    },
-    [addCollectionWithItems]
-  )
+      // Creates the collection (named after the folder) and selects it.
+      await createCollectionFromFolder(path)
+    }
+  }, [])
 
   return (
     <div
