@@ -12,7 +12,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 
 const rootRoute = createRootRoute({
   component: () => (
-    <ThemeProvider defaultTheme="system" storageKey="soundbox-ui-theme">
+    <ThemeProvider>
       <TooltipProvider delayDuration={300}>
         <Outlet />
       </TooltipProvider>

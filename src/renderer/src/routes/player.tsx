@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { Folder, FolderPlus, Moon, Search, Sun, X } from 'lucide-react'
+import { FolderPlus, PanelLeft, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { FileTree } from '@/components/file-tree/file-tree'
+import { SidebarLayout } from '@/components/layout/sidebar-layout'
 import { AudioList } from '@/components/player/audio-list'
 import { AudioPlayer } from '@/components/player/audio-player'
 import { LyricsView } from '@/components/player/lyrics-view'
@@ -11,7 +12,10 @@ import { basename } from '@/lib/audio-extensions'
 import { cn } from '@/lib/utils'
 import { useLibrary } from '@/store/library-store'
 import { useUI } from '@/store/ui-store'
-import { useTheme } from '@/hooks/use-theme'
+
+// How far the sidebar toggle steps right to clear the traffic lights once the
+// sidebar is collapsed and they land on the content pane's header.
+const COLLAPSED_TOGGLE_OFFSET = 80
 
 export function PlayerRoute(): React.JSX.Element {
   const setCollections = useLibrary((s) => s.setCollections)
@@ -23,21 +27,8 @@ export function PlayerRoute(): React.JSX.Element {
   const setBulkTrackInfo = useLibrary((s) => s.setBulkTrackInfo)
   const setHydrated = useLibrary((s) => s.setHydrated)
   const hydrated = useLibrary((s) => s.hydrated)
-  const selectedAudio = useLibrary((s) => s.selectedAudio)
-  const trackMeta = useLibrary((s) => s.trackMeta)
-
-  const isSearchOpen = useUI((s) => s.isSearchOpen)
-  const searchQuery = useUI((s) => s.searchQuery)
-  const setIsSearchOpen = useUI((s) => s.setIsSearchOpen)
-  const setSearchQuery = useUI((s) => s.setSearchQuery)
-  const searchInputRef = useRef<HTMLInputElement>(null)
-  const metadata = selectedAudio ? trackMeta[selectedAudio] : null
-  const windowTitle = selectedAudio
-    ? metadata?.title && metadata.title !== 'Unknown'
-      ? metadata.title
-      : basename(selectedAudio)
-    : 'Magpie'
-
+  const sidebarOpen = useUI((s) => s.sidebarOpen)
+  const setMainView = useUI((s) => s.setMainView)
   useEffect(() => {
     void (async () => {
       const state = await window.soundbox.getState()
@@ -118,115 +109,118 @@ export function PlayerRoute(): React.JSX.Element {
     })
   }, [setCollections, setLastAudioByCollection, selectAudio, setAudioMarks])
 
+  return (
+    <SidebarLayout
+      open={sidebarOpen}
+      sidebar={
+        <>
+          {/* Clears the traffic lights and keeps the window draggable here. */}
+          <div className="app-drag h-10 shrink-0 border-b" />
+          <FileTree onSelectCollection={() => setMainView('list')} />
+        </>
+      }
+      content={
+        <>
+          <ContentHeader />
+          <PlayerCenter />
+        </>
+      }
+    />
+  )
+}
+
+function ContentHeader(): React.JSX.Element {
+  const selectedAudio = useLibrary((s) => s.selectedAudio)
+  const trackMeta = useLibrary((s) => s.trackMeta)
+  const sidebarOpen = useUI((s) => s.sidebarOpen)
+  const toggleSidebar = useUI((s) => s.toggleSidebar)
+  const isSearchOpen = useUI((s) => s.isSearchOpen)
+  const searchQuery = useUI((s) => s.searchQuery)
+  const setIsSearchOpen = useUI((s) => s.setIsSearchOpen)
+  const setSearchQuery = useUI((s) => s.setSearchQuery)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
   useEffect(() => {
     if (isSearchOpen) searchInputRef.current?.focus()
   }, [isSearchOpen])
 
-  return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <div className="flex flex-1 min-w-0 flex-col">
-        <header className="app-drag relative flex h-10 shrink-0 items-center justify-center border-b bg-muted/35">
-          <span
-            className={cn(
-              'max-w-[50%] truncate text-[11px] font-medium tracking-wide text-muted-foreground/70',
-              isSearchOpen && 'invisible'
-            )}
-          >
-            {windowTitle}
-          </span>
-          <div className="app-no-drag absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
-            {isSearchOpen ? (
-              <div className="flex h-7 items-center rounded-md border bg-background/80 px-2 shadow-xs">
-                <Search className="mr-1.5 size-3.5 text-muted-foreground" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search songs…"
-                  className="w-36 bg-transparent text-xs outline-none placeholder:text-muted-foreground/60"
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Escape') setIsSearchOpen(false)
-                  }}
-                />
-                <button
-                  type="button"
-                  className="ml-1 text-muted-foreground hover:text-foreground"
-                  onClick={() => setIsSearchOpen(false)}
-                  aria-label="Close search"
-                >
-                  <X className="size-3.5" />
-                </button>
-              </div>
-            ) : (
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-7"
-                onClick={() => setIsSearchOpen(true)}
-                aria-label="Search songs"
-              >
-                <Search className="size-3.5" />
-              </Button>
-            )}
-          </div>
-        </header>
-
-        <div className="flex min-h-0 flex-1">
-          <PlayerCenter />
-        </div>
-        <StatusBar />
-      </div>
-    </div>
-  )
-}
-
-function StatusBar(): React.JSX.Element {
-  const mainView = useUI((s) => s.mainView)
-  const toggleFoldersView = useUI((s) => s.toggleFoldersView)
+  const metadata = selectedAudio ? trackMeta[selectedAudio] : null
+  const windowTitle = selectedAudio
+    ? metadata?.title && metadata.title !== 'Unknown'
+      ? metadata.title
+      : basename(selectedAudio)
+    : 'Magpie'
 
   return (
-    <footer className="grid h-8 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center border-t bg-muted/55 px-1.5 text-[11px] text-muted-foreground backdrop-blur-xl">
-      <div className="flex items-center gap-1 justify-self-start">
-        <ThemeToggleButton />
-      </div>
-
-      <div className="justify-self-center">
-        <UpdateIndicator />
-      </div>
-
-      <div className="flex items-center gap-1 justify-self-end">
+    <header className="app-drag relative flex h-10 shrink-0 items-center justify-center border-b bg-muted/35">
+      {/* Collapsing the sidebar puts the traffic lights on this strip, so the
+          toggle steps aside to clear them. The header's own left edge is
+          sliding at the same time, so the shift has to run on the same 200ms
+          curve — snapping it would fling the button across before it settled.
+          The offset is a literal transform rather than a translate-x utility:
+          those resolve through a `syntax: "*"` custom property, which browsers
+          cannot interpolate, so the utility would snap however it's timed. */}
+      <div
+        className="app-no-drag absolute left-2 top-1/2 transition-transform duration-200 ease-out motion-reduce:transition-none"
+        style={{ transform: `translate(${sidebarOpen ? 0 : COLLAPSED_TOGGLE_OFFSET}px, -50%)` }}
+      >
         <Button
           size="icon"
           variant="ghost"
-          className={cn('size-6', mainView === 'folders' && 'bg-accent text-foreground')}
-          onClick={toggleFoldersView}
-          aria-label={mainView === 'folders' ? 'Show playlist' : 'Show folders'}
-          aria-pressed={mainView === 'folders'}
+          className="size-7"
+          onClick={toggleSidebar}
+          aria-label={sidebarOpen ? 'Hide collections' : 'Show collections'}
+          aria-pressed={sidebarOpen}
         >
-          <Folder className="size-3.5" />
+          <PanelLeft className="size-3.5" />
         </Button>
       </div>
-    </footer>
-  )
-}
-
-// Reflects the resolved (light/dark) appearance and toggles between the two.
-// The initial value comes from the OS preference (theme defaults to 'system').
-function ThemeToggleButton(): React.JSX.Element {
-  const { resolvedTheme, setTheme } = useTheme()
-  const isDark = resolvedTheme === 'dark'
-
-  return (
-    <Button
-      size="icon"
-      variant="ghost"
-      className="size-6"
-      onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-    >
-      {isDark ? <Moon className="size-3.5" /> : <Sun className="size-3.5" />}
-    </Button>
+      <span
+        className={cn(
+          'max-w-[50%] truncate text-[11px] font-medium tracking-wide text-muted-foreground/70',
+          isSearchOpen && 'invisible'
+        )}
+      >
+        {windowTitle}
+      </span>
+      <div className="app-no-drag absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
+        <UpdateIndicator />
+        {isSearchOpen ? (
+          <div className="flex h-7 items-center rounded-md border bg-background/80 px-2 shadow-xs">
+            <Search className="mr-1.5 size-3.5 text-muted-foreground" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search songs…"
+              className="w-36 bg-transparent text-xs outline-none placeholder:text-muted-foreground/60"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') setIsSearchOpen(false)
+              }}
+            />
+            <button
+              type="button"
+              className="ml-1 text-muted-foreground hover:text-foreground"
+              onClick={() => setIsSearchOpen(false)}
+              aria-label="Close search"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
+        ) : (
+          <Button
+            size="icon"
+            variant="ghost"
+            className="size-7"
+            onClick={() => setIsSearchOpen(true)}
+            aria-label="Search songs"
+          >
+            <Search className="size-3.5" />
+          </Button>
+        )}
+      </div>
+    </header>
   )
 }
 
@@ -235,7 +229,6 @@ function PlayerCenter(): React.JSX.Element {
   const addItemsToSelectedCollection = useLibrary((s) => s.addItemsToSelectedCollection)
   const addCollectionWithItems = useLibrary((s) => s.addCollectionWithItems)
   const mainView = useUI((s) => s.mainView)
-  const setMainView = useUI((s) => s.setMainView)
   const [isDragOver, setIsDragOver] = useState(false)
   const dragCounter = useRef(0)
 
@@ -302,8 +295,7 @@ function PlayerCenter(): React.JSX.Element {
     }
   }
 
-  // The folders view brings its own drop target, and lyrics accepts none —
-  // only the playlist wires up the drop handlers below.
+  // Lyrics accept no drops — only the playlist wires up the handlers below.
   const dropHandlers =
     mainView === 'list'
       ? {
@@ -318,9 +310,7 @@ function PlayerCenter(): React.JSX.Element {
     <main className="relative flex min-h-0 min-w-0 flex-1 flex-col" {...dropHandlers}>
       <AudioPlayer />
       <div className="relative flex min-h-0 flex-1 flex-col">
-        {mainView === 'folders' ? (
-          <FileTree onSelectCollection={() => setMainView('list')} />
-        ) : mainView === 'lyrics' ? (
+        {mainView === 'lyrics' ? (
           <LyricsView />
         ) : (
           <ScrollArea className="min-h-0 flex-1 bg-background">

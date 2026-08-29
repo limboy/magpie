@@ -49,17 +49,19 @@ export function TransportControls({
     requestSeek(Math.max(0, Math.min(durationMs, currentTimeMs + deltaMs)))
   }
 
+  // The content pane can get narrow once the sidebar takes its share, so the
+  // row splits in two below 28rem: transport on top, the toggles beneath it.
   return (
-    <div className="relative flex flex-col gap-2 rounded-lg bg-muted/20 p-3">
+    <div className="@container relative flex flex-col gap-2 rounded-lg bg-muted/20 p-3">
       <ProgressBar disabled={!selectedAudio} />
 
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-        <div className="flex justify-start gap-1">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <div className="order-2 flex flex-1 justify-start gap-1 @md:order-1">
           <ShuffleButton />
           <RepeatModeButton />
         </div>
 
-        <div className="flex items-center justify-center gap-3">
+        <div className="order-1 flex w-full items-center justify-center gap-3 @md:order-2 @md:w-auto @md:flex-none">
           <SeekButton
             seconds={5}
             direction="back"
@@ -107,7 +109,7 @@ export function TransportControls({
           />
         </div>
 
-        <div className="flex justify-end gap-1">
+        <div className="order-3 flex flex-1 justify-end gap-1">
           <LyricsButton />
           <ToggleCoverButton />
         </div>

@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import type { AudioMark } from '../../../preload/soundbox'
 import { nextAudioMark } from '@/lib/audio-mark'
 
-export type MainView = 'list' | 'folders' | 'lyrics'
+export type MainView = 'list' | 'lyrics'
 
 // What the cover panel (above the transport controls) is currently showing.
 // Cover art and lyrics share the same panel, so only one can be active.
@@ -13,13 +13,14 @@ type UIState = {
   searchQuery: string
   markFilter: AudioMark | null
   mainView: MainView
+  sidebarOpen: boolean
   fullPlayer: boolean
   coverPanelView: CoverPanelView
   setIsSearchOpen: (open: boolean) => void
   setSearchQuery: (query: string) => void
   cycleMarkFilter: () => void
   setMainView: (view: MainView) => void
-  toggleFoldersView: () => void
+  toggleSidebar: () => void
   toggleLyricsView: () => void
   toggleFullPlayer: () => void
   setFullPlayer: (full: boolean) => void
@@ -32,14 +33,14 @@ export const useUI = create<UIState>((set) => ({
   searchQuery: '',
   markFilter: null,
   mainView: 'list',
+  sidebarOpen: true,
   fullPlayer: false,
   coverPanelView: 'cover',
   setIsSearchOpen: (isSearchOpen) => set({ isSearchOpen, searchQuery: isSearchOpen ? '' : '' }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
   cycleMarkFilter: () => set((s) => ({ markFilter: nextAudioMark(s.markFilter) })),
   setMainView: (mainView) => set({ mainView }),
-  toggleFoldersView: () =>
-    set((s) => ({ mainView: s.mainView === 'folders' ? 'list' : 'folders' })),
+  toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   toggleLyricsView: () => set((s) => ({ mainView: s.mainView === 'lyrics' ? 'list' : 'lyrics' })),
   toggleFullPlayer: () => set((s) => ({ fullPlayer: !s.fullPlayer })),
   setFullPlayer: (fullPlayer) => set({ fullPlayer }),
