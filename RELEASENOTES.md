@@ -1,17 +1,14 @@
-### Features
-
-- add fullscreen support and restructure View menu ([098caed](https://github.com/limboy/magpie/commit/098caed66fbfb78bb7f9f629115775a8ad1a5734))
-
-### Bug Fixes
-
-- replace title attributes with aria-label for accessibility ([c0f2b8e](https://github.com/limboy/magpie/commit/c0f2b8e324b996a5d461e4755438816ddf7a71f2))
-
-### Refactoring
-
-- extract window and menu management utilities ([b1ee6b5](https://github.com/limboy/magpie/commit/b1ee6b57733103509e696955fb93d78b60ac4b92))
-
 ### Documentation
 
-- update CHANGELOG for v1.7.3 ([e1ab9ea](https://github.com/limboy/magpie/commit/e1ab9eaddbc0aaab4c93e159c3ded40e6c3d74c8))
+- update CHANGELOG for v1.8.0 ([981c4ef](https://github.com/limboy/magpie/commit/981c4eff33d4c78a2d6c7f240e5085633d9714aa))
 
-**Full Changelog**: https://github.com/limboy/magpie/compare/v1.7.3...v1.8.0
+### Other Changes
+
+- Add play count tracking ([80b6da4](https://github.com/limboy/magpie/commit/80b6da4d60fbcd9ca25ce038df33d4112a2810ae))
+- Add drag-and-drop collection reordering ([49a3f49](https://github.com/limboy/magpie/commit/49a3f499ec198f705253ddc6edfbdcec789f7717))
+- Fix sidebar toggle positioning during width transitions ([4d4aa39](https://github.com/limboy/magpie/commit/4d4aa39fb9c4b1f58d9a2674b288ce173befecb0))
+- Update empty state message to reference folder button ([7e96982](https://github.com/limboy/magpie/commit/7e96982d663efc23ba0c724be48eac7432875027))
+- Extract folder collection logic into utility ([98a073d](https://github.com/limboy/magpie/commit/98a073d6b6baf93a8079521745d11d57756dcf97))
+- Restructure layout with persistent sidebar ([615fe90](https://github.com/limboy/magpie/commit/615fe9006b264077e41656c39923abac2091b5c3))
+
+**Full Changelog**: https://github.com/limboy/magpie/compare/v1.8.0...HEAD
