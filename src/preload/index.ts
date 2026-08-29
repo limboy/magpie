@@ -36,6 +36,10 @@ const soundbox = {
   getState: () => ipcRenderer.invoke('soundbox:getState'),
   setState: (patch: Partial<import('./soundbox').AppState>) =>
     ipcRenderer.invoke('soundbox:setState', patch),
+  incrementPlayCount: (path: string) =>
+    ipcRenderer.invoke('soundbox:incrementPlayCount', path) as Promise<
+      import('./soundbox').AppState
+    >,
   onLibraryChanged: (cb: (payload: { kind: 'tree'; path: string }) => void) => {
     const listener = (_: IpcRendererEvent, payload: { kind: 'tree'; path: string }): void =>
       cb(payload)

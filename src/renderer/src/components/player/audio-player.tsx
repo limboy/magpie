@@ -13,6 +13,7 @@ export function AudioPlayer(): React.JSX.Element {
   const selectedAudio = useLibrary((s) => s.selectedAudio)
   const selectAudio = useLibrary((s) => s.selectAudio)
   const orderedPaths = useLibrary((s) => s.orderedPaths)
+  const recordPlay = useLibrary((s) => s.recordPlay)
 
   const isPlaying = usePlayer((s) => s.isPlaying)
   const setPlaying = usePlayer((s) => s.setPlaying)
@@ -337,6 +338,7 @@ export function AudioPlayer(): React.JSX.Element {
         onEnded={() => {
           console.log('[AudioPlayer] ended')
           if (selectedAudio) {
+            recordPlay(selectedAudio)
             saveAudioPosition(selectedAudio, 0)
           }
           if (loopMode === 'one' && orderedPaths.includes(selectedAudio ?? '')) {

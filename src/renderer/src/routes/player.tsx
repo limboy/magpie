@@ -23,6 +23,7 @@ export function PlayerRoute(): React.JSX.Element {
   const setCollections = useLibrary((s) => s.setCollections)
   const setLastAudioByCollection = useLibrary((s) => s.setLastAudioByCollection)
   const setLastAudioPositions = useLibrary((s) => s.setLastAudioPositions)
+  const setPlayCounts = useLibrary((s) => s.setPlayCounts)
   const selectCollection = useLibrary((s) => s.selectCollection)
   const selectAudio = useLibrary((s) => s.selectAudio)
   const setAudioMarks = useLibrary((s) => s.setAudioMarks)
@@ -48,6 +49,7 @@ export function PlayerRoute(): React.JSX.Element {
         positions[state.lastAudioPath] = state.lastAudioPositionMs
       }
       setLastAudioPositions(positions)
+      setPlayCounts(state.playCounts ?? {})
       if (state.selectedCollectionId) selectCollection(state.selectedCollectionId)
       if (state.lastAudioPath) selectAudio(state.lastAudioPath)
       const legacyStarPaths = Object.keys(state.likedPaths ?? {})
@@ -63,6 +65,7 @@ export function PlayerRoute(): React.JSX.Element {
     setCollections,
     setLastAudioByCollection,
     setLastAudioPositions,
+    setPlayCounts,
     selectCollection,
     selectAudio,
     setAudioMarks,
@@ -90,6 +93,7 @@ export function PlayerRoute(): React.JSX.Element {
       const previous = useLibrary.getState()
       setCollections(state.collections)
       if (state.lastAudioByCollection) setLastAudioByCollection(state.lastAudioByCollection)
+      setPlayCounts(state.playCounts ?? {})
 
       const collections = state.collections ?? []
       const collectionGone =
@@ -109,7 +113,7 @@ export function PlayerRoute(): React.JSX.Element {
       )
       setAudioMarks({ ...legacyStars, ...(state.audioMarks ?? {}) })
     })
-  }, [setCollections, setLastAudioByCollection, selectAudio, setAudioMarks])
+  }, [setCollections, setLastAudioByCollection, setPlayCounts, selectAudio, setAudioMarks])
 
   return (
     <SidebarLayout

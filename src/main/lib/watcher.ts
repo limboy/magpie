@@ -187,6 +187,7 @@ function setupHandlers(): void {
 
     const nextLikedPaths = { ...(currentState.likedPaths || {}) }
     const nextAudioMarks = { ...(currentState.audioMarks || {}) }
+    const nextPlayCounts = { ...(currentState.playCounts || {}) }
     for (const p of pathsToProcess) {
       const np = normalize(p)
       for (const likedPath of Object.keys(nextLikedPaths)) {
@@ -201,6 +202,12 @@ function setupHandlers(): void {
           changed = true
         }
       }
+      for (const playedPath of Object.keys(nextPlayCounts)) {
+        if (normalize(playedPath) === np) {
+          delete nextPlayCounts[playedPath]
+          changed = true
+        }
+      }
     }
 
     if (changed) {
@@ -208,6 +215,7 @@ function setupHandlers(): void {
         collections: nextCollections,
         lastAudioPath: nextLastAudioPath,
         lastAudioByCollection: nextLastAudioByCollection,
+        playCounts: nextPlayCounts,
         audioMarks: nextAudioMarks,
         likedPaths: nextLikedPaths
       })

@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowDown, ArrowUp, ArrowUpDown, CalendarPlus, Clock3, FileAudio } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  CalendarPlus,
+  Clock3,
+  ClockCheck,
+  FileAudio
+} from 'lucide-react'
 import {
   ContextMenu,
   ContextMenuCheckboxItem,
@@ -25,12 +33,13 @@ type AudioItem = {
   album: string
   duration: number | null
   dateAdded: number | null
+  playedTimes: number
   mark: AudioMark | null
 }
 
-type SortKey = 'title' | 'dateAdded'
+type SortKey = 'title' | 'playedTimes' | 'dateAdded'
 type SortDirection = 'asc' | 'desc'
-type OptionalColumn = 'number' | 'duration' | 'dateAdded' | 'starred'
+type OptionalColumn = 'number' | 'duration' | 'playedTimes' | 'dateAdded' | 'starred'
 type ColumnVisibility = Record<OptionalColumn, boolean>
 
 type ListPreferences = {
@@ -41,7 +50,7 @@ type ListPreferences = {
 const PREFERENCES_KEY = 'magpie-song-list-preferences'
 const DEFAULT_PREFERENCES: ListPreferences = {
   sort: { key: 'title', direction: 'asc' },
-  columns: { number: true, duration: true, dateAdded: true, starred: true }
+  columns: { number: true, duration: true, playedTimes: true, dateAdded: true, starred: true }
 }
 const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
   year: 'numeric',
@@ -58,12 +67,13 @@ function loadPreferences(): ListPreferences {
     const direction = parsed.sort?.direction
     return {
       sort: {
-        key: key === 'dateAdded' ? 'dateAdded' : 'title',
+        key: key === 'dateAdded' || key === 'playedTimes' ? key : 'title',
         direction: direction === 'desc' ? 'desc' : 'asc'
       },
       columns: {
         number: parsed.columns?.number ?? DEFAULT_PREFERENCES.columns.number,
         duration: parsed.columns?.duration ?? DEFAULT_PREFERENCES.columns.duration,
+        playedTimes: parsed.columns?.playedTimes ?? DEFAULT_PREFERENCES.columns.playedTimes,
         dateAdded: parsed.columns?.dateAdded ?? DEFAULT_PREFERENCES.columns.dateAdded,
         starred: parsed.columns?.starred ?? DEFAULT_PREFERENCES.columns.starred
       }
@@ -101,6 +111,7 @@ export function AudioList(): React.JSX.Element {
   const trackMeta = useLibrary((state) => state.trackMeta)
   const trackDurations = useLibrary((state) => state.trackDurations)
   const trackDatesAdded = useLibrary((state) => state.trackDatesAdded)
+  const playCounts = useLibrary((state) => state.playCounts)
   const setTrackMeta = useLibrary((state) => state.setTrackMeta)
   const setTrackDuration = useLibrary((state) => state.setTrackDuration)
   const setBulkTrackInfo = useLibrary((state) => state.setBulkTrackInfo)
@@ -211,6 +222,7 @@ export function AudioList(): React.JSX.Element {
           album: metadata?.album && metadata.album !== 'Unknown' ? metadata.album : '',
           duration: trackDurations[path] ?? null,
           dateAdded: trackDatesAdded[path] ?? null,
+          playedTimes: playCounts[path] ?? 0,
           mark: audioMarks[path] ?? null
         }
       })
@@ -223,18 +235,23 @@ export function AudioList(): React.JSX.Element {
       )
 
     filtered.sort((a, b) => {
-      let comparison = 0
+      let primary = 0
       if (preferences.sort.key === 'title') {
-        comparison = compareTitles(a.title, b.title)
+        primary = compareTitles(a.title, b.title)
+      } else if (preferences.sort.key === 'playedTimes') {
+        primary = a.playedTimes - b.playedTimes
       } else if (a.dateAdded === null || b.dateAdded === null) {
+        // Tracks without a date sort last whichever way the column points.
         if (a.dateAdded === null && b.dateAdded !== null) return 1
         if (a.dateAdded !== null && b.dateAdded === null) return -1
       } else {
-        comparison = a.dateAdded - b.dateAdded
+        primary = a.dateAdded - b.dateAdded
       }
 
-      if (comparison === 0) comparison = a.index - b.index
-      return preferences.sort.direction === 'asc' ? comparison : -comparison
+      // The direction flips the column, not the tie-break. Most tracks share a
+      // play count, and reversing those ties would reshuffle the whole list.
+      const comparison = preferences.sort.direction === 'asc' ? primary : -primary
+      return comparison !== 0 ? comparison : a.index - b.index
     })
 
     return filtered.map((item, index) => ({ ...item, index: index + 1 }))
@@ -243,6 +260,7 @@ export function AudioList(): React.JSX.Element {
     trackMeta,
     trackDurations,
     trackDatesAdded,
+    playCounts,
     audioMarks,
     searchQuery,
     markFilter,
@@ -254,6 +272,7 @@ export function AudioList(): React.JSX.Element {
       [
         preferences.columns.number && '38px',
         'minmax(0, 1fr)',
+        preferences.columns.playedTimes && '80px',
         preferences.columns.duration && '56px',
         preferences.columns.dateAdded && '126px',
         preferences.columns.starred && '34px'
@@ -279,6 +298,9 @@ export function AudioList(): React.JSX.Element {
     }
     setPreferences((current) => ({
       ...current,
+      // A hidden column leaves no way to reach the sort it owns, so hand the
+      // sort back to the title column, which is always shown.
+      sort: !visible && current.sort.key === column ? DEFAULT_PREFERENCES.sort : current.sort,
       columns: { ...current.columns, [column]: visible }
     }))
   }
@@ -378,6 +400,18 @@ export function AudioList(): React.JSX.Element {
               <span className="truncate">Title</span>
               <SortIndicator column="title" sort={preferences.sort} />
             </button>
+            {preferences.columns.playedTimes && (
+              <button
+                type="button"
+                className="flex h-full items-center justify-end gap-1 pr-1 transition-colors hover:text-foreground"
+                onClick={() => toggleSort('playedTimes')}
+                aria-label={`Sort by play count ${preferences.sort.key === 'playedTimes' && preferences.sort.direction === 'asc' ? 'descending' : 'ascending'}`}
+              >
+                <ClockCheck className="size-3.5 shrink-0" aria-hidden="true" />
+                <span className="whitespace-nowrap">Plays</span>
+                <SortIndicator column="playedTimes" sort={preferences.sort} />
+              </button>
+            )}
             {preferences.columns.duration && (
               <span className="flex items-center justify-end pr-1" aria-label="Duration">
                 <Clock3 className="size-3.5" aria-hidden="true" />
@@ -424,6 +458,11 @@ export function AudioList(): React.JSX.Element {
             label="Number"
             checked={preferences.columns.number}
             onCheckedChange={(checked) => setColumnVisible('number', checked)}
+          />
+          <ColumnMenuItem
+            label="Plays"
+            checked={preferences.columns.playedTimes}
+            onCheckedChange={(checked) => setColumnVisible('playedTimes', checked)}
           />
           <ColumnMenuItem
             label="Duration"
@@ -542,6 +581,11 @@ export function AudioList(): React.JSX.Element {
                 {item.album && <span className="text-muted-foreground/60"> · {item.album}</span>}
               </p>
             </div>
+            {preferences.columns.playedTimes && (
+              <span className="pr-1 text-right text-xs tabular-nums text-muted-foreground">
+                {item.playedTimes > 0 ? item.playedTimes.toLocaleString() : ''}
+              </span>
+            )}
             {preferences.columns.duration && (
               <span className="text-right text-xs tabular-nums text-muted-foreground">
                 {msToClock(item.duration)}

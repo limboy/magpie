@@ -19,6 +19,7 @@ export type AppState = {
   lastAudioPositionMs?: number
   lastAudioPositions?: Record<string, number>
   lastAudioByCollection?: Record<string, string>
+  playCounts?: Record<string, number>
   audioMarks?: Record<string, AudioMark>
   /** @deprecated Legacy star-only data. */
   likedPaths?: Record<string, number>
@@ -65,6 +66,7 @@ export interface SoundboxApi {
   setFullPlayer(full: boolean): void
   getState(): Promise<AppState>
   setState(patch: Partial<AppState>): Promise<AppState>
+  incrementPlayCount(path: string): Promise<AppState>
   onLibraryChanged(cb: (payload: LibraryChangedPayload) => void): () => void
   onStateUpdated(cb: (state: AppState) => void): () => void
   getPathInfo(path: string): Promise<{ isDirectory: boolean; isFile: boolean; ext: string } | null>

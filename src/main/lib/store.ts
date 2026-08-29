@@ -20,6 +20,7 @@ export type AppState = {
   lastAudioPositionMs?: number
   lastAudioPositions?: Record<string, number>
   lastAudioByCollection?: Record<string, string>
+  playCounts?: Record<string, number>
   audioMarks?: Record<string, AudioMark>
   // Legacy star-only data. Kept so existing libraries can migrate in the renderer.
   likedPaths?: Record<string, number>
@@ -46,6 +47,7 @@ const DEFAULT: AppState = {
   lastAudioPositionMs: 0,
   lastAudioPositions: {},
   lastAudioByCollection: {},
+  playCounts: {},
   audioMarks: {}
 }
 

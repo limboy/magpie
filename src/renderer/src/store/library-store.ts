@@ -10,6 +10,7 @@ type LibraryState = {
   selectedAudio: string | null
   lastAudioByCollection: Record<string, string>
   lastAudioPositions: Record<string, number>
+  playCounts: Record<string, number>
   loading: boolean
   hydrated: boolean
   error: string | null
@@ -21,6 +22,8 @@ type LibraryState = {
   setCollections: (collections: Collection[]) => void
   setLastAudioByCollection: (lastAudioByCollection: Record<string, string>) => void
   setLastAudioPositions: (positions: Record<string, number>) => void
+  setPlayCounts: (playCounts: Record<string, number>) => void
+  recordPlay: (path: string) => void
   saveAudioPosition: (path: string, positionMs: number) => void
   setOrderedPaths: (paths: string[]) => void
   setAudioMarks: (audioMarks: Record<string, AudioMark>) => void
@@ -58,6 +61,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   selectedAudio: null,
   lastAudioByCollection: {},
   lastAudioPositions: {},
+  playCounts: {},
   loading: false,
   hydrated: false,
   error: null,
@@ -69,6 +73,15 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   setCollections: (collections) => set({ collections }),
   setLastAudioByCollection: (lastAudioByCollection) => set({ lastAudioByCollection }),
   setLastAudioPositions: (lastAudioPositions) => set({ lastAudioPositions }),
+  setPlayCounts: (playCounts) => set({ playCounts }),
+  recordPlay: (path) => {
+    if (!path) return
+    // Bump the list right away; main does the arithmetic that gets persisted
+    // and broadcasts the authoritative count back to every window.
+    const playCounts = get().playCounts
+    set({ playCounts: { ...playCounts, [path]: (playCounts[path] ?? 0) + 1 } })
+    void window.soundbox.incrementPlayCount(path)
+  },
   saveAudioPosition: (path, positionMs) => {
     if (!path) return
     const rounded = Math.round(positionMs)
