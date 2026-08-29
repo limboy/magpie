@@ -3,7 +3,7 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
-## [Unreleased](https://github.com/limboy/magpie/compare/v1.9.0...HEAD)
+## [v1.9.1](https://github.com/limboy/magpie/compare/v1.9.0...v1.9.1) - 2026-08-29
 
 ### Documentation
 
