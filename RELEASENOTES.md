@@ -11,4 +11,4 @@
 - Extract folder collection logic into utility ([98a073d](https://github.com/limboy/magpie/commit/98a073d6b6baf93a8079521745d11d57756dcf97))
 - Restructure layout with persistent sidebar ([615fe90](https://github.com/limboy/magpie/commit/615fe9006b264077e41656c39923abac2091b5c3))
 
-**Full Changelog**: https://github.com/limboy/magpie/compare/v1.8.0...HEAD
+**Full Changelog**: https://github.com/limboy/magpie/compare/v1.8.0...v1.9.0
