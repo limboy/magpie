@@ -148,7 +148,9 @@ export function FileTree({
       <ScrollArea className="min-h-0 flex-1 p-2">
         {collections.length === 0 ? (
           <div className="flex flex-1 items-center justify-center p-4 text-center text-sm text-muted-foreground">
-            Drag a folder here to create a collection.
+            Drag a folder here — or use{' '}
+            <FolderPlus className="inline size-3.5 -translate-y-px" aria-hidden /> above — to create
+            a collection.
           </div>
         ) : (
           <div className="flex flex-col gap-0.5">
