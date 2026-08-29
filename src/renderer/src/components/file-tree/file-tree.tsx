@@ -5,6 +5,13 @@ import { createCollectionFromFolder } from '@/lib/collections'
 import { useLibrary } from '@/store/library-store'
 import { usePlayer } from '@/store/player-store'
 
+const COLLECTION_DRAG_TYPE = 'application/x-magpie-collection'
+
+type DropTarget = {
+  id: string
+  position: 'before' | 'after'
+}
+
 export function FileTree({
   onSelectCollection
 }: {
@@ -15,6 +22,7 @@ export function FileTree({
     selectedCollectionId,
     selectCollection,
     addCollection,
+    reorderCollection,
     updateCollectionTitle,
     deleteCollection
   } = useLibrary()
@@ -22,8 +30,44 @@ export function FileTree({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [isDragOver, setIsDragOver] = useState(false)
+  const [draggedCollectionId, setDraggedCollectionId] = useState<string | null>(null)
+  const [dropTarget, setDropTarget] = useState<DropTarget | null>(null)
+  const draggedCollectionIdRef = useRef<string | null>(null)
+  const dropTargetRef = useRef<DropTarget | null>(null)
   const dragCounter = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const updateDropTarget = useCallback((target: DropTarget | null): void => {
+    dropTargetRef.current = target
+    setDropTarget((current) =>
+      current?.id === target?.id && current?.position === target?.position ? current : target
+    )
+  }, [])
+
+  const clearCollectionDrag = useCallback((): void => {
+    draggedCollectionIdRef.current = null
+    dropTargetRef.current = null
+    setDraggedCollectionId(null)
+    setDropTarget(null)
+  }, [])
+
+  const completeCollectionDrop = useCallback(
+    (event: React.DragEvent): boolean => {
+      if (!event.dataTransfer.types.includes(COLLECTION_DRAG_TYPE)) return false
+      event.preventDefault()
+      event.stopPropagation()
+
+      const sourceId =
+        event.dataTransfer.getData(COLLECTION_DRAG_TYPE) || draggedCollectionIdRef.current
+      const target = dropTargetRef.current
+      if (sourceId && target) {
+        reorderCollection(sourceId, target.id, target.position)
+      }
+      clearCollectionDrag()
+      return true
+    },
+    [clearCollectionDrag, reorderCollection]
+  )
 
   const handleAddDefault = useCallback((): void => {
     const baseName = 'New Collection'
@@ -91,12 +135,14 @@ export function FileTree({
   }, [])
 
   const handleDragEnter = useCallback((e: React.DragEvent): void => {
+    if (!e.dataTransfer.types.includes('Files')) return
     e.preventDefault()
     dragCounter.current++
     setIsDragOver(true)
   }, [])
 
-  const handleDragLeave = useCallback((): void => {
+  const handleDragLeave = useCallback((e: React.DragEvent): void => {
+    if (!e.dataTransfer.types.includes('Files')) return
     dragCounter.current--
     if (dragCounter.current <= 0) {
       dragCounter.current = 0
@@ -104,28 +150,97 @@ export function FileTree({
     }
   }, [])
 
-  const handleDragOver = useCallback((e: React.DragEvent): void => {
-    e.preventDefault()
-  }, [])
+  const handleDragOver = useCallback(
+    (e: React.DragEvent): void => {
+      if (e.dataTransfer.types.includes(COLLECTION_DRAG_TYPE)) {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'move'
 
-  const handleDrop = useCallback(async (e: React.DragEvent): Promise<void> => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounter.current = 0
-    setIsDragOver(false)
+        const rows = Array.from(
+          e.currentTarget.querySelectorAll<HTMLElement>('[data-collection-id]')
+        )
+        if (rows.length === 0) return
 
-    const files = Array.from(e.dataTransfer.files)
+        let target: DropTarget = {
+          id: rows[0].dataset.collectionId as string,
+          position: 'before'
+        }
+        for (const row of rows) {
+          if (e.clientY < row.getBoundingClientRect().top + row.offsetHeight / 2) break
+          target = { id: row.dataset.collectionId as string, position: 'after' }
+        }
 
-    for (const file of files) {
-      const path = window.soundbox.getPathForFile(file)
-      if (!path) continue
-      const info = await window.soundbox.getPathInfo(path)
-      if (!info?.isDirectory) continue // only folders create collections
+        updateDropTarget(target.id === draggedCollectionIdRef.current ? null : target)
+        return
+      }
+      if (!e.dataTransfer.types.includes('Files')) return
+      e.preventDefault()
+    },
+    [updateDropTarget]
+  )
 
-      // Creates the collection (named after the folder) and selects it.
-      await createCollectionFromFolder(path)
-    }
-  }, [])
+  const handleDrop = useCallback(
+    async (e: React.DragEvent): Promise<void> => {
+      if (completeCollectionDrop(e)) return
+      if (!e.dataTransfer.types.includes('Files')) return
+      e.preventDefault()
+      e.stopPropagation()
+      dragCounter.current = 0
+      setIsDragOver(false)
+
+      const files = Array.from(e.dataTransfer.files)
+
+      for (const file of files) {
+        const path = window.soundbox.getPathForFile(file)
+        if (!path) continue
+        const info = await window.soundbox.getPathInfo(path)
+        if (!info?.isDirectory) continue // only folders create collections
+
+        // Creates the collection (named after the folder) and selects it.
+        await createCollectionFromFolder(path)
+      }
+    },
+    [completeCollectionDrop]
+  )
+
+  const handleCollectionDragStart = useCallback(
+    (event: React.DragEvent, id: string): void => {
+      event.dataTransfer.effectAllowed = 'move'
+      event.dataTransfer.setData(COLLECTION_DRAG_TYPE, id)
+      draggedCollectionIdRef.current = id
+      setDraggedCollectionId(id)
+      updateDropTarget(null)
+    },
+    [updateDropTarget]
+  )
+
+  const handleCollectionDragOver = useCallback(
+    (event: React.DragEvent, id: string): void => {
+      if (!event.dataTransfer.types.includes(COLLECTION_DRAG_TYPE)) return
+      event.preventDefault()
+      event.stopPropagation()
+      event.dataTransfer.dropEffect = 'move'
+
+      if (id === draggedCollectionIdRef.current) {
+        updateDropTarget(null)
+        return
+      }
+
+      const bounds = event.currentTarget.getBoundingClientRect()
+      const position = event.clientY < bounds.top + bounds.height / 2 ? 'before' : 'after'
+      updateDropTarget({ id, position })
+    },
+    [updateDropTarget]
+  )
+
+  const handleCollectionDrop = useCallback(
+    (event: React.DragEvent): void => {
+      completeCollectionDrop(event)
+    },
+    [completeCollectionDrop]
+  )
+
+  const handleCollectionDragEnd = clearCollectionDrag
 
   return (
     <div
@@ -155,7 +270,18 @@ export function FileTree({
         ) : (
           <div className="flex flex-col gap-0.5">
             {collections.map((c) => (
-              <div key={c.id}>
+              <div
+                key={c.id}
+                className="relative"
+                data-collection-id={c.id}
+                onDragOver={(event) => handleCollectionDragOver(event, c.id)}
+                onDrop={handleCollectionDrop}
+              >
+                {dropTarget?.id === c.id && (
+                  <div
+                    className={`pointer-events-none absolute inset-x-1 z-10 h-0.5 rounded-full bg-primary ${dropTarget.position === 'before' ? '-top-px' : '-bottom-px'}`}
+                  />
+                )}
                 {editingId === c.id ? (
                   <div className="flex items-center gap-2 rounded-md px-2 py-1 bg-accent">
                     <Folder className="h-4 w-4 shrink-0 opacity-70" />
@@ -173,6 +299,9 @@ export function FileTree({
                   </div>
                 ) : (
                   <button
+                    draggable
+                    onDragStart={(event) => handleCollectionDragStart(event, c.id)}
+                    onDragEnd={handleCollectionDragEnd}
                     onClick={() => {
                       selectCollection(c.id)
                       onSelectCollection?.()
@@ -182,7 +311,7 @@ export function FileTree({
                       e.stopPropagation()
                       void window.soundbox.showCollectionContextMenu(c.id, c.title)
                     }}
-                    className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-left transition-colors ${selectedCollectionId === c.id ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}
+                    className={`flex w-full cursor-grab items-center gap-2 rounded-md px-2 py-1.5 text-sm text-left transition-[color,background-color,opacity] active:cursor-grabbing ${draggedCollectionId === c.id ? 'opacity-40' : ''} ${selectedCollectionId === c.id ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}
                   >
                     <Folder className="h-4 w-4 shrink-0 opacity-70" />
                     <span className="min-w-0 flex-1 truncate">{c.title}</span>

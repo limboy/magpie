@@ -26,6 +26,7 @@ type LibraryState = {
   setAudioMarks: (audioMarks: Record<string, AudioMark>) => void
   addCollection: (title: string) => string
   addCollectionWithItems: (title: string, items: string[], watchedFolders: string[]) => string
+  reorderCollection: (sourceId: string, targetId: string, position: 'before' | 'after') => void
   updateCollectionTitle: (id: string, title: string) => void
   deleteCollection: (id: string) => void
   setTrackMeta: (
@@ -117,6 +118,25 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       lastAudioByCollection: nextLastAudioMap
     })
     return id
+  },
+  reorderCollection: (sourceId, targetId, position) => {
+    if (sourceId === targetId) return
+
+    const { collections } = get()
+    const source = collections.find((collection) => collection.id === sourceId)
+    if (!source) return
+
+    const reordered = collections.filter((collection) => collection.id !== sourceId)
+    const targetIndex = reordered.findIndex((collection) => collection.id === targetId)
+    if (targetIndex === -1) return
+
+    const insertionIndex = targetIndex + (position === 'after' ? 1 : 0)
+    reordered.splice(insertionIndex, 0, source)
+
+    if (reordered.every((collection, index) => collection.id === collections[index]?.id)) return
+
+    set({ collections: reordered })
+    void window.soundbox.setState({ collections: reordered })
   },
   updateCollectionTitle: (id, title) => {
     const next = get().collections.map((c) => (c.id === id ? { ...c, title } : c))
