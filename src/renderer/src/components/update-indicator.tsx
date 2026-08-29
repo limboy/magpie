@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { ArrowUpCircle } from 'lucide-react'
 
+// Sits at the bottom of the collections sidebar and stays out of the way until
+// an update is downloaded; the whole row is the apply button.
 export function UpdateIndicator(): React.JSX.Element | null {
   const [updateVersion, setUpdateVersion] = useState<string | null>(null)
   const [applying, setApplying] = useState(false)
@@ -29,14 +31,20 @@ export function UpdateIndicator(): React.JSX.Element | null {
   }
 
   return (
-    <Button
-      size="xs"
-      className="h-5 bg-blue-500 px-2 text-[11px] text-white hover:bg-blue-600 hover:text-white"
-      disabled={applying}
-      onClick={handleApply}
-      aria-label={applying ? 'Applying update' : `Apply update ${updateVersion}`}
-    >
-      {applying ? 'Updating…' : 'Update'}
-    </Button>
+    <div className="shrink-0 border-t p-2">
+      <button
+        type="button"
+        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-60"
+        disabled={applying}
+        onClick={handleApply}
+        aria-label={applying ? 'Applying update' : `Apply update ${updateVersion}`}
+        title={`Version ${updateVersion} is ready to install`}
+      >
+        <ArrowUpCircle className="size-3.5 shrink-0 text-blue-500" />
+        <span className="min-w-0 flex-1 truncate">
+          {applying ? 'Updating…' : `Update to ${updateVersion}`}
+        </span>
+      </button>
+    </div>
   )
 }

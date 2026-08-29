@@ -122,6 +122,7 @@ export function PlayerRoute(): React.JSX.Element {
         <>
           <SidebarHeader />
           <FileTree onSelectCollection={() => setMainView('list')} />
+          <UpdateIndicator />
         </>
       }
       content={
@@ -222,7 +223,6 @@ function ContentHeader(): React.JSX.Element {
         {windowTitle}
       </span>
       <div className="app-no-drag absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
-        <UpdateIndicator />
         {isSearchOpen ? (
           <div className="flex h-7 items-center rounded-md border bg-background/80 px-2 shadow-xs">
             <Search className="mr-1.5 size-3.5 text-muted-foreground" />
