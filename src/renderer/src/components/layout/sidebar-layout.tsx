@@ -64,7 +64,10 @@ export function SidebarLayout({
         )}
         style={
           floating
-            ? { width: SIDEBAR_WIDTH, transform: open ? 'translateX(0)' : 'translateX(-100%)' }
+            ? {
+                width: open ? SIDEBAR_WIDTH : 0,
+                transform: open ? 'translateX(0)' : 'translateX(-100%)'
+              }
             : { width: open ? SIDEBAR_WIDTH : 0 }
         }
         aria-hidden={!open}
