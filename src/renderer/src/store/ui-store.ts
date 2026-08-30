@@ -14,6 +14,9 @@ type UIState = {
   markFilter: AudioMark | null
   mainView: MainView
   sidebarOpen: boolean
+  // True while the window is too narrow to seat the sidebar beside the
+  // content, so it floats above it instead.
+  sidebarFloating: boolean
   fullPlayer: boolean
   coverPanelView: CoverPanelView
   setIsSearchOpen: (open: boolean) => void
@@ -21,6 +24,8 @@ type UIState = {
   cycleMarkFilter: () => void
   setMainView: (view: MainView) => void
   toggleSidebar: () => void
+  setSidebarOpen: (open: boolean) => void
+  setSidebarFloating: (floating: boolean) => void
   toggleLyricsView: () => void
   toggleFullPlayer: () => void
   setFullPlayer: (full: boolean) => void
@@ -34,6 +39,7 @@ export const useUI = create<UIState>((set) => ({
   markFilter: null,
   mainView: 'list',
   sidebarOpen: true,
+  sidebarFloating: false,
   fullPlayer: false,
   coverPanelView: 'cover',
   setIsSearchOpen: (isSearchOpen) => set({ isSearchOpen, searchQuery: isSearchOpen ? '' : '' }),
@@ -41,6 +47,8 @@ export const useUI = create<UIState>((set) => ({
   cycleMarkFilter: () => set((s) => ({ markFilter: nextAudioMark(s.markFilter) })),
   setMainView: (mainView) => set({ mainView }),
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+  setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
+  setSidebarFloating: (sidebarFloating) => set({ sidebarFloating }),
   toggleLyricsView: () => set((s) => ({ mainView: s.mainView === 'lyrics' ? 'list' : 'lyrics' })),
   toggleFullPlayer: () => set((s) => ({ fullPlayer: !s.fullPlayer })),
   setFullPlayer: (fullPlayer) => set({ fullPlayer }),

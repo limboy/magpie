@@ -1,134 +1,87 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { cn } from '@/lib/utils'
 
-const MIN_WIDTH = 240
-const MAX_WIDTH = 420
-const DEFAULT_WIDTH = 300
-const STORAGE_KEY = 'magpie-sidebar-width'
+const SIDEBAR_WIDTH = 280
+// The content pane stops fitting the transport controls on one row below
+// this, so a window too narrow to seat both side by side gets a floating
+// sidebar instead.
+const MIN_CONTENT_WIDTH = 400
 
-function clamp(width: number): number {
-  return Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, width))
+function useViewportWidth(): number {
+  const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth)
+  useEffect(() => {
+    const handleResize = (): void => setViewportWidth(window.innerWidth)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+  return viewportWidth
 }
 
-function readStoredWidth(): number {
-  const stored = Number(localStorage.getItem(STORAGE_KEY))
-  return Number.isFinite(stored) && stored > 0 ? clamp(stored) : DEFAULT_WIDTH
-}
-
-// The window splits left to right: the collections sidebar, and the content
-// pane beside it. Drag the divider (or focus it and use the arrow keys) to
-// resize the sidebar; the width is remembered across sessions. Collapsing
-// keeps the sidebar mounted at zero width so it slides rather than pops.
+// The window splits left to right: the collections sidebar at a fixed width,
+// and the content pane beside it. Collapsing keeps the sidebar mounted at
+// zero width so it slides rather than pops. Once the window is too narrow for
+// both, the sidebar floats above the content and a click outside (or Escape)
+// dismisses it.
 export function SidebarLayout({
   sidebar,
   content,
-  open
+  open,
+  onRequestClose,
+  onFloatingChange
 }: {
   sidebar: React.ReactNode
   content: React.ReactNode
   open: boolean
+  onRequestClose: () => void
+  onFloatingChange: (floating: boolean) => void
 }): React.JSX.Element {
-  const [width, setWidth] = useState(readStoredWidth)
+  const viewportWidth = useViewportWidth()
+  const floating = viewportWidth - SIDEBAR_WIDTH < MIN_CONTENT_WIDTH
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, String(width))
-  }, [width])
+    onFloatingChange(floating)
+  }, [floating, onFloatingChange])
+
+  useEffect(() => {
+    if (!floating || !open) return
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') onRequestClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [floating, open, onRequestClose])
 
   return (
     <div
-      className="flex h-screen overflow-hidden bg-background text-foreground"
-      style={{ '--sidebar-width': `${width}px` } as React.CSSProperties}
+      className="relative flex h-screen overflow-hidden bg-background text-foreground"
+      style={{ '--sidebar-width': `${SIDEBAR_WIDTH}px` } as React.CSSProperties}
     >
       <aside
-        className="flex min-h-0 shrink-0 flex-col overflow-hidden bg-sidebar transition-[width] duration-200 ease-out motion-reduce:transition-none"
-        style={{ width: open ? width : 0 }}
+        className={cn(
+          'flex min-h-0 shrink-0 flex-col overflow-hidden bg-sidebar transition-[width,transform] duration-150 ease-out motion-reduce:transition-none',
+          open && 'border-r',
+          floating && 'absolute inset-y-0 left-0 z-50 shadow-xl'
+        )}
+        style={
+          floating
+            ? { width: SIDEBAR_WIDTH, transform: open ? 'translateX(0)' : 'translateX(-100%)' }
+            : { width: open ? SIDEBAR_WIDTH : 0 }
+        }
         aria-hidden={!open}
         inert={!open ? true : undefined}
       >
-        <div style={{ width }} className="flex h-full min-h-0 flex-col">
+        <div style={{ width: SIDEBAR_WIDTH }} className="flex h-full min-h-0 flex-col">
           {sidebar}
         </div>
       </aside>
-      {open && <Divider width={width} onResize={setWidth} />}
+      {floating && open && (
+        <div
+          className="absolute inset-0 z-40 bg-black/50 animate-in fade-in-0 duration-150 motion-reduce:animate-none"
+          onPointerDown={onRequestClose}
+          aria-hidden
+        />
+      )}
       <div className="flex min-w-0 flex-1 flex-col">{content}</div>
     </div>
-  )
-}
-
-function Divider({
-  width,
-  onResize
-}: {
-  width: number
-  onResize: (width: number) => void
-}): React.JSX.Element {
-  const dragStart = useRef<{ x: number; width: number } | null>(null)
-
-  const handlePointerDown = useCallback(
-    (event: React.PointerEvent<HTMLDivElement>): void => {
-      if (event.button !== 0) return
-      event.preventDefault()
-      dragStart.current = { x: event.clientX, width }
-      event.currentTarget.setPointerCapture(event.pointerId)
-      document.body.style.cursor = 'col-resize'
-      document.body.style.userSelect = 'none'
-    },
-    [width]
-  )
-
-  const handlePointerMove = useCallback(
-    (event: React.PointerEvent<HTMLDivElement>): void => {
-      if (!dragStart.current) return
-      onResize(clamp(dragStart.current.width + (event.clientX - dragStart.current.x)))
-    },
-    [onResize]
-  )
-
-  const handlePointerUp = useCallback((event: React.PointerEvent<HTMLDivElement>): void => {
-    if (!dragStart.current) return
-    dragStart.current = null
-    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId)
-    }
-    document.body.style.cursor = ''
-    document.body.style.userSelect = ''
-  }, [])
-
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>): void => {
-      const step = event.shiftKey ? 32 : 8
-      if (event.key === 'ArrowLeft') {
-        event.preventDefault()
-        onResize(clamp(width - step))
-      } else if (event.key === 'ArrowRight') {
-        event.preventDefault()
-        onResize(clamp(width + step))
-      } else if (event.key === 'Home') {
-        event.preventDefault()
-        onResize(MIN_WIDTH)
-      } else if (event.key === 'End') {
-        event.preventDefault()
-        onResize(MAX_WIDTH)
-      }
-    },
-    [width, onResize]
-  )
-
-  return (
-    <div
-      role="separator"
-      aria-orientation="vertical"
-      aria-label="Resize sidebar"
-      aria-valuenow={width}
-      aria-valuemin={MIN_WIDTH}
-      aria-valuemax={MAX_WIDTH}
-      tabIndex={0}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
-      onLostPointerCapture={handlePointerUp}
-      onKeyDown={handleKeyDown}
-      className="relative z-30 w-px shrink-0 cursor-col-resize touch-none bg-border outline-none after:absolute after:-inset-x-1 after:inset-y-0 after:content-[''] hover:bg-foreground/25 focus-visible:bg-foreground/40"
-    />
   )
 }

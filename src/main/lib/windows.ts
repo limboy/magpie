@@ -5,8 +5,9 @@ import icon from '../../../resources/icon.png?asset'
 import { readState, writeState } from './store'
 
 const PLAYER_SIZE = { width: 900, height: 760 }
-// The sidebar plus the song list need room to sit side by side.
-const MIN_SIZE = { width: 640, height: 562 }
+// Narrower than this the transport controls start to crowd; the sidebar
+// floats above the content rather than forcing a wider window.
+const MIN_SIZE = { width: 400, height: 562 }
 // Each extra window opens down-right of the one it was spawned from, the way
 // Finder cascades new windows.
 const CASCADE_OFFSET = 28
@@ -45,8 +46,8 @@ type Bounds = { x?: number; y?: number; width: number; height: number }
 function nextBounds(saved: Bounds | undefined): Bounds {
   const open = BrowserWindow.getAllWindows().filter((win) => !win.isDestroyed())
   if (open.length === 0) {
-    // macOS honours the size it is given over minWidth/minHeight, so bounds
-    // saved by an older, narrower layout have to be widened here.
+    // macOS honours the size it is given over minWidth/minHeight, so saved
+    // bounds smaller than the minimum have to be widened here.
     return {
       x: saved?.x,
       y: saved?.y,

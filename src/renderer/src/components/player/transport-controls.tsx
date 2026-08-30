@@ -49,19 +49,20 @@ export function TransportControls({
     requestSeek(Math.max(0, Math.min(durationMs, currentTimeMs + deltaMs)))
   }
 
-  // The content pane can get narrow once the sidebar takes its share, so the
-  // row splits in two below 28rem: transport on top, the toggles beneath it.
+  // Everything stays on one row down to the narrowest window the app allows;
+  // the gaps tighten instead. Below 22rem the buttons no longer fit at all,
+  // so the row splits: transport on top, the toggles beneath it.
   return (
     <div className="@container relative flex flex-col gap-2 rounded-lg bg-muted/20 p-3">
       <ProgressBar disabled={!selectedAudio} />
 
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <div className="order-2 flex flex-1 justify-start gap-1 @md:order-1">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 @md:gap-x-3">
+        <div className="order-2 flex flex-1 justify-start gap-0.5 @min-[22rem]:order-1 @md:gap-1">
           <ShuffleButton />
           <RepeatModeButton />
         </div>
 
-        <div className="order-1 flex w-full items-center justify-center gap-3 @md:order-2 @md:w-auto @md:flex-none">
+        <div className="order-1 flex w-full items-center justify-center gap-2 @min-[22rem]:order-2 @min-[22rem]:w-auto @min-[22rem]:flex-none @md:gap-3">
           <SeekButton
             seconds={5}
             direction="back"
@@ -109,7 +110,7 @@ export function TransportControls({
           />
         </div>
 
-        <div className="order-3 flex flex-1 justify-end gap-1">
+        <div className="order-3 flex flex-1 justify-end gap-0.5 @md:gap-1">
           <LyricsButton />
           <ToggleCoverButton />
         </div>

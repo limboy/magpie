@@ -15,7 +15,9 @@ import { useLibrary } from '@/store/library-store'
 import { useUI } from '@/store/ui-store'
 
 // The toggle clears the traffic lights while the sidebar is collapsed. Its
-// expanded position includes the sidebar's one-pixel divider.
+// expanded position includes the sidebar's one-pixel divider. A floating
+// sidebar covers the collapsed spot, which is where the toggle stays — there
+// is nowhere for it to go, and the scrim is what dismisses the sidebar.
 const COLLAPSED_TOGGLE_LEFT = 88
 const EXPANDED_TOGGLE_GAP = 9
 
@@ -31,6 +33,8 @@ export function PlayerRoute(): React.JSX.Element {
   const setHydrated = useLibrary((s) => s.setHydrated)
   const hydrated = useLibrary((s) => s.hydrated)
   const sidebarOpen = useUI((s) => s.sidebarOpen)
+  const setSidebarOpen = useUI((s) => s.setSidebarOpen)
+  const setSidebarFloating = useUI((s) => s.setSidebarFloating)
   const setMainView = useUI((s) => s.setMainView)
   useEffect(() => {
     void (async () => {
@@ -118,6 +122,8 @@ export function PlayerRoute(): React.JSX.Element {
   return (
     <SidebarLayout
       open={sidebarOpen}
+      onRequestClose={() => setSidebarOpen(false)}
+      onFloatingChange={setSidebarFloating}
       sidebar={
         <>
           <SidebarHeader />
@@ -172,6 +178,7 @@ function ContentHeader(): React.JSX.Element {
   const selectedAudio = useLibrary((s) => s.selectedAudio)
   const trackMeta = useLibrary((s) => s.trackMeta)
   const sidebarOpen = useUI((s) => s.sidebarOpen)
+  const sidebarFloating = useUI((s) => s.sidebarFloating)
   const toggleSidebar = useUI((s) => s.toggleSidebar)
   const isSearchOpen = useUI((s) => s.isSearchOpen)
   const searchQuery = useUI((s) => s.searchQuery)
@@ -198,9 +205,10 @@ function ContentHeader(): React.JSX.Element {
       <div
         className="app-no-drag fixed top-5 z-40 -translate-y-1/2 transition-[left] duration-200 ease-out motion-reduce:transition-none"
         style={{
-          left: sidebarOpen
-            ? `calc(var(--sidebar-width) + ${EXPANDED_TOGGLE_GAP}px)`
-            : COLLAPSED_TOGGLE_LEFT
+          left:
+            sidebarOpen && !sidebarFloating
+              ? `calc(var(--sidebar-width) + ${EXPANDED_TOGGLE_GAP}px)`
+              : COLLAPSED_TOGGLE_LEFT
         }}
       >
         <Button
