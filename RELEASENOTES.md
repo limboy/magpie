@@ -7,4 +7,4 @@
 - Fix header title inset based on sidebar state ([840ca22](https://github.com/limboy/magpie/commit/840ca2210ebb9b9aeea14e798f90c9af82af193c))
 - Make sidebar float above content when narrow ([9d50d09](https://github.com/limboy/magpie/commit/9d50d096edae143a34bea4864d837d4490dbb82c))
 
-**Full Changelog**: https://github.com/limboy/magpie/compare/v1.9.1...HEAD
+**Full Changelog**: https://github.com/limboy/magpie/compare/v1.9.1...v1.9.2
