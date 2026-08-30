@@ -1,9 +1,17 @@
 import { protocol } from 'electron'
 import { createReadStream, promises as fs } from 'node:fs'
 import { extname } from 'node:path'
+import { Readable } from 'node:stream'
 import { isAuthorizedPath } from './store'
 
 export const LOCAL_SCHEME = 'local'
+
+function toResponseBody(stream: ReturnType<typeof createReadStream>): ReadableStream<Uint8Array> {
+  // Node's and Electron's TypeScript libraries expose equivalent WHATWG
+  // ReadableStream types from different modules, so bridge them at this API
+  // boundary while keeping the runtime stream conversion explicit.
+  return Readable.toWeb(stream) as unknown as ReadableStream<Uint8Array>
+}
 
 export function registerLocalSchemePrivileged(): void {
   protocol.registerSchemesAsPrivileged([
@@ -72,12 +80,16 @@ export function registerLocalProtocolHandler(): void {
         const m = rangeHeader.match(/bytes=(\d+)-(\d+)?/)
         if (m) {
           const start = parseInt(m[1], 10)
-          const end = m[2] ? parseInt(m[2], 10) : stats.size - 1
+          const requestedEnd = m[2] ? parseInt(m[2], 10) : stats.size - 1
+          const end = Math.min(requestedEnd, stats.size - 1)
 
-          if (start < stats.size) {
+          if (start < stats.size && end >= start) {
             const stream = createReadStream(absPath, { start, end })
-            // @ts-ignore: ReadableStream and ReadStream are compatible here for Response body
-            return new Response(stream, {
+            // Adapt the Node stream explicitly. Passing fs.ReadStream directly
+            // makes Electron/undici install its own adapter, which can try to
+            // close the WHATWG stream twice when an audio request is cancelled
+            // just as it reaches EOF while the next track starts.
+            return new Response(toResponseBody(stream), {
               status: 206,
               statusText: 'Partial Content',
               headers: {
@@ -88,12 +100,23 @@ export function registerLocalProtocolHandler(): void {
               }
             })
           }
+
+          // The range parsed cleanly but cannot be satisfied (start past EOF,
+          // or an inverted range). Say so instead of falling through to the
+          // full-file response, which would re-send the whole track with a 200.
+          return new Response('Range Not Satisfiable', {
+            status: 416,
+            statusText: 'Range Not Satisfiable',
+            headers: {
+              'Content-Range': `bytes */${stats.size}`,
+              'Accept-Ranges': 'bytes'
+            }
+          })
         }
       }
 
       const stream = createReadStream(absPath)
-      // @ts-ignore: ReadableStream and ReadStream are compatible here for Response body
-      return new Response(stream, {
+      return new Response(toResponseBody(stream), {
         status: 200,
         headers: {
           'Content-Type': contentType,
