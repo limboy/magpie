@@ -20,6 +20,13 @@ import { useUI } from '@/store/ui-store'
 // is nowhere for it to go, and the scrim is what dismisses the sidebar.
 const COLLAPSED_TOGGLE_LEFT = 88
 const EXPANDED_TOGGLE_GAP = 9
+const TOGGLE_SIZE = 28
+// The song title is centred in the header, so it has to be inset by the same
+// amount on both sides to stay clear of what sits on either end: the toggle
+// on the left, the search button on the right. The expanded toggle overhangs
+// into the sidebar, leaving only its far edge over the header.
+const TITLE_INSET_EXPANDED = EXPANDED_TOGGLE_GAP + TOGGLE_SIZE + 8
+const TITLE_INSET_COLLAPSED = COLLAPSED_TOGGLE_LEFT + TOGGLE_SIZE + 8
 
 export function PlayerRoute(): React.JSX.Element {
   const setCollections = useLibrary((s) => s.setCollections)
@@ -197,18 +204,22 @@ function ContentHeader(): React.JSX.Element {
       : basename(selectedAudio)
     : 'Magpie'
 
+  const toggleInsidePane = sidebarOpen && !sidebarFloating
+
   return (
-    <header className="app-drag relative flex h-10 shrink-0 items-center justify-center border-b bg-muted/35">
+    <header
+      className="app-drag relative flex h-10 shrink-0 items-center justify-center border-b bg-muted/35 transition-[padding] duration-200 ease-out motion-reduce:transition-none"
+      style={{ paddingInline: toggleInsidePane ? TITLE_INSET_EXPANDED : TITLE_INSET_COLLAPSED }}
+    >
       {/* Keep the toggle in viewport coordinates while the sidebar animates.
           Animating it relative to this moving header combines two transitions
           and can briefly send it left when the sidebar starts opening. */}
       <div
         className="app-no-drag fixed top-5 z-40 -translate-y-1/2 transition-[left] duration-200 ease-out motion-reduce:transition-none"
         style={{
-          left:
-            sidebarOpen && !sidebarFloating
-              ? `calc(var(--sidebar-width) + ${EXPANDED_TOGGLE_GAP}px)`
-              : COLLAPSED_TOGGLE_LEFT
+          left: toggleInsidePane
+            ? `calc(var(--sidebar-width) + ${EXPANDED_TOGGLE_GAP}px)`
+            : COLLAPSED_TOGGLE_LEFT
         }}
       >
         <Button
@@ -224,7 +235,7 @@ function ContentHeader(): React.JSX.Element {
       </div>
       <span
         className={cn(
-          'max-w-[50%] truncate text-[11px] font-medium tracking-wide text-muted-foreground/70',
+          'max-w-[min(100%,24rem)] truncate text-[11px] font-medium tracking-wide text-muted-foreground/70',
           isSearchOpen && 'invisible'
         )}
       >
