@@ -6,4 +6,4 @@
 
 - Fix HTTP range request handling and stream conversion ([73f0c0a](https://github.com/limboy/magpie/commit/73f0c0a119f167105fbd3b6a938ca0ee2f86814d))
 
-**Full Changelog**: https://github.com/limboy/magpie/compare/v1.9.3...HEAD
+**Full Changelog**: https://github.com/limboy/magpie/compare/v1.9.3...v1.9.4
