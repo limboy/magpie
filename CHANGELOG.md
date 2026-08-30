@@ -3,6 +3,16 @@
 All notable changes to this project are documented here.
 This file is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) — run `npm run changelog` to regenerate.
 
+## [Unreleased](https://github.com/limboy/magpie/compare/v1.9.3...HEAD)
+
+### Documentation
+
+- update CHANGELOG for v1.9.3 ([a5244ab](https://github.com/limboy/magpie/commit/a5244ab439a79246e8ab203349611a82cb2e7e49))
+
+### Other Changes
+
+- Fix HTTP range request handling and stream conversion ([73f0c0a](https://github.com/limboy/magpie/commit/73f0c0a119f167105fbd3b6a938ca0ee2f86814d))
+
 ## [v1.9.3](https://github.com/limboy/magpie/compare/v1.9.2...v1.9.3) - 2026-08-30
 
 ### Documentation
