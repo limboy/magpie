@@ -39,31 +39,31 @@ struct NowPlayingLCD: View {
 
     private var nowPlaying: some View {
         let track = player.currentTrack
-        return VStack(alignment: .leading, spacing: 3) {
-            HStack(spacing: 10) {
-                artwork
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(track?.title ?? "Not Playing")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(track == nil ? .secondary : .primary)
-                        .lineLimit(1)
-                    if track != nil {
-                        if hovering {
-                            TimeLabels()
-                        } else {
-                            MarqueeText(text: track?.subtitle ?? "")
-                                .font(.system(size: 12))
-                                .foregroundStyle(.secondary)
-                        }
+        return HStack(spacing: 10) {
+            artwork
+            // The progress bar sits under the text, starting where the title does.
+            VStack(alignment: .leading, spacing: 1) {
+                Text(track?.title ?? "Not Playing")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(track == nil ? .secondary : .primary)
+                    .lineLimit(1)
+                if track != nil {
+                    if hovering {
+                        TimeLabels()
+                    } else {
+                        MarqueeText(text: track?.subtitle ?? "")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
                     }
                 }
+                ThinSlider(
+                    value: player.duration > 0 ? player.currentTime / player.duration : 0,
+                    thickness: 3, activeThickness: 5
+                ) { _ in } onCommit: { player.seek(to: $0 * player.duration) }
+                    .frame(height: 6)
+                    .padding(.top, 2)
+                    .disabled(track == nil)
             }
-            ThinSlider(
-                value: player.duration > 0 ? player.currentTime / player.duration : 0,
-                thickness: 3, activeThickness: 5
-            ) { _ in } onCommit: { player.seek(to: $0 * player.duration) }
-                .frame(height: 6)
-                .disabled(track == nil)
         }
     }
 
@@ -72,7 +72,7 @@ struct NowPlayingLCD: View {
             ui.toggleMode()
         } label: {
             ArtworkView(path: player.currentPath, maxPixel: 96, cornerRadius: 4)
-                .frame(width: 32, height: 32)
+                .frame(width: 38, height: 38)
                 .overlay {
                     if hoveringArt && player.currentPath != nil {
                         RoundedRectangle(cornerRadius: 4)
