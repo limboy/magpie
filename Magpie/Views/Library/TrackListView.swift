@@ -131,8 +131,11 @@ struct TrackListView: View {
     private func menuEntries(_ selected: Set<String>, ids: [String]) -> [TrackMenuEntry] {
         guard let first = ids.first(where: selected.contains) else { return [] }
         let allFavorite = selected.allSatisfy(library.isFavorite)
+        let ordered = ids.filter(selected.contains)
         var entries: [TrackMenuEntry] = [
             .item("Play") { player.play(first, in: ids) },
+            .item("Play Next") { player.playNext(ordered) },
+            .item("Add to Queue") { player.addToQueue(ordered) },
             .separator,
             .item(allFavorite ? "Unfavorite" : "Favorite") {
                 for id in selected where library.isFavorite(id) == allFavorite { library.toggleFavorite(id) }

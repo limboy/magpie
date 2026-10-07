@@ -30,6 +30,12 @@ nonisolated struct CachedTrack: Codable, Sendable {
     var modified: Date
 }
 
+/// A song in Up Next. The same song can be queued more than once.
+nonisolated struct QueueEntry: Identifiable, Hashable, Sendable {
+    let id = UUID()
+    let path: String
+}
+
 nonisolated enum RepeatMode: String, Codable, Sendable {
     case off, all, one
 

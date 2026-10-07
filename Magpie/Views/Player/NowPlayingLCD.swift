@@ -10,6 +10,7 @@ struct NowPlayingLCD: View {
     @Environment(AppState.self) private var ui
     @State private var hovering = false
     @State private var hoveringArt = false
+    @State private var showingUpNext = false
     /// Narrow windows drop shuffle, repeat and the more menu.
     @State private var isCompact = false
 
@@ -92,10 +93,23 @@ struct NowPlayingLCD: View {
 
     private var accessories: some View {
         HStack(spacing: 2) {
+            upNextButton
             lyricsButton
             FavoriteButton(path: player.currentPath, size: Self.iconSize, weight: Self.iconWeight)
             if !isCompact { moreMenu }
         }
+    }
+
+    private var upNextButton: some View {
+        Button {
+            showingUpNext.toggle()
+        } label: {
+            accessoryIcon("list.bullet")
+                .foregroundStyle(showingUpNext ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
+        }
+        .buttonStyle(PressableStyle())
+        .help("Up Next")
+        .popover(isPresented: $showingUpNext, arrowEdge: .top) { UpNextView() }
     }
 
     private var lyricsButton: some View {

@@ -11,6 +11,11 @@ final class PlayerEngine {
     private(set) var duration: TimeInterval = 0
     /// The play order — the source list, shuffled when shuffle is on.
     private(set) var queue: [String] = []
+    /// Songs added with Play Next or Add to Queue. They play, in order, before
+    /// the queue carries on.
+    private(set) var upNext: [QueueEntry] = [] {
+        didSet { UserDefaults.standard.set(upNext.map(\.path), forKey: "upNext") }
+    }
 
     var volume: Double {
         didSet {
@@ -40,7 +45,9 @@ final class PlayerEngine {
     /// by the time we hear it finished.
     @ObservationIgnored private var playingItem: AVPlayerItem?
     /// The next track, queued behind the current one so it starts without a gap.
-    @ObservationIgnored private var upcoming: (item: AVPlayerItem, path: String)?
+    @ObservationIgnored private var upcoming: (item: AVPlayerItem, path: String, fromUpNext: Bool)?
+    /// The queue's place: the last song it played. Songs from Up Next don't move it.
+    @ObservationIgnored private var queuePath: String?
     @ObservationIgnored private var sourceQueue: [String] = []
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
     @ObservationIgnored private var timeObserver: Any?
@@ -59,6 +66,9 @@ final class PlayerEngine {
         repeatMode = RepeatMode(rawValue: defaults.string(forKey: "repeatMode") ?? "") ?? .off
         player.volume = Float(volume)
         player.actionAtItemEnd = .advance
+        upNext = (defaults.stringArray(forKey: "upNext") ?? [])
+            .filter { FileManager.default.fileExists(atPath: $0) }
+            .map { QueueEntry(path: $0) }
 
         observeTime()
         observeNotifications()
@@ -73,6 +83,7 @@ final class PlayerEngine {
     func play(_ path: String, in list: [String]) {
         sourceQueue = list.contains(path) ? list : [path]
         rebuildQueue(startingWith: path)
+        queuePath = path
         load(path, autoplay: true, startAt: resumePoint(for: path))
     }
 
@@ -141,13 +152,68 @@ final class PlayerEngine {
         queue = shuffled
     }
 
+    /// The queue's songs after its place, wrapping round when repeating all.
+    var queueAhead: [String] {
+        guard let index = queuePath.flatMap(queue.firstIndex(of:)) else { return queue }
+        var ahead = Array(queue[(index + 1)...])
+        if repeatMode == .all { ahead += queue[...index] }
+        return ahead
+    }
+
     /// The track that plays when the current one ends on its own, if any.
-    private var nextPath: String? {
+    private var nextUp: (path: String, fromUpNext: Bool)? {
         guard let current = currentPath else { return nil }
-        if repeatMode == .one { return current }
-        guard let index = queue.firstIndex(of: current) else { return nil }
-        if index + 1 < queue.count { return queue[index + 1] }
-        return repeatMode == .all ? queue.first : nil
+        if repeatMode == .one { return (current, false) }
+        if let entry = upNext.first { return (entry.path, true) }
+        return queueAhead.first.map { ($0, false) }
+    }
+
+    // MARK: Up Next
+
+    func playNext(_ paths: [String]) { enqueue(paths, atFront: true) }
+
+    func addToQueue(_ paths: [String]) { enqueue(paths, atFront: false) }
+
+    private func enqueue(_ paths: [String], atFront: Bool) {
+        var entries = paths.map { QueueEntry(path: $0) }
+        // With nothing loaded, the first one plays right away.
+        let first = currentPath == nil && !entries.isEmpty ? entries.removeFirst() : nil
+        upNext.insert(contentsOf: entries, at: atFront ? 0 : upNext.count)
+        if let first {
+            play(first.path, in: [first.path])
+        } else {
+            preloadNext()
+        }
+    }
+
+    func removeFromUpNext(_ ids: Set<QueueEntry.ID>) {
+        upNext.removeAll { ids.contains($0.id) }
+        preloadNext()
+    }
+
+    func moveUpNext(from source: IndexSet, to destination: Int) {
+        upNext.move(fromOffsets: source, toOffset: destination)
+        preloadNext()
+    }
+
+    func clearUpNext() {
+        upNext.removeAll()
+        preloadNext()
+    }
+
+    /// Plays a song from Up Next, skipping the ones before it.
+    func playFromUpNext(_ id: QueueEntry.ID) {
+        guard let index = upNext.firstIndex(where: { $0.id == id }) else { return }
+        let path = upNext[index].path
+        upNext.removeFirst(index + 1)
+        load(path, autoplay: true, startAt: resumePoint(for: path))
+    }
+
+    /// Jumps to a song further along the queue.
+    func playFromQueue(_ path: String) {
+        guard queue.contains(path) else { return }
+        queuePath = path
+        load(path, autoplay: true, startAt: resumePoint(for: path))
     }
 
     /// Queues the next track behind the current one, replacing whatever was queued.
@@ -158,16 +224,23 @@ final class PlayerEngine {
         }
         // Tracks that resume mid-way load when they start instead.
         guard let playingItem, player.items().contains(playingItem),
-              let path = nextPath, resumePoint(for: path) == nil else { return }
+              let (path, fromUpNext) = nextUp, resumePoint(for: path) == nil else { return }
         let item = AVPlayerItem(url: URL(fileURLWithPath: path))
         player.insert(item, after: playingItem)
-        upcoming = (item, path)
+        upcoming = (item, path, fromUpNext)
     }
 
     private func advance(by step: Int, automatic: Bool) {
-        guard let current = currentPath, !queue.isEmpty else { return }
-        let index = queue.firstIndex(of: current) ?? -1
-        var target = index + step
+        guard let current = currentPath else { return }
+        if step > 0, let entry = upNext.first {
+            upNext.removeFirst()
+            load(entry.path, autoplay: automatic || isPlaying, startAt: resumePoint(for: entry.path))
+            return
+        }
+        guard !queue.isEmpty else { return }
+        let index = queuePath.flatMap(queue.firstIndex(of:)) ?? -1
+        // Back from a song out of Up Next returns to the queue's place.
+        var target = step < 0 && current != queuePath && index >= 0 ? index : index + step
         if target >= queue.count {
             guard repeatMode == .all || !automatic else {
                 // End of the queue: stop on the last track, rewound.
@@ -178,6 +251,7 @@ final class PlayerEngine {
         } else if target < 0 {
             target = queue.count - 1
         }
+        queuePath = queue[target]
         load(queue[target], autoplay: automatic || isPlaying, startAt: resumePoint(for: queue[target]))
     }
 
@@ -205,6 +279,11 @@ final class PlayerEngine {
     private func adoptUpcoming() {
         guard let upcoming else { return }
         self.upcoming = nil
+        if upcoming.fromUpNext {
+            upNext.removeFirst()
+        } else if upcoming.path != currentPath {
+            queuePath = upcoming.path
+        }
         currentPath = upcoming.path
         library.lastTrackPath = upcoming.path
         playingItem = upcoming.item
@@ -237,6 +316,7 @@ final class PlayerEngine {
         let list = library.paths(for: library.selection)
         sourceQueue = list.contains(path) ? list : [path]
         rebuildQueue(startingWith: path)
+        queuePath = path
         load(path, autoplay: false, startAt: library.position(path))
     }
 
