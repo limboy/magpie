@@ -4,6 +4,10 @@ options:
   deploymentTarget:
     macOS: "26.0"
   createIntermediateGroups: true
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.10.0
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -22,11 +26,17 @@ targets:
       - path: assets/app.icon
         type: file
         buildPhase: resources
+    dependencies:
+      - package: Sparkle
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.limboy.magpie
         PRODUCT_NAME: Magpie
         GENERATE_INFOPLIST_FILE: YES
+        # Sparkle's keys, merged into the generated Info.plist.
+        INFOPLIST_FILE: Magpie/Info.plist
+        # Each GitHub release carries its own appcast.xml (scripts/release.sh).
+        SPARKLE_FEED_URL: https://github.com/limboy/magpie-native/releases/latest/download/appcast.xml
         INFOPLIST_KEY_CFBundleDisplayName: Magpie
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.music
         INFOPLIST_KEY_NSHumanReadableCopyright: ""
@@ -36,3 +46,10 @@ targets:
         ENABLE_APP_SANDBOX: NO
         COMBINE_HIDPI_IMAGES: YES
         ASSETCATALOG_COMPILER_APPICON_NAME: app
+      configs:
+        # Builds run from Xcode never offer to replace themselves; the menu
+        # item still checks.
+        Debug:
+          SPARKLE_AUTOMATIC_CHECKS: NO
+        Release:
+          SPARKLE_AUTOMATIC_CHECKS: YES

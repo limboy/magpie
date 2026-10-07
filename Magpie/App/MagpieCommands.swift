@@ -4,8 +4,14 @@ struct MagpieCommands: Commands {
     let library: LibraryStore
     let player: PlayerEngine
     let ui: AppState
+    let updater: Updater
 
     var body: some Commands {
+        CommandGroup(after: .appInfo) {
+            Button("Check for Updates…") { updater.checkForUpdates() }
+                .disabled(!updater.canCheckForUpdates)
+        }
+
         CommandGroup(replacing: .newItem) {
             Button("Add Folder…") { library.presentAddFolder() }
                 .keyboardShortcut("o")

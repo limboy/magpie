@@ -5,6 +5,7 @@ struct MagpieApp: App {
     @State private var library: LibraryStore
     @State private var player: PlayerEngine
     @State private var ui: AppState
+    @State private var updater = Updater()
 
     init() {
         // Before anything reads the library or settings.
@@ -24,7 +25,7 @@ struct MagpieApp: App {
         }
         .defaultSize(width: 1080, height: 720)
         .windowToolbarStyle(.unified)
-        .commands { MagpieCommands(library: library, player: player, ui: ui) }
+        .commands { MagpieCommands(library: library, player: player, ui: ui, updater: updater) }
     }
 }
 

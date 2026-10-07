@@ -27,4 +27,14 @@ xcodebuild -project Magpie.xcodeproj -scheme Magpie -configuration Debug -derive
 open build/Build/Products/Debug/Magpie.app
 ```
 
+## Releasing
+
+Magpie updates itself with [Sparkle](https://sparkle-project.org) (Magpie → Check for Updates…, and automatically in Release builds). Its feed is the `appcast.xml` attached to the latest GitHub release.
+
+```bash
+scripts/release.sh 0.2.0 notes.md
+```
+
+This sets the version, commits and tags `v0.2.0`, builds the Release app, zips it, signs the zip with the Sparkle key in your Keychain, writes `appcast.xml`, and publishes both as a GitHub release. Without a notes file, the notes are the commit subjects since the last tag. `DRY_RUN=1` builds and signs into `dist/` without touching git or GitHub.
+
 Formats: MP3, AAC/M4A/M4B, ALAC, FLAC, WAV, AIFF, CAF. OGG isn't supported by AVFoundation.
