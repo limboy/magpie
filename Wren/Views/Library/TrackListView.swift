@@ -85,9 +85,27 @@ struct TrackListView: View {
             return true
         }
         .onChange(of: library.selection) { selection.removeAll() }
-        // Shown in the toolbar row: the collection name over the song count.
-        .navigationTitle(library.collections.isEmpty ? "Wren" : library.title(for: library.selection))
-        .navigationSubtitle(library.collections.isEmpty ? "" : summary(rows))
+        // The collection name over the song count, in the toolbar row. A custom
+        // item rather than navigationTitle, so it can be larger and line up
+        // with the list.
+        .toolbar {
+            ToolbarItem(placement: .navigation) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(library.collections.isEmpty ? "Wren" : library.title(for: library.selection))
+                        .font(.system(size: 17, weight: .bold))
+                    if !library.collections.isEmpty {
+                        Text(summary(rows))
+                            .font(.system(size: 11))
+                            .monospacedDigit()
+                            .foregroundStyle(.secondary)
+                            .contentTransition(.numericText())
+                    }
+                }
+                .lineLimit(1)
+            }
+            .sharedBackgroundVisibility(.hidden)
+        }
+        .toolbar(removing: .title)
     }
 
     // MARK: Summary

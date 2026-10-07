@@ -16,6 +16,7 @@ struct LibraryView: View {
 
 struct ListModeToolbar: ToolbarContent {
     var body: some ToolbarContent {
+        ToolbarSpacer(.flexible)
         ToolbarItem(placement: .primaryAction) {
             FilterSortMenu()
         }
