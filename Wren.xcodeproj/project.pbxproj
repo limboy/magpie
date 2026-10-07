@@ -20,6 +20,7 @@
 		6C9A8E9ACC7BADDDF7A22CBB /* LibraryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F7E2EDCB537B50B9A45BE0D /* LibraryModels.swift */; };
 		6E377D17283C98C10163A5FC /* LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D0D50531825B06F8773DDC3 /* LibraryStore.swift */; };
 		71E24542073720F049726E74 /* AudioFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2942FCDD8EFCAB0588DB9F00 /* AudioFiles.swift */; };
+		900B4F5699A2B33DC7E6BE10 /* TrackTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6688CC465985379B9BFF5CDD /* TrackTable.swift */; };
 		94604805483F9EEF1767078E /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A36B14991858989C61CE6E8 /* LibraryView.swift */; };
 		9DB95B57A235F363621E106D /* FolderWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = E56F0791B7E102BC078378FF /* FolderWatcher.swift */; };
 		A55C74021EDFCB0D845F3273 /* Metadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00CD3D7B83B2E84A9A39D3A /* Metadata.swift */; };
@@ -36,6 +37,7 @@
 		45827C44222820FBC1DD812A /* TransportControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransportControls.swift; sourceTree = "<group>"; };
 		4D0D50531825B06F8773DDC3 /* LibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryStore.swift; sourceTree = "<group>"; };
 		52F56D00DCEB19E088FE5EC8 /* WrenCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WrenCommands.swift; sourceTree = "<group>"; };
+		6688CC465985379B9BFF5CDD /* TrackTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackTable.swift; sourceTree = "<group>"; };
 		6F7E2EDCB537B50B9A45BE0D /* LibraryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryModels.swift; sourceTree = "<group>"; };
 		71DAA8D2C29E4138F2724E83 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		720F4D058A059FAC38C27F23 /* Lyrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lyrics.swift; sourceTree = "<group>"; };
@@ -126,6 +128,7 @@
 				7A36B14991858989C61CE6E8 /* LibraryView.swift */,
 				71DAA8D2C29E4138F2724E83 /* SidebarView.swift */,
 				C22C83B41189C811B053E39C /* TrackListView.swift */,
+				6688CC465985379B9BFF5CDD /* TrackTable.swift */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -236,6 +239,7 @@
 				46B19FCAA0AECEAC53CD49D0 /* ThinSlider.swift in Sources */,
 				6BA3DD3B1C45D198CD845371 /* Track.swift in Sources */,
 				C19D046436610C6375D6B760 /* TrackListView.swift in Sources */,
+				900B4F5699A2B33DC7E6BE10 /* TrackTable.swift in Sources */,
 				31ECDF02005DB61AB0E29B14 /* TransportControls.swift in Sources */,
 				0677B9AF1BCEF91FDC546828 /* WrenApp.swift in Sources */,
 				0414E93CFDE9010CE3E63658 /* WrenCommands.swift in Sources */,

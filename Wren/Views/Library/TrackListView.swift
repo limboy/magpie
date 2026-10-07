@@ -21,12 +21,6 @@ struct TrackListView: View {
 
     @State private var selection = Set<String>()
 
-    private static let sortKeyPaths: [(SortKey, PartialKeyPath<TrackRow>)] = [
-        (.order, \TrackRow.order), (.title, \TrackRow.title), (.artist, \TrackRow.artist),
-        (.album, \TrackRow.album), (.duration, \TrackRow.duration), (.plays, \TrackRow.plays),
-        (.added, \TrackRow.added),
-    ]
-
     private static func comparator(_ key: SortKey, ascending: Bool) -> KeyPathComparator<TrackRow> {
         let order: SortOrder = ascending ? .forward : .reverse
         return switch key {
@@ -37,18 +31,6 @@ struct TrackListView: View {
         case .duration: KeyPathComparator(\.duration, order: order)
         case .plays: KeyPathComparator(\.plays, order: order)
         case .added: KeyPathComparator(\.added, order: order)
-        }
-    }
-
-    /// The table's column headers and the toolbar menu share one sort setting.
-    private var sortOrder: Binding<[KeyPathComparator<TrackRow>]> {
-        Binding {
-            [Self.comparator(ui.sortKey, ascending: ui.sortAscending)]
-        } set: { comparators in
-            guard let first = comparators.first,
-                  let key = Self.sortKeyPaths.first(where: { $0.1 == first.keyPath })?.0 else { return }
-            ui.sortKey = key
-            ui.sortAscending = first.order == .forward
         }
     }
 
@@ -68,7 +50,7 @@ struct TrackListView: View {
                 added: library.addedDate(path, in: item) ?? .distantPast, order: index
             )
         }
-        return rows.sorted(using: sortOrder.wrappedValue)
+        return rows.sorted(using: Self.comparator(ui.sortKey, ascending: ui.sortAscending))
     }
 
     var body: some View {
@@ -126,87 +108,39 @@ struct TrackListView: View {
     // MARK: Table
 
     private func table(_ rows: [TrackRow]) -> some View {
-        Table(rows, selection: $selection, sortOrder: sortOrder) {
-            TableColumn("#", value: \.order) { row in
-                NowPlayingIndicator(
-                    order: row.order + 1, isCurrent: row.id == player.currentPath, isPlaying: player.isPlaying
-                )
-            }
-            .width(32)
-
-            TableColumn("Title", value: \.title) { row in
-                Text(row.title)
-                    .fontWeight(row.id == player.currentPath ? .semibold : .regular)
-                    .foregroundStyle(row.id == player.currentPath ? Color.accentColor : .primary)
-            }
-            .width(min: 160, ideal: 280)
-
-            TableColumn("Artist", value: \.artist) { row in
-                Text(row.artist).foregroundStyle(.secondary)
-            }
-            .width(min: 100, ideal: 180)
-
-            TableColumn("Album", value: \.album) { row in
-                Text(row.album).foregroundStyle(.secondary)
-            }
-            .width(min: 100, ideal: 180)
-
-            TableColumn("Plays", value: \.plays) { row in
-                Text(row.plays > 0 ? "\(row.plays)" : "")
-                    .monospacedDigit()
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-            }
-            .width(48)
-
-            TableColumn("Time", value: \.duration) { row in
-                Text(row.duration > 0 ? formatTime(row.duration) : "")
-                    .monospacedDigit()
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-            }
-            .width(56)
-
-            TableColumn(Text(Image(systemName: "star"))) { row in
-                Button {
-                    library.toggleFavorite(row.id)
-                } label: {
-                    Image(systemName: row.isFavorite ? "star.fill" : "star")
-                        .foregroundStyle(row.isFavorite ? Color.accentColor : Color.secondary.opacity(0.5))
-                }
-                .buttonStyle(.plain)
-                .help(row.isFavorite ? "Unfavorite" : "Favorite")
-            }
-            .width(28)
-        }
-        .tableStyle(.inset)
-        .alternatingRowBackgrounds(.enabled)
-        .contextMenu(forSelectionType: String.self) { ids in
-            contextMenu(ids, rows: rows)
-        } primaryAction: { ids in
-            if let id = rows.first(where: { ids.contains($0.id) })?.id {
-                player.play(id, in: rows.map(\.id))
-            }
-        }
+        let ids = rows.map(\.id)
+        return TrackTable(
+            rows: rows,
+            currentPath: player.currentPath,
+            isPlaying: player.isPlaying,
+            selection: $selection,
+            sortKey: ui.sortKey,
+            sortAscending: ui.sortAscending,
+            onSort: { key, ascending in
+                ui.sortKey = key
+                ui.sortAscending = ascending
+            },
+            onPlay: { player.play($0, in: ids) },
+            onToggleFavorite: { library.toggleFavorite($0) },
+            menu: { menuEntries($0, ids: ids) }
+        )
     }
 
-    @ViewBuilder
-    private func contextMenu(_ ids: Set<String>, rows: [TrackRow]) -> some View {
-        if let first = rows.first(where: { ids.contains($0.id) }) {
-            Button("Play") { player.play(first.id, in: rows.map(\.id)) }
-            Divider()
-            let allFavorite = ids.allSatisfy(library.isFavorite)
-            Button(allFavorite ? "Unfavorite" : "Favorite") {
-                for id in ids where library.isFavorite(id) == allFavorite { library.toggleFavorite(id) }
-            }
-            Button("Show in Finder") { library.revealInFinder(Array(ids)) }
-            if case .collection(let collectionID) = library.selection {
-                Divider()
-                Button("Remove from Collection", role: .destructive) {
-                    library.remove(ids, from: collectionID)
-                }
-            }
+    private func menuEntries(_ selected: Set<String>, ids: [String]) -> [TrackMenuEntry] {
+        guard let first = ids.first(where: selected.contains) else { return [] }
+        let allFavorite = selected.allSatisfy(library.isFavorite)
+        var entries: [TrackMenuEntry] = [
+            .item("Play") { player.play(first, in: ids) },
+            .separator,
+            .item(allFavorite ? "Unfavorite" : "Favorite") {
+                for id in selected where library.isFavorite(id) == allFavorite { library.toggleFavorite(id) }
+            },
+            .item("Show in Finder") { library.revealInFinder(Array(selected)) },
+        ]
+        if case .collection(let collectionID) = library.selection {
+            entries += [.separator, .item("Remove from Collection") { library.remove(selected, from: collectionID) }]
         }
+        return entries
     }
 
     // MARK: Empty states
@@ -246,28 +180,5 @@ struct TrackListView: View {
                 description: Text("Drop audio files or folders here to add them.")
             )
         }
-    }
-}
-
-/// Table cells get plain values rather than reading the environment: SwiftUI
-/// can re-render a cell that's being removed without its environment.
-private struct NowPlayingIndicator: View {
-    let order: Int
-    let isCurrent: Bool
-    let isPlaying: Bool
-
-    var body: some View {
-        Group {
-            if isCurrent {
-                Image(systemName: "speaker.wave.2.fill")
-                    .symbolEffect(.variableColor.iterative.dimInactiveLayers, isActive: isPlaying)
-                    .foregroundStyle(Color.accentColor)
-            } else {
-                Text("\(order)")
-                    .monospacedDigit()
-                    .foregroundStyle(.tertiary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .trailing)
     }
 }
