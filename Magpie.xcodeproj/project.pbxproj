@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		013506B92F450EACB3000D60 /* app.icon in Resources */ = {isa = PBXBuildFile; fileRef = B2325B2197D0A7101A0CCAF5 /* app.icon */; };
 		056D94C43E21F492493A1069 /* TransportControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA548FD471C02A5D9CFB123 /* TransportControls.swift */; };
 		0C6BBC15C6B39B0FB4AB4BEB /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130D8D65237FC6BA26816B03 /* Storage.swift */; };
 		1A741C816DED9F447D8D32AB /* MagpieApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BE3EDEFFA3312B7416A3144 /* MagpieApp.swift */; };
@@ -54,6 +55,7 @@
 		8AA5AB43E7AE5118E079DF15 /* PlayerModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerModeView.swift; sourceTree = "<group>"; };
 		9BE3EDEFFA3312B7416A3144 /* MagpieApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagpieApp.swift; sourceTree = "<group>"; };
 		AFF5AD32BB133E96D82360F1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B2325B2197D0A7101A0CCAF5 /* app.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = app.icon; sourceTree = "<group>"; };
 		B3C36E32F9A7C6B096E4C511 /* LyricsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsPanel.swift; sourceTree = "<group>"; };
 		BC32FE433F4C42A11B022350 /* Lyrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lyrics.swift; sourceTree = "<group>"; };
 		CAA548FD471C02A5D9CFB123 /* TransportControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransportControls.swift; sourceTree = "<group>"; };
@@ -111,6 +113,7 @@
 		6FA7DC1D53FD2BCF071E90B5 = {
 			isa = PBXGroup;
 			children = (
+				7899B9155374B316A99BB8C0 /* assets */,
 				B5722FC4F81C8876A980761A /* Magpie */,
 				949197DB4BAEC6C4EFAC08F8 /* Products */,
 			);
@@ -123,6 +126,14 @@
 				5B5AB2166BCC75BED6F03515 /* MagpieCommands.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		7899B9155374B316A99BB8C0 /* assets */ = {
+			isa = PBXGroup;
+			children = (
+				B2325B2197D0A7101A0CCAF5 /* app.icon */,
+			);
+			path = assets;
 			sourceTree = "<group>";
 		};
 		7DEF9536DD99669738AEA812 /* Models */ = {
@@ -176,6 +187,7 @@
 			buildConfigurationList = 68D94158CF2474557D86C0AD /* Build configuration list for PBXNativeTarget "Magpie" */;
 			buildPhases = (
 				B68FCA56FEA15742558D5547 /* Sources */,
+				9C8BE836A46B789338C57761 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -221,6 +233,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		9C8BE836A46B789338C57761 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				013506B92F450EACB3000D60 /* app.icon in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		B68FCA56FEA15742558D5547 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -260,7 +283,7 @@
 		607858AD17BF89108D62C24B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = app;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -344,7 +367,7 @@
 		9ED467995E2BCE0CB17170B5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = app;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;

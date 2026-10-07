@@ -18,6 +18,10 @@ targets:
     platform: macOS
     sources:
       - path: Magpie
+      # An Icon Composer icon; actool compiles it into the app icon.
+      - path: assets/app.icon
+        type: file
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.limboy.magpie
@@ -31,3 +35,4 @@ targets:
         ENABLE_HARDENED_RUNTIME: NO
         ENABLE_APP_SANDBOX: NO
         COMBINE_HIDPI_IMAGES: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: app
