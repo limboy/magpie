@@ -3,8 +3,8 @@ import SwiftUI
 struct ContentView: View {
     @Environment(AppState.self) private var ui
     @Environment(PlayerEngine.self) private var player
+    let split: LibrarySplitController
     @State private var keyMonitor: Any?
-    @State private var window: NSWindow?
 
     var body: some View {
         // The song list stays alive under the player, which slides up over the
@@ -16,8 +16,8 @@ struct ContentView: View {
             // left edge, so the toolbar's trailing section (the player's
             // buttons) stays in the window.
             GeometryReader { geometry in
-                let minimum = DisplayMode.list.minimumSize
-                LibraryView()
+                let minimum = ui.minimumSize(for: .list)
+                LibraryView(split: split)
                     .frame(
                         width: max(geometry.size.width, minimum.width),
                         height: max(geometry.size.height, minimum.height)
@@ -41,16 +41,11 @@ struct ContentView: View {
             .zIndex(1)
             .allowsHitTesting(ui.mode == .player)
         }
-        .frame(minWidth: ui.mode.minimumSize.width, minHeight: ui.mode.minimumSize.height)
-        // In full screen the toolbar sits in its own opaque strip that the
-        // player can't reach under; let it hide until the pointer nears the top.
-        .windowToolbarFullScreenVisibility(ui.mode == .player ? .onHover : .automatic)
-        .background(WindowReader(window: $window))
+        .frame(minWidth: ui.minimumSize(for: ui.mode).width, minHeight: ui.minimumSize(for: ui.mode).height)
         .onAppear(perform: installKeyMonitor)
         .sheet(isPresented: Binding(get: { ui.infoPath != nil }, set: { if !$0 { ui.infoPath = nil } })) {
             if let path = ui.infoPath { TrackInfoView(path: path) }
         }
-        .onChange(of: window) { ui.window = window }
     }
 
     /// Space toggles playback anywhere except while editing text.
@@ -64,21 +59,6 @@ struct ContentView: View {
             MainActor.assumeIsolated { player.togglePlayPause() }
             return nil
         }
-    }
-}
-
-/// Hands back the NSWindow hosting this view.
-private struct WindowReader: NSViewRepresentable {
-    @Binding var window: NSWindow?
-
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        DispatchQueue.main.async { window = view.window }
-        return view
-    }
-
-    func updateNSView(_ view: NSView, context: Context) {
-        if window == nil { DispatchQueue.main.async { window = view.window } }
     }
 }
 

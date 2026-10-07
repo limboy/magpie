@@ -2,31 +2,50 @@ import SwiftUI
 
 @main
 struct MagpieApp: App {
-    @State private var library: LibraryStore
-    @State private var player: PlayerEngine
-    @State private var ui: AppState
-    @State private var updater = Updater()
-
-    init() {
-        // Before anything reads the library or settings.
-        Storage.migrateFromWren()
-        _ui = State(initialValue: AppState())
-        let library = LibraryStore()
-        _library = State(initialValue: library)
-        _player = State(initialValue: PlayerEngine(library: library))
-    }
+    @NSApplicationDelegateAdaptor private var app: AppDelegate
 
     var body: some Scene {
-        Window("Magpie", id: "main") {
-            ContentView()
-                .environment(library)
-                .environment(player)
-                .environment(ui)
-        }
-        .defaultSize(width: 1080, height: 720)
-        .windowToolbarStyle(.unified)
-        .commands { MagpieCommands(library: library, player: player, ui: ui, updater: updater) }
+        // The main window is AppKit's (MainWindowController); this scene only
+        // carries the menus.
+        Settings { EmptyView() }
+            .commands {
+                MagpieCommands(library: app.library, player: app.player, ui: app.ui, updater: app.updater)
+                CommandGroup(replacing: .appSettings) {}
+            }
     }
+}
+
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    let ui: AppState
+    let library: LibraryStore
+    let player: PlayerEngine
+    let updater = Updater()
+    private var windowController: MainWindowController?
+
+    override init() {
+        // Before anything reads the library or settings.
+        Storage.migrateFromWren()
+        ui = AppState()
+        library = LibraryStore()
+        player = PlayerEngine(library: library)
+        super.init()
+    }
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        // One window, no tabs (and no tab items in the View menu).
+        NSWindow.allowsAutomaticWindowTabbing = false
+        let controller = MainWindowController(library: library, player: player, ui: ui)
+        windowController = controller
+        controller.showWindow(nil)
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        if !hasVisibleWindows { windowController?.showWindow(nil) }
+        return true
+    }
+
+    // As with a single SwiftUI Window scene: closing the window quits.
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 }
 
 @Observable
@@ -37,6 +56,8 @@ final class AppState {
     /// view mid-slide) and the player's lyrics.
     private(set) var settledMode: DisplayMode? = .list
     var searchText = ""
+    /// The song count and length under the collection name, from the song list.
+    var listSummary = ""
     var showLyrics = UserDefaults.standard.object(forKey: "showLyrics") as? Bool ?? true {
         didSet { UserDefaults.standard.set(showLyrics, forKey: "showLyrics") }
     }
@@ -56,16 +77,33 @@ final class AppState {
 
     /// Kept in step by the library's split view, which also does the toggling.
     var isSidebarCollapsed = false
+    var isLyricsSidebarCollapsed = true
+    var sidebarWidth = LibraryLayout.defaultSidebarWidth
     @ObservationIgnored var toggleSidebar: () -> Void = {}
+    @ObservationIgnored var toggleLyricsSidebar: () -> Void = {}
+
+    /// The window's minimum content size in a mode. The song list's leaves
+    /// it room beside whichever sidebars are open.
+    func minimumSize(for mode: DisplayMode) -> CGSize {
+        var size = mode.minimumSize
+        guard mode == .list else { return size }
+        let sidebars = (isSidebarCollapsed ? 0 : sidebarWidth) + (isLyricsSidebarCollapsed ? 0 : LibraryLayout.lyricsWidth)
+        size.width = max(size.width, LibraryLayout.songsMinimumWidth + sidebars)
+        return size
+    }
+
+    /// Whether ⌘U would hide lyrics: the player's, or the song list's sidebar.
+    var lyricsShown: Bool { mode == .player ? showLyrics : !isLyricsSidebarCollapsed }
 
     @ObservationIgnored weak var window: NSWindow?
     /// Each mode keeps its own window size, so a small player window doesn't
     /// squeeze the song list (and vice versa).
     @ObservationIgnored private var savedSizes: [DisplayMode: NSSize] = [:]
 
-    /// ⌘U and the player's lyrics button. Lyrics show only in the player.
+    /// ⌘U and the lyrics buttons: the player's lyrics, or over the song list,
+    /// its lyrics sidebar.
     func toggleLyrics() {
-        guard mode == .player else { return }
+        guard mode == .player else { return toggleLyricsSidebar() }
         withAnimation(.smooth) { showLyrics.toggle() }
     }
 
@@ -84,7 +122,7 @@ final class AppState {
 
         savedSizes[mode] = window.frame.size
         var size = savedSizes[new] ?? window.frame.size
-        let minimum = window.frameRect(forContentRect: NSRect(origin: .zero, size: new.minimumSize)).size
+        let minimum = window.frameRect(forContentRect: NSRect(origin: .zero, size: minimumSize(for: new))).size
         size.width = max(size.width, minimum.width)
         size.height = max(size.height, minimum.height)
         // Keep the top-left corner where it is.

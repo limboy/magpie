@@ -92,12 +92,25 @@ struct NowPlayingLCD: View {
 
     private var accessories: some View {
         HStack(spacing: 2) {
+            lyricsButton
             FavoriteButton(path: player.currentPath, size: Self.iconSize, weight: Self.iconWeight)
             if !isCompact { moreMenu }
         }
     }
 
-    // Star and more share one size and weight.
+    private var lyricsButton: some View {
+        let shown = !ui.isLyricsSidebarCollapsed
+        return Button {
+            ui.toggleLyricsSidebar()
+        } label: {
+            accessoryIcon(shown ? "quote.bubble.fill" : "quote.bubble")
+                .foregroundStyle(shown ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
+        }
+        .buttonStyle(PressableStyle())
+        .help(shown ? "Hide Lyrics (⌘U)" : "Show Lyrics (⌘U)")
+    }
+
+    // Lyrics, star and more share one size and weight.
     private static let iconSize: CGFloat = 15
     private static let iconWeight: Font.Weight = .medium
 

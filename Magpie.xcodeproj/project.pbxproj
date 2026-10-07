@@ -22,6 +22,7 @@
 		5A3031E06FAA1E8DDFB7BED5 /* AudioFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A739C3B08E0A18339C4B46D /* AudioFiles.swift */; };
 		600FDDCD391666C880D4BBCD /* PlayerModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA5AB43E7AE5118E079DF15 /* PlayerModeView.swift */; };
 		61A29825F7DCAF4C9E8B67D6 /* TrackInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EE7D1E6C0C3E8A5DF2EE167 /* TrackInfoView.swift */; };
+		629C2EEFF715B62F33F0026D /* MainWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33F720141A5A3DB29F31B7E3 /* MainWindowController.swift */; };
 		8131DD75927F0719937F5FCA /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 491E4AC022D4704414DEBE72 /* Sparkle */; };
 		82FC8AEFC6949C5584871D8B /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EDEFFC652E4F140B528CE68 /* SidebarView.swift */; };
 		9DF0361C8C0601A1C4165A0F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF5AD32BB133E96D82360F1 /* ContentView.swift */; };
@@ -44,6 +45,7 @@
 		1C4A25A1E1C3655D5AAB9DC8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		30A042BB00B0676A28CFBFFA /* ThinSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThinSlider.swift; sourceTree = "<group>"; };
 		318A8599D1C3A7E30B43868C /* AmbientBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientBackground.swift; sourceTree = "<group>"; };
+		33F720141A5A3DB29F31B7E3 /* MainWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindowController.swift; sourceTree = "<group>"; };
 		34110A922267DED81135D507 /* ArtworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtworkView.swift; sourceTree = "<group>"; };
 		3B842C2D78B6D3FFD712BF72 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		47A4EE1E708F62CF234968B7 /* LibrarySplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySplitView.swift; sourceTree = "<group>"; };
@@ -142,6 +144,7 @@
 			children = (
 				9BE3EDEFFA3312B7416A3144 /* MagpieApp.swift */,
 				5B5AB2166BCC75BED6F03515 /* MagpieCommands.swift */,
+				33F720141A5A3DB29F31B7E3 /* MainWindowController.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -287,6 +290,7 @@
 				B4084BA1D934EC504AB4C5C0 /* LyricsPanel.swift in Sources */,
 				1A741C816DED9F447D8D32AB /* MagpieApp.swift in Sources */,
 				E46A791D83C65E24272015F8 /* MagpieCommands.swift in Sources */,
+				629C2EEFF715B62F33F0026D /* MainWindowController.swift in Sources */,
 				A4F4E12CB7DEDCDFB6FD5DC7 /* Metadata.swift in Sources */,
 				55E589A0B5858FB2B08F091D /* NowPlayingLCD.swift in Sources */,
 				3FC68ACA628A3088CB2CD932 /* PlayerEngine.swift in Sources */,

@@ -30,9 +30,8 @@ struct MagpieCommands: Commands {
         CommandGroup(before: .sidebar) {
             Button(ui.mode == .list ? "Show Player" : "Show Song List") { ui.toggleMode() }
                 .keyboardShortcut("f", modifiers: [.command, .shift])
-            Button(ui.showLyrics ? "Hide Lyrics" : "Show Lyrics") { ui.toggleLyrics() }
+            Button(ui.lyricsShown ? "Hide Lyrics" : "Show Lyrics") { ui.toggleLyrics() }
                 .keyboardShortcut("u")
-                .disabled(ui.mode != .player)
             Divider()
         }
 
