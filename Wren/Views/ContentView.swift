@@ -42,6 +42,9 @@ struct ContentView: View {
             .allowsHitTesting(ui.mode == .player)
         }
         .frame(minWidth: ui.mode.minimumSize.width, minHeight: ui.mode.minimumSize.height)
+        // In full screen the toolbar sits in its own opaque strip that the
+        // player can't reach under; let it hide until the pointer nears the top.
+        .windowToolbarFullScreenVisibility(ui.mode == .player ? .onHover : .automatic)
         .background(WindowReader(window: $window))
         .onAppear(perform: installKeyMonitor)
         .sheet(isPresented: Binding(get: { ui.infoPath != nil }, set: { if !$0 { ui.infoPath = nil } })) {
