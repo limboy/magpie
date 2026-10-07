@@ -23,15 +23,24 @@ final class PlayerEngine {
         didSet {
             UserDefaults.standard.set(shuffle, forKey: "shuffle")
             rebuildQueue()
+            preloadNext()
         }
     }
     var repeatMode: RepeatMode {
-        didSet { UserDefaults.standard.set(repeatMode.rawValue, forKey: "repeatMode") }
+        didSet {
+            UserDefaults.standard.set(repeatMode.rawValue, forKey: "repeatMode")
+            preloadNext()
+        }
     }
 
     let library: LibraryStore
 
-    @ObservationIgnored private let player = AVPlayer()
+    @ObservationIgnored private let player = AVQueuePlayer()
+    /// The item for `currentPath`. The player may already have moved past it
+    /// by the time we hear it finished.
+    @ObservationIgnored private var playingItem: AVPlayerItem?
+    /// The next track, queued behind the current one so it starts without a gap.
+    @ObservationIgnored private var upcoming: (item: AVPlayerItem, path: String)?
     @ObservationIgnored private var sourceQueue: [String] = []
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
     @ObservationIgnored private var timeObserver: Any?
@@ -49,7 +58,7 @@ final class PlayerEngine {
         shuffle = defaults.bool(forKey: "shuffle")
         repeatMode = RepeatMode(rawValue: defaults.string(forKey: "repeatMode") ?? "") ?? .off
         player.volume = Float(volume)
-        player.actionAtItemEnd = .pause
+        player.actionAtItemEnd = .advance
 
         observeTime()
         observeNotifications()
@@ -132,6 +141,29 @@ final class PlayerEngine {
         queue = shuffled
     }
 
+    /// The track that plays when the current one ends on its own, if any.
+    private var nextPath: String? {
+        guard let current = currentPath else { return nil }
+        if repeatMode == .one { return current }
+        guard let index = queue.firstIndex(of: current) else { return nil }
+        if index + 1 < queue.count { return queue[index + 1] }
+        return repeatMode == .all ? queue.first : nil
+    }
+
+    /// Queues the next track behind the current one, replacing whatever was queued.
+    private func preloadNext() {
+        if let upcoming {
+            player.remove(upcoming.item)
+            self.upcoming = nil
+        }
+        // Tracks that resume mid-way load when they start instead.
+        guard let playingItem, player.items().contains(playingItem),
+              let path = nextPath, resumePoint(for: path) == nil else { return }
+        let item = AVPlayerItem(url: URL(fileURLWithPath: path))
+        player.insert(item, after: playingItem)
+        upcoming = (item, path)
+    }
+
     private func advance(by step: Int, automatic: Bool) {
         guard let current = currentPath, !queue.isEmpty else { return }
         let index = queue.firstIndex(of: current) ?? -1
@@ -139,8 +171,7 @@ final class PlayerEngine {
         if target >= queue.count {
             guard repeatMode == .all || !automatic else {
                 // End of the queue: stop on the last track, rewound.
-                pause()
-                seek(to: 0)
+                load(current, autoplay: false)
                 return
             }
             target = 0
@@ -155,7 +186,10 @@ final class PlayerEngine {
         currentPath = path
         library.lastTrackPath = path
         let item = AVPlayerItem(url: URL(fileURLWithPath: path))
-        player.replaceCurrentItem(with: item)
+        player.removeAllItems()
+        upcoming = nil
+        player.insert(item, after: nil)
+        playingItem = item
         currentTime = startAt ?? 0
         duration = library.track(for: path).duration
         if let startAt, startAt > 0 {
@@ -163,6 +197,25 @@ final class PlayerEngine {
         }
         if autoplay { player.play() }
         isPlaying = autoplay
+        preloadNext()
+        trackDidStart()
+    }
+
+    /// The player moved on to the queued track by itself; catch up with it.
+    private func adoptUpcoming() {
+        guard let upcoming else { return }
+        self.upcoming = nil
+        currentPath = upcoming.path
+        library.lastTrackPath = upcoming.path
+        playingItem = upcoming.item
+        currentTime = 0
+        duration = library.track(for: upcoming.path).duration
+        preloadNext()
+        trackDidStart()
+    }
+
+    private func trackDidStart() {
+        guard let path = currentPath else { return }
         updateNowPlaying()
         // Ready the player backdrop's colors before anyone opens it.
         Task { _ = await ArtworkCache.shared.palette(path) }
@@ -204,8 +257,10 @@ final class PlayerEngine {
     }
 
     private func tick(_ seconds: TimeInterval) {
+        // Between the player moving on and us hearing about it, times belong to the next track.
+        guard player.currentItem === playingItem else { return }
         if !isSeeking, seconds.isFinite { currentTime = seconds }
-        if let itemDuration = player.currentItem?.duration.seconds, itemDuration.isFinite, itemDuration > 0,
+        if let itemDuration = playingItem?.duration.seconds, itemDuration.isFinite, itemDuration > 0,
            abs(itemDuration - duration) > 0.5 {
             duration = itemDuration
             updateNowPlaying()
@@ -218,14 +273,14 @@ final class PlayerEngine {
         observers.append(center.addObserver(forName: AVPlayerItem.didPlayToEndTimeNotification, object: nil, queue: .main) { [weak self] note in
             let item = note.object as? AVPlayerItem
             MainActor.assumeIsolated {
-                guard let self, item === self.player.currentItem else { return }
+                guard let self, item === self.playingItem else { return }
                 self.itemDidFinish()
             }
         })
         observers.append(center.addObserver(forName: AVPlayerItem.failedToPlayToEndTimeNotification, object: nil, queue: .main) { [weak self] note in
             let item = note.object as? AVPlayerItem
             MainActor.assumeIsolated {
-                guard let self, item === self.player.currentItem else { return }
+                guard let self, item === self.playingItem else { return }
                 self.advance(by: 1, automatic: true)
             }
         })
@@ -252,11 +307,13 @@ final class PlayerEngine {
         guard let path = currentPath else { return }
         library.recordPlay(path)
         library.setPosition(nil, for: path)
-        if repeatMode == .one {
-            seek(to: 0)
-            player.play()
+        currentTime = 0
+        // The queued track is already playing, unless it failed to load and was dropped.
+        if let upcoming, player.items().contains(upcoming.item) {
+            adoptUpcoming()
+        } else if repeatMode == .one {
+            load(path, autoplay: true)
         } else {
-            currentTime = 0
             advance(by: 1, automatic: true)
         }
     }
