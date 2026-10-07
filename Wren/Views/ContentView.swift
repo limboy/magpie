@@ -10,7 +10,20 @@ struct ContentView: View {
         // The song list stays alive under the player, which slides up over the
         // whole window. Nothing beneath changes, so nothing re-lays out.
         ZStack {
-            LibraryView()
+            // Never squeezed below its own minimum while the smaller player
+            // window covers it: its split views can't fit and AppKit loops
+            // on their constraints until it throws. Any overflow goes off the
+            // left edge, so the toolbar's trailing section (the player's
+            // buttons) stays in the window.
+            GeometryReader { geometry in
+                let minimum = DisplayMode.list.minimumSize
+                LibraryView()
+                    .frame(
+                        width: max(geometry.size.width, minimum.width),
+                        height: max(geometry.size.height, minimum.height)
+                    )
+                    .frame(width: geometry.size.width, height: geometry.size.height, alignment: .topTrailing)
+            }
             // The player's layer spans the whole window, toolbar area
             // included, so its size never changes while it slides.
             GeometryReader { geometry in
