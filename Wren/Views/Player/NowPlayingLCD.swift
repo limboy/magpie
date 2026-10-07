@@ -93,45 +93,49 @@ struct NowPlayingLCD: View {
     // MARK: Accessories
 
     private var accessories: some View {
-        HStack(spacing: 4) {
-            FavoriteButton(path: player.currentPath, size: 13)
-                .foregroundStyle(.secondary)
-
-            if !isCompact { moreMenu }
+        HStack(spacing: 2) {
+            FavoriteButton(path: player.currentPath, size: Self.iconSize, weight: Self.iconWeight)
 
             Button {
                 ui.showLyrics = true
                 if ui.mode == .list { ui.toggleMode() }
             } label: {
-                Image(systemName: "quote.bubble")
-                    .font(.system(size: 17, weight: .semibold))
-                    .frame(width: 30, height: 30)
-                    .contentShape(.rect)
+                accessoryIcon("quote.bubble")
             }
             .buttonStyle(PressableStyle())
             .help("Lyrics")
+
+            if !isCompact { moreMenu }
         }
+    }
+
+    // Star, lyrics and more share one size and weight.
+    private static let iconSize: CGFloat = 15
+    private static let iconWeight: Font.Weight = .medium
+
+    private func accessoryIcon(_ symbol: String) -> some View {
+        Image(systemName: symbol)
+            .font(.system(size: Self.iconSize, weight: Self.iconWeight))
+            .frame(width: Self.iconSize * 2, height: Self.iconSize * 2)
+            .contentShape(.rect)
     }
 
     private var moreMenu: some View {
         Menu {
-                Button("Show Player") { ui.toggleMode() }
-                if let path = player.currentPath {
-                    Button("Show in Finder") { library.revealInFinder([path]) }
-                    Divider()
-                    Button(library.isFavorite(path) ? "Unfavorite" : "Favorite") { library.toggleFavorite(path) }
-                }
-            } label: {
-                Image(systemName: "ellipsis")
-                    .font(.system(size: 15, weight: .bold))
-                    .frame(width: 28, height: 28)
-                    .contentShape(.rect)
+            Button("Show Player") { ui.toggleMode() }
+            if let path = player.currentPath {
+                Button("Show in Finder") { library.revealInFinder([path]) }
+                Divider()
+                Button(library.isFavorite(path) ? "Unfavorite" : "Favorite") { library.toggleFavorite(path) }
             }
-            .menuStyle(.button)
-            .buttonStyle(.plain)
-            .menuIndicator(.hidden)
-            .fixedSize()
-            .help("More")
+        } label: {
+            accessoryIcon("ellipsis")
+        }
+        .menuStyle(.button)
+        .buttonStyle(.plain)
+        .menuIndicator(.hidden)
+        .fixedSize()
+        .help("More")
     }
 }
 

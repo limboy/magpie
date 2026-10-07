@@ -117,6 +117,7 @@ struct FavoriteButton: View {
     @Environment(LibraryStore.self) private var library
     let path: String?
     var size: CGFloat = 12
+    var weight: Font.Weight = .semibold
 
     var body: some View {
         let isFavorite = path.map(library.isFavorite) ?? false
@@ -124,7 +125,8 @@ struct FavoriteButton: View {
             if let path { library.toggleFavorite(path) }
         } label: {
             Image(systemName: isFavorite ? "star.fill" : "star")
-                .font(.system(size: size, weight: .semibold))
+                .font(.system(size: size, weight: weight))
+                .foregroundStyle(isFavorite ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
                 .contentTransition(.symbolEffect(.replace))
                 .frame(width: size * 2, height: size * 2)
                 .contentShape(.rect)
