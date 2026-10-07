@@ -24,9 +24,8 @@ struct WrenCommands: Commands {
         CommandGroup(before: .sidebar) {
             Button(ui.mode == .list ? "Show Player" : "Show Song List") { ui.toggleMode() }
                 .keyboardShortcut("f", modifiers: [.command, .shift])
-            Button(ui.showLyrics ? "Hide Lyrics" : "Show Lyrics") {
-                withAnimation(.smooth) { ui.showLyrics.toggle() }
-            }
+            let lyricsShown = ui.mode == .list ? ui.showLyricsSidebar : ui.showLyrics
+            Button(lyricsShown ? "Hide Lyrics" : "Show Lyrics") { ui.toggleLyrics() }
             .keyboardShortcut("u")
             Divider()
         }

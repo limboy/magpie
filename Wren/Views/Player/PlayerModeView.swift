@@ -30,7 +30,7 @@ struct PlayerModeView: View {
             ToolbarSpacer(.flexible)
             ToolbarItem {
                 Button {
-                    withAnimation(.smooth) { ui.showLyrics.toggle() }
+                    ui.toggleLyrics()
                 } label: {
                     Label("Lyrics", systemImage: ui.showLyrics ? "quote.bubble.fill" : "quote.bubble")
                 }

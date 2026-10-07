@@ -97,13 +97,13 @@ struct NowPlayingLCD: View {
             FavoriteButton(path: player.currentPath, size: Self.iconSize, weight: Self.iconWeight)
 
             Button {
-                ui.showLyrics = true
-                if ui.mode == .list { ui.toggleMode() }
+                ui.toggleLyrics()
             } label: {
-                accessoryIcon("quote.bubble")
+                accessoryIcon(ui.showLyricsSidebar ? "quote.bubble.fill" : "quote.bubble")
+                    .foregroundStyle(ui.showLyricsSidebar ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
             }
             .buttonStyle(PressableStyle())
-            .help("Lyrics")
+            .help(ui.showLyricsSidebar ? "Hide Lyrics (⌘U)" : "Show Lyrics (⌘U)")
 
             if !isCompact { moreMenu }
         }

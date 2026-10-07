@@ -32,6 +32,10 @@ final class AppState {
     var showLyrics = UserDefaults.standard.object(forKey: "showLyrics") as? Bool ?? true {
         didSet { UserDefaults.standard.set(showLyrics, forKey: "showLyrics") }
     }
+    /// The lyrics sidebar beside the song list.
+    var showLyricsSidebar = UserDefaults.standard.bool(forKey: "showLyricsSidebar") {
+        didSet { UserDefaults.standard.set(showLyricsSidebar, forKey: "showLyricsSidebar") }
+    }
     /// Bumped to ask the library view to focus its search field.
     var searchFocusRequest = 0
     var onlyFavorites = UserDefaults.standard.bool(forKey: "onlyFavorites") {
@@ -48,6 +52,13 @@ final class AppState {
     /// Each mode keeps its own window size, so a small player window doesn't
     /// squeeze the song list (and vice versa).
     @ObservationIgnored private var savedSizes: [DisplayMode: NSSize] = [:]
+
+    /// ⌘U and the lyrics buttons: the sidebar in the list, the panel in the player.
+    func toggleLyrics() {
+        withAnimation(.smooth) {
+            if mode == .list { showLyricsSidebar.toggle() } else { showLyrics.toggle() }
+        }
+    }
 
     func toggleMode() {
         let new: DisplayMode = mode == .list ? .player : .list

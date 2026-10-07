@@ -11,6 +11,16 @@ struct LibraryView: View {
             TrackListView()
                 .toolbar { ListModeToolbar() }
         }
+        // On the split view rather than the song list, so the lyrics sidebar
+        // runs the full height of the window like the left one.
+        .inspector(isPresented: Bindable(ui).showLyricsSidebar) {
+            LyricsPanel(fontSize: 20)
+                .padding(.horizontal, 20)
+                .inspectorColumnWidth(min: 240, ideal: 320, max: 480)
+                // An (empty) toolbar section of its own keeps filter and search
+                // over the list instead of above the sidebar.
+                .toolbar { ToolbarSpacer(.flexible) }
+        }
     }
 }
 

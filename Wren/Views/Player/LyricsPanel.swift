@@ -16,7 +16,7 @@ struct LyricsPanel: View {
                 if track == nil {
                     message("Play something to see its lyrics.", symbol: "music.note")
                 } else {
-                    ProgressView().controlSize(.regular).tint(.white)
+                    ProgressView().controlSize(.regular)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             case .synced(let lines):
@@ -25,7 +25,7 @@ struct LyricsPanel: View {
                 ScrollView(showsIndicators: false) {
                     Text(text)
                         .font(.system(size: fontSize * 0.7, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.85))
+                        .foregroundStyle(.primary.opacity(0.85))
                         .lineSpacing(8)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 40)
@@ -54,7 +54,7 @@ struct LyricsPanel: View {
             Image(systemName: symbol).font(.system(size: 28, weight: .light))
             Text(text).font(.callout)
         }
-        .foregroundStyle(.white.opacity(0.45))
+        .foregroundStyle(.secondary)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
@@ -145,7 +145,7 @@ private struct LyricLineView: View {
     var body: some View {
         Text(text.isEmpty ? "♪" : text)
             .font(.system(size: fontSize, weight: .bold))
-            .foregroundStyle(.white.opacity(isActive ? 1 : (hovering ? 0.6 : 0.3)))
+            .foregroundStyle(.primary.opacity(isActive ? 1 : (hovering ? 0.6 : 0.3)))
             .blur(radius: isActive || hovering ? 0 : min(2.5, Double(distance) * 0.6))
             .scaleEffect(isActive ? 1 : 0.96, anchor: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
