@@ -6,9 +6,17 @@ struct LibraryView: View {
     var body: some View {
         let isList = ui.settledMode == .list
         NavigationSplitView {
-            SidebarView()
-                .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 320)
-                .toolbar(removing: isList ? nil : .sidebarToggle)
+            // Over the player there's no sidebar toggle. Only attached then:
+            // even with nil, `toolbar(removing:)` pushes the toggle into the
+            // overflow menu while the sidebar is collapsed.
+            if isList {
+                SidebarView()
+                    .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 320)
+            } else {
+                SidebarView()
+                    .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 320)
+                    .toolbar(removing: .sidebarToggle)
+            }
         } detail: {
             TrackListView()
                 .toolbar {
