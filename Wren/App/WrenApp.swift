@@ -36,10 +36,6 @@ final class AppState {
     var showLyrics = UserDefaults.standard.object(forKey: "showLyrics") as? Bool ?? true {
         didSet { UserDefaults.standard.set(showLyrics, forKey: "showLyrics") }
     }
-    /// The lyrics sidebar beside the song list.
-    var showLyricsSidebar = UserDefaults.standard.bool(forKey: "showLyricsSidebar") {
-        didSet { UserDefaults.standard.set(showLyricsSidebar, forKey: "showLyricsSidebar") }
-    }
     /// Bumped to ask the library view to focus its search field.
     var searchFocusRequest = 0
     /// The song shown in the Get Info sheet, if open.
@@ -59,11 +55,10 @@ final class AppState {
     /// squeeze the song list (and vice versa).
     @ObservationIgnored private var savedSizes: [DisplayMode: NSSize] = [:]
 
-    /// ⌘U and the lyrics buttons: the sidebar in the list, the panel in the player.
+    /// ⌘U and the player's lyrics button. Lyrics show only in the player.
     func toggleLyrics() {
-        withAnimation(.smooth) {
-            if mode == .list { showLyricsSidebar.toggle() } else { showLyrics.toggle() }
-        }
+        guard mode == .player else { return }
+        withAnimation(.smooth) { showLyrics.toggle() }
     }
 
     func toggleMode() {

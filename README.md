@@ -17,7 +17,7 @@ Switch modes with ⇧⌘F, the toolbar button, or a click on the LCD artwork. Ea
 - Favorites, play counts, shuffle, repeat (all/one).
 - Reopens the last song where you left off. Long tracks (≥10 min) remember their position.
 - Now Playing / Control Center integration and media keys.
-- Shortcuts: Space play/pause · ⌘←/→ previous/next · ⇧⌘←/→ ±15s · ⌘↑/↓ volume · ⌘L favorite · ⌘U lyrics · ⌘F search.
+- Shortcuts: Space play/pause · ⌘←/→ previous/next · ⇧⌘←/→ ±15s · ⌘↑/↓ volume · ⌘L favorite · ⌘U lyrics (in the player) · ⌘F search.
 
 ## Build
 

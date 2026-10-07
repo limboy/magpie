@@ -4,7 +4,6 @@ struct LibraryView: View {
     @Environment(AppState.self) private var ui
 
     var body: some View {
-        let isPlayer = ui.settledMode == .player
         let isList = ui.settledMode == .list
         NavigationSplitView {
             SidebarView()
@@ -13,22 +12,7 @@ struct LibraryView: View {
         } detail: {
             TrackListView()
                 .toolbar {
-                    ListModeToolbar(mode: ui.settledMode, playerButtonsHere: !ui.showLyricsSidebar)
-                }
-        }
-        // On the split view rather than the song list, so the lyrics sidebar
-        // runs the full height of the window like the left one.
-        .inspector(isPresented: Bindable(ui).showLyricsSidebar) {
-            LyricsPanel(fontSize: 20)
-                .padding(.horizontal, 20)
-                .inspectorColumnWidth(min: 240, ideal: 320, max: 480)
-                // Its own toolbar section keeps filter and search over the
-                // list; in player mode it holds the player's buttons, so they
-                // stay at the window's top-right corner.
-                .toolbar {
-                    ToolbarSpacer(.flexible)
-                    // Its toolbar lingers while it's closed, so check both.
-                    if isPlayer && ui.showLyricsSidebar { PlayerToolbarItems() }
+                    ListModeToolbar(mode: ui.settledMode)
                 }
         }
         // The player covers this view rather than replacing it, so the toolbar
@@ -41,8 +25,6 @@ struct LibraryView: View {
 struct ListModeToolbar: ToolbarContent {
     /// Nil while the player slides in or out: show nothing.
     let mode: DisplayMode?
-    /// False when the lyrics sidebar is open: its section holds them instead.
-    let playerButtonsHere: Bool
 
     var body: some ToolbarContent {
         ToolbarSpacer(.flexible)
@@ -54,7 +36,7 @@ struct ListModeToolbar: ToolbarContent {
                 SongSearchField()
             }
             .sharedBackgroundVisibility(.hidden)
-        } else if mode == .player && playerButtonsHere {
+        } else if mode == .player {
             PlayerToolbarItems()
         }
     }

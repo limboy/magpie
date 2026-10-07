@@ -2,8 +2,8 @@ import SwiftUI
 
 /// The player bar that floats over the bottom of the song list, modeled on
 /// Apple Music's: transport controls, then artwork with title and a scrolling
-/// artist/album line over a thin progress bar, then favorite, more, and
-/// lyrics — all in one glass capsule.
+/// artist/album line over a thin progress bar, then favorite and more — all
+/// in one glass capsule.
 struct NowPlayingLCD: View {
     @Environment(PlayerEngine.self) private var player
     @Environment(LibraryStore.self) private var library
@@ -93,21 +93,11 @@ struct NowPlayingLCD: View {
     private var accessories: some View {
         HStack(spacing: 2) {
             FavoriteButton(path: player.currentPath, size: Self.iconSize, weight: Self.iconWeight)
-
-            Button {
-                ui.toggleLyrics()
-            } label: {
-                accessoryIcon(ui.showLyricsSidebar ? "quote.bubble.fill" : "quote.bubble")
-                    .foregroundStyle(ui.showLyricsSidebar ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
-            }
-            .buttonStyle(PressableStyle())
-            .help(ui.showLyricsSidebar ? "Hide Lyrics (⌘U)" : "Show Lyrics (⌘U)")
-
             if !isCompact { moreMenu }
         }
     }
 
-    // Star, lyrics and more share one size and weight.
+    // Star and more share one size and weight.
     private static let iconSize: CGFloat = 15
     private static let iconWeight: Font.Weight = .medium
 
