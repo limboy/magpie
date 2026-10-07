@@ -91,6 +91,9 @@ struct TrackListView: View {
         .toolbar {
             if ui.settledMode == .list {
             ToolbarItem(placement: .navigation) {
+                SidebarToggle()
+            }
+            ToolbarItem(placement: .navigation) {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(library.collections.isEmpty ? "Magpie" : library.title(for: library.selection))
                         .font(.system(size: 17, weight: .bold))
@@ -106,8 +109,13 @@ struct TrackListView: View {
             }
             .sharedBackgroundVisibility(.hidden)
             }
+            ListModeToolbar(mode: ui.settledMode)
         }
         .toolbar(removing: .title)
+        // The player covers this view rather than replacing it, so the toolbar
+        // stays put (and the content under it never moves); it just turns
+        // transparent and trades its items for the player's.
+        .toolbarBackgroundVisibility(ui.settledMode == .list ? .automatic : .hidden, for: .windowToolbar)
     }
 
     // MARK: Summary

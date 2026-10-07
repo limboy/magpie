@@ -54,6 +54,10 @@ final class AppState {
         didSet { UserDefaults.standard.set(sortAscending, forKey: "sortAscending") }
     }
 
+    /// Kept in step by the library's split view, which also does the toggling.
+    var isSidebarCollapsed = false
+    @ObservationIgnored var toggleSidebar: () -> Void = {}
+
     @ObservationIgnored weak var window: NSWindow?
     /// Each mode keeps its own window size, so a small player window doesn't
     /// squeeze the song list (and vice versa).

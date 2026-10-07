@@ -10,10 +10,8 @@ struct NowPlayingLCD: View {
     @Environment(AppState.self) private var ui
     @State private var hovering = false
     @State private var hoveringArt = false
-    @State private var width: CGFloat = 760
-
     /// Narrow windows drop shuffle, repeat and the more menu.
-    private var isCompact: Bool { width < 440 }
+    @State private var isCompact = false
 
     var body: some View {
         HStack(spacing: 10) {
@@ -26,7 +24,9 @@ struct NowPlayingLCD: View {
         .padding(.trailing, 12)
         .frame(maxWidth: 760)
         .frame(height: 54)
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+        // Only the threshold: the width changes on every frame while the
+        // sidebar slides, and redoing the bar each time drops frames.
+        .onGeometryChange(for: Bool.self) { $0.size.width < 440 } action: { isCompact = $0 }
         // Song rows scroll underneath, so back the glass with a thick
         // material to keep the text over it readable.
         .background(.thickMaterial, in: .capsule)

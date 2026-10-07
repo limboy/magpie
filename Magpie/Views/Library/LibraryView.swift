@@ -1,32 +1,11 @@
 import SwiftUI
 
 struct LibraryView: View {
-    @Environment(AppState.self) private var ui
-
     var body: some View {
-        let isList = ui.settledMode == .list
-        NavigationSplitView {
-            // Over the player there's no sidebar toggle. Only attached then:
-            // even with nil, `toolbar(removing:)` pushes the toggle into the
-            // overflow menu while the sidebar is collapsed.
-            if isList {
-                SidebarView()
-                    .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 320)
-            } else {
-                SidebarView()
-                    .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 320)
-                    .toolbar(removing: .sidebarToggle)
-            }
-        } detail: {
-            TrackListView()
-                .toolbar {
-                    ListModeToolbar(mode: ui.settledMode)
-                }
-        }
-        // The player covers this view rather than replacing it, so the toolbar
-        // stays put (and the content under it never moves); it just turns
-        // transparent and trades its items for the player's.
-        .toolbarBackgroundVisibility(isList ? .automatic : .hidden, for: .windowToolbar)
+        // The toolbar is set up by the song list inside, which owns it. Under
+        // the toolbar, as NavigationSplitView is: each side insets itself.
+        LibrarySplitView()
+            .ignoresSafeArea()
     }
 }
 

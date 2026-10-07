@@ -35,6 +35,7 @@
 		E46A791D83C65E24272015F8 /* MagpieCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5AB2166BCC75BED6F03515 /* MagpieCommands.swift */; };
 		F3596EDEF239E0F1AB9546D8 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B842C2D78B6D3FFD712BF72 /* LibraryView.swift */; };
 		F8FA3F1E89C781AB1591DD6F /* TrackTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F358A0C31CE8746897BDEEE /* TrackTable.swift */; };
+		FDEFB283EDB780B8B656F0F5 /* LibrarySplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A4EE1E708F62CF234968B7 /* LibrarySplitView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,6 +46,7 @@
 		318A8599D1C3A7E30B43868C /* AmbientBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientBackground.swift; sourceTree = "<group>"; };
 		34110A922267DED81135D507 /* ArtworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtworkView.swift; sourceTree = "<group>"; };
 		3B842C2D78B6D3FFD712BF72 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		47A4EE1E708F62CF234968B7 /* LibrarySplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySplitView.swift; sourceTree = "<group>"; };
 		47F34D8B986F067F434AFA6E /* Track.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Track.swift; sourceTree = "<group>"; };
 		4F5A3F8E4E320A526FFAF0A1 /* NowPlayingLCD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingLCD.swift; sourceTree = "<group>"; };
 		5B5AB2166BCC75BED6F03515 /* MagpieCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagpieCommands.swift; sourceTree = "<group>"; };
@@ -95,6 +97,7 @@
 		51D31315BCA65AC38B2DD3F3 /* Library */ = {
 			isa = PBXGroup;
 			children = (
+				47A4EE1E708F62CF234968B7 /* LibrarySplitView.swift */,
 				3B842C2D78B6D3FFD712BF72 /* LibraryView.swift */,
 				5EDEFFC652E4F140B528CE68 /* SidebarView.swift */,
 				5EE7D1E6C0C3E8A5DF2EE167 /* TrackInfoView.swift */,
@@ -277,6 +280,7 @@
 				9DF0361C8C0601A1C4165A0F /* ContentView.swift in Sources */,
 				3719B0E144EF9CF9852D8C4E /* FolderWatcher.swift in Sources */,
 				B7675BB22F7360EC28B72318 /* LibraryModels.swift in Sources */,
+				FDEFB283EDB780B8B656F0F5 /* LibrarySplitView.swift in Sources */,
 				4B2A04640E467E0DDE2A325F /* LibraryStore.swift in Sources */,
 				F3596EDEF239E0F1AB9546D8 /* LibraryView.swift in Sources */,
 				466E8154D9848AE24AB8727C /* Lyrics.swift in Sources */,
