@@ -1,0 +1,447 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		03C0A3A659F2382C61FF3D8A /* NowPlayingLCD.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C43077C676E01D41513DBE /* NowPlayingLCD.swift */; };
+		0414E93CFDE9010CE3E63658 /* WrenCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F56D00DCEB19E088FE5EC8 /* WrenCommands.swift */; };
+		0677B9AF1BCEF91FDC546828 /* WrenApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD35745AF0778B89EA208BD2 /* WrenApp.swift */; };
+		1B437EAEEFFA5B5A9B334E19 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71DAA8D2C29E4138F2724E83 /* SidebarView.swift */; };
+		2FE42DC478AE0147F704D840 /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73D042E26D292CB90A85612F /* Storage.swift */; };
+		31ECDF02005DB61AB0E29B14 /* TransportControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45827C44222820FBC1DD812A /* TransportControls.swift */; };
+		42B084254C124383E618F6E3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B3EA45F5EB647FC04328299 /* ContentView.swift */; };
+		46B19FCAA0AECEAC53CD49D0 /* ThinSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = BADC2031EE11AAE1BA695F6A /* ThinSlider.swift */; };
+		6BA3DD3B1C45D198CD845371 /* Track.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6420AC3FBDA1BAEA6E4F7BD /* Track.swift */; };
+		6C15DAADBD453AC939DE5F90 /* LyricsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E61D2707E2DC31E42AB04AFF /* LyricsPanel.swift */; };
+		6C9A8E9ACC7BADDDF7A22CBB /* LibraryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F7E2EDCB537B50B9A45BE0D /* LibraryModels.swift */; };
+		6E377D17283C98C10163A5FC /* LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D0D50531825B06F8773DDC3 /* LibraryStore.swift */; };
+		71E24542073720F049726E74 /* AudioFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2942FCDD8EFCAB0588DB9F00 /* AudioFiles.swift */; };
+		94604805483F9EEF1767078E /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A36B14991858989C61CE6E8 /* LibraryView.swift */; };
+		9DB95B57A235F363621E106D /* FolderWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = E56F0791B7E102BC078378FF /* FolderWatcher.swift */; };
+		A55C74021EDFCB0D845F3273 /* Metadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00CD3D7B83B2E84A9A39D3A /* Metadata.swift */; };
+		AE3C1A3394066EDCEAF751C5 /* Lyrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720F4D058A059FAC38C27F23 /* Lyrics.swift */; };
+		AFFDF2BB7DA01DCE6BAA5E4B /* PlayerModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5993C459E7725031B7FCFB2 /* PlayerModeView.swift */; };
+		C19D046436610C6375D6B760 /* TrackListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C22C83B41189C811B053E39C /* TrackListView.swift */; };
+		D20B60873FD0DC0C9CAF9138 /* ArtworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A6DB1AC21087CACD8F8142C /* ArtworkView.swift */; };
+		D985FA7B2DB7CDD86CA3FBA6 /* AmbientBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDF2B1205FF9212EED3674F0 /* AmbientBackground.swift */; };
+		E2833AFF47B384AA15994748 /* PlayerEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 722B75A016F5C1967E1CB563 /* PlayerEngine.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2942FCDD8EFCAB0588DB9F00 /* AudioFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFiles.swift; sourceTree = "<group>"; };
+		45827C44222820FBC1DD812A /* TransportControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransportControls.swift; sourceTree = "<group>"; };
+		4D0D50531825B06F8773DDC3 /* LibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryStore.swift; sourceTree = "<group>"; };
+		52F56D00DCEB19E088FE5EC8 /* WrenCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WrenCommands.swift; sourceTree = "<group>"; };
+		6F7E2EDCB537B50B9A45BE0D /* LibraryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryModels.swift; sourceTree = "<group>"; };
+		71DAA8D2C29E4138F2724E83 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
+		720F4D058A059FAC38C27F23 /* Lyrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lyrics.swift; sourceTree = "<group>"; };
+		722B75A016F5C1967E1CB563 /* PlayerEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerEngine.swift; sourceTree = "<group>"; };
+		73D042E26D292CB90A85612F /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
+		771DF2C89DAF5F2DD43F1864 /* Wren.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wren.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A36B14991858989C61CE6E8 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		7A6DB1AC21087CACD8F8142C /* ArtworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtworkView.swift; sourceTree = "<group>"; };
+		8B3EA45F5EB647FC04328299 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A6420AC3FBDA1BAEA6E4F7BD /* Track.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Track.swift; sourceTree = "<group>"; };
+		BADC2031EE11AAE1BA695F6A /* ThinSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThinSlider.swift; sourceTree = "<group>"; };
+		C22C83B41189C811B053E39C /* TrackListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackListView.swift; sourceTree = "<group>"; };
+		CDF2B1205FF9212EED3674F0 /* AmbientBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientBackground.swift; sourceTree = "<group>"; };
+		D00CD3D7B83B2E84A9A39D3A /* Metadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metadata.swift; sourceTree = "<group>"; };
+		D6C43077C676E01D41513DBE /* NowPlayingLCD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingLCD.swift; sourceTree = "<group>"; };
+		DD35745AF0778B89EA208BD2 /* WrenApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WrenApp.swift; sourceTree = "<group>"; };
+		E56F0791B7E102BC078378FF /* FolderWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderWatcher.swift; sourceTree = "<group>"; };
+		E61D2707E2DC31E42AB04AFF /* LyricsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsPanel.swift; sourceTree = "<group>"; };
+		F5993C459E7725031B7FCFB2 /* PlayerModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerModeView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		3EF2E9624CF402F32DE83814 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				2942FCDD8EFCAB0588DB9F00 /* AudioFiles.swift */,
+				E56F0791B7E102BC078378FF /* FolderWatcher.swift */,
+				4D0D50531825B06F8773DDC3 /* LibraryStore.swift */,
+				720F4D058A059FAC38C27F23 /* Lyrics.swift */,
+				D00CD3D7B83B2E84A9A39D3A /* Metadata.swift */,
+				722B75A016F5C1967E1CB563 /* PlayerEngine.swift */,
+				73D042E26D292CB90A85612F /* Storage.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		4DCC78C3F35467AA5726B037 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				7A6DB1AC21087CACD8F8142C /* ArtworkView.swift */,
+				BADC2031EE11AAE1BA695F6A /* ThinSlider.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		64498DDA165F6DDC30AAD393 /* Wren */ = {
+			isa = PBXGroup;
+			children = (
+				A0A043C48B975F60B6BBD181 /* App */,
+				82CAEF5FD262C4DE39E31D13 /* Models */,
+				3EF2E9624CF402F32DE83814 /* Services */,
+				FB7ABC26BEA6C87B2CCB353F /* Views */,
+			);
+			path = Wren;
+			sourceTree = "<group>";
+		};
+		6650F3086C8037D02858D51B = {
+			isa = PBXGroup;
+			children = (
+				64498DDA165F6DDC30AAD393 /* Wren */,
+				6E6B530D709AD1D42E0FB791 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6A19E0D0F87A64844F2C79E3 /* Player */ = {
+			isa = PBXGroup;
+			children = (
+				CDF2B1205FF9212EED3674F0 /* AmbientBackground.swift */,
+				E61D2707E2DC31E42AB04AFF /* LyricsPanel.swift */,
+				D6C43077C676E01D41513DBE /* NowPlayingLCD.swift */,
+				F5993C459E7725031B7FCFB2 /* PlayerModeView.swift */,
+				45827C44222820FBC1DD812A /* TransportControls.swift */,
+			);
+			path = Player;
+			sourceTree = "<group>";
+		};
+		6E6B530D709AD1D42E0FB791 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				771DF2C89DAF5F2DD43F1864 /* Wren.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		78338299C191519357EE4F1E /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				7A36B14991858989C61CE6E8 /* LibraryView.swift */,
+				71DAA8D2C29E4138F2724E83 /* SidebarView.swift */,
+				C22C83B41189C811B053E39C /* TrackListView.swift */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
+		82CAEF5FD262C4DE39E31D13 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				6F7E2EDCB537B50B9A45BE0D /* LibraryModels.swift */,
+				A6420AC3FBDA1BAEA6E4F7BD /* Track.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A0A043C48B975F60B6BBD181 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				DD35745AF0778B89EA208BD2 /* WrenApp.swift */,
+				52F56D00DCEB19E088FE5EC8 /* WrenCommands.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		FB7ABC26BEA6C87B2CCB353F /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				8B3EA45F5EB647FC04328299 /* ContentView.swift */,
+				4DCC78C3F35467AA5726B037 /* Components */,
+				78338299C191519357EE4F1E /* Library */,
+				6A19E0D0F87A64844F2C79E3 /* Player */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F7E372FDBBEC3D562BD8C06D /* Wren */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BD9C8616BC58FB6D032F5FBE /* Build configuration list for PBXNativeTarget "Wren" */;
+			buildPhases = (
+				D8A012A995E4CA8B76B6DA13 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Wren;
+			packageProductDependencies = (
+			);
+			productName = Wren;
+			productReference = 771DF2C89DAF5F2DD43F1864 /* Wren.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		470F110330FB05B54C66224A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					F7E372FDBBEC3D562BD8C06D = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 797F8532C4299549522E50B0 /* Build configuration list for PBXProject "Wren" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 6650F3086C8037D02858D51B;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 6E6B530D709AD1D42E0FB791 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F7E372FDBBEC3D562BD8C06D /* Wren */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D8A012A995E4CA8B76B6DA13 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D985FA7B2DB7CDD86CA3FBA6 /* AmbientBackground.swift in Sources */,
+				D20B60873FD0DC0C9CAF9138 /* ArtworkView.swift in Sources */,
+				71E24542073720F049726E74 /* AudioFiles.swift in Sources */,
+				42B084254C124383E618F6E3 /* ContentView.swift in Sources */,
+				9DB95B57A235F363621E106D /* FolderWatcher.swift in Sources */,
+				6C9A8E9ACC7BADDDF7A22CBB /* LibraryModels.swift in Sources */,
+				6E377D17283C98C10163A5FC /* LibraryStore.swift in Sources */,
+				94604805483F9EEF1767078E /* LibraryView.swift in Sources */,
+				AE3C1A3394066EDCEAF751C5 /* Lyrics.swift in Sources */,
+				6C15DAADBD453AC939DE5F90 /* LyricsPanel.swift in Sources */,
+				A55C74021EDFCB0D845F3273 /* Metadata.swift in Sources */,
+				03C0A3A659F2382C61FF3D8A /* NowPlayingLCD.swift in Sources */,
+				E2833AFF47B384AA15994748 /* PlayerEngine.swift in Sources */,
+				AFFDF2BB7DA01DCE6BAA5E4B /* PlayerModeView.swift in Sources */,
+				1B437EAEEFFA5B5A9B334E19 /* SidebarView.swift in Sources */,
+				2FE42DC478AE0147F704D840 /* Storage.swift in Sources */,
+				46B19FCAA0AECEAC53CD49D0 /* ThinSlider.swift in Sources */,
+				6BA3DD3B1C45D198CD845371 /* Track.swift in Sources */,
+				C19D046436610C6375D6B760 /* TrackListView.swift in Sources */,
+				31ECDF02005DB61AB0E29B14 /* TransportControls.swift in Sources */,
+				0677B9AF1BCEF91FDC546828 /* WrenApp.swift in Sources */,
+				0414E93CFDE9010CE3E63658 /* WrenCommands.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		4C0CCCE282A0347EAB18D35B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Wren;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.limboy.wren;
+				PRODUCT_NAME = Wren;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		5E6977B4646C0CE9B91E3660 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		F199FDC50DF50267D8951177 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		FF30693A65EF7FEB108BD9F4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Wren;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.limboy.wren;
+				PRODUCT_NAME = Wren;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		797F8532C4299549522E50B0 /* Build configuration list for PBXProject "Wren" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5E6977B4646C0CE9B91E3660 /* Debug */,
+				F199FDC50DF50267D8951177 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BD9C8616BC58FB6D032F5FBE /* Build configuration list for PBXNativeTarget "Wren" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4C0CCCE282A0347EAB18D35B /* Debug */,
+				FF30693A65EF7FEB108BD9F4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 470F110330FB05B54C66224A /* Project object */;
+}
