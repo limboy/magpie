@@ -1,0 +1,95 @@
+---
+name: release
+description: Cut a Magpie release — pick the version, draft release notes, push the tag, watch the GitHub Actions build (sign, notarize, Sparkle appcast), and verify what users will download. Use when asked to release, ship, publish or tag a new version of Magpie.
+---
+
+# Releasing Magpie
+
+A release is a pushed `v*` tag. `.github/workflows/release.yml` builds that tag with `scripts/build-release.sh`: Developer ID signing, notarization with an App Store Connect API key, the Sparkle-signed zip, and `appcast.xml`. It publishes both as a GitHub release on `limboy/magpie-native`. Installed copies find updates through `releases/latest/download/appcast.xml`, so **the newest release is what every user's Sparkle sees**.
+
+Publishing is outward-facing and can't be quietly undone once users have updated. Confirm the version and notes with the user before pushing anything.
+
+## 1. Check the starting point
+
+```bash
+git status --short && git branch --show-current
+git fetch --tags -q && git tag --sort=-v:refname | head -5
+grep MARKETING_VERSION project.yml
+gh secret list -R limboy/magpie-native
+```
+
+- The tree must be clean and on `main`; `scripts/release.sh` refuses otherwise. Don't commit or stash the user's work on your own; ask.
+- The secrets should be `CSC_LINK`, `APPLE_API_KEY`, `APPLE_API_KEY_ID`, `APPLE_API_ISSUER` and `SPARKLE_PRIVATE_KEY` (`CSC_KEY_PASSWORD` only if the `.p12` has a password; the current one doesn't).
+- The Developer ID certificate expires **Feb 1, 2027**. Near or past that, stop and tell the user to renew it and update `CSC_LINK`.
+
+## 2. Pick the version
+
+The last tag is the last release (with no tags, this is the first release; suggest the version in `project.yml`, `0.1.0`). Suggest the next one from what changed: patch for fixes, minor for features. Let the user decide. The build number is the commit count on `main` and is set automatically; Sparkle compares it, so never release from another branch.
+
+## 3. Draft the notes
+
+```bash
+last=$(git describe --tags --abbrev=0 2>/dev/null); git log --no-merges --format='%h %s' ${last:+$last..}HEAD
+```
+
+Turn the commits into a short list for listeners, not developers. Each line becomes a bullet in Sparkle's "new version available" window and on the GitHub release:
+
+- One `- ` line per user-visible change, in plain words ("Lyrics show only in the full player", not "Remove inspector").
+- Leave out refactors, build and CI changes, and `Release v…` commits.
+
+Write the notes to a file in your scratchpad, show them to the user, and get a yes on the version and the notes together.
+
+## 4. Release
+
+```bash
+scripts/release.sh <version> <notes.md>
+```
+
+This sets `MARKETING_VERSION`, regenerates the Xcode project, commits `Release v<version>`, makes an annotated tag with the notes as its message (the workflow reads them from there), and pushes `main` and the tag.
+
+`LOCAL=1` builds and publishes from this Mac instead. Use it only if the user asks or the workflow can't run. For signing and notarizing locally, the credentials are in `~/Library/CloudStorage/Dropbox/Secure/apple_no_certifications_password/` (`DEVELOPER_ID="Developer ID Application: LI ZHONG (5P9ZHW7578)"`, `APPLE_API_KEY_PATH`, `APPLE_API_KEY_ID=C9X9XHN78Y`, `APPLE_API_ISSUER` from `ASC_ISSUER_ID.txt`). Never print or `cat` those files.
+
+## 5. Watch the workflow
+
+```bash
+gh run list -R limboy/magpie-native --workflow release.yml -L 1
+gh run watch <run-id> -R limboy/magpie-native --exit-status
+```
+
+Notarization usually takes a few minutes. If a run fails:
+
+```bash
+gh run view <run-id> -R limboy/magpie-native --log-failed | tail -60
+```
+
+- **Select Xcode / build errors about the SDK.** The runner's newest Xcode is too old for the project. Check `runs-on` against GitHub's current macOS images.
+- **Import signing certificate.** `CSC_LINK` is wrong or expired, or the `.p12` gained a password (set `CSC_KEY_PASSWORD`).
+- **Notarization `Invalid`.** Fetch the log with `xcrun notarytool log <submission-id>` (with the API key), fix the signing, and release again.
+- **Transient (network, notary timeout).** `gh run rerun <run-id> --failed`.
+
+If the build can't be fixed under the same tag and nothing was published, delete the tag (`git push origin :refs/tags/v<version>` and `git tag -d v<version>`) after telling the user, fix the problem, and release again. Keep the `Release v…` commit; the next release bumps from there. Never delete or replace a release that's already published: users may have it. Ship a newer version instead.
+
+## 6. Verify what users get
+
+```bash
+gh release view v<version> -R limboy/magpie-native --json assets --jq '.assets[].name'
+curl -sL https://github.com/limboy/magpie-native/releases/latest/download/appcast.xml | grep -E 'shortVersionString|<sparkle:version>|enclosure'
+```
+
+The release needs `Magpie-<version>.zip` and `appcast.xml`, and the latest appcast must name this version and link to this release's zip.
+
+Then check the download as a user would see it, in your scratchpad:
+
+```bash
+gh release download v<version> -R limboy/magpie-native -p 'Magpie-*.zip' -D <scratch>
+ditto -x -k <scratch>/Magpie-<version>.zip <scratch>/app
+xattr -w com.apple.quarantine "0081;$(printf %x $(date +%s));Safari;" <scratch>/app/Magpie.app
+spctl -a -t exec -vv <scratch>/app/Magpie.app   # expect: source=Notarized Developer ID
+xcrun stapler validate <scratch>/app/Magpie.app
+```
+
+Don't launch it, and don't install it over the user's own Magpie. To try the update itself, use a dev-bundle build (`com.limboy.magpie.dev`) as in `scripts/build-release.sh`'s testing variables, never the user's installed app or its data.
+
+## 7. Report
+
+Tell the user the version and build number, the release URL, what the workflow and the checks showed, and anything that failed or was skipped.
