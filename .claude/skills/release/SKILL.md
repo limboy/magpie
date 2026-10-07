@@ -37,7 +37,7 @@ Turn the commits into a short list for listeners, not developers. Each line beco
 - One `- ` line per user-visible change, in plain words ("Lyrics show only in the full player", not "Remove inspector").
 - Leave out refactors, build and CI changes, and `Release v…` commits.
 
-Write the notes to a file in your scratchpad, show them to the user, and get a yes on the version and the notes together.
+Write the notes to a file in your scratchpad. Then confirm the version and the notes together with an AskUserQuestion popup, not a question in text: the recommended version first, with the notes as its preview, an alternative version if one is plausible, and "Don't release yet".
 
 ## 4. Release
 
@@ -45,7 +45,7 @@ Write the notes to a file in your scratchpad, show them to the user, and get a y
 scripts/release.sh <version> <notes.md>
 ```
 
-This sets `MARKETING_VERSION`, regenerates the Xcode project, commits `Release v<version>`, makes an annotated tag with the notes as its message (the workflow reads them from there), and pushes `main` and the tag.
+This sets `MARKETING_VERSION`, regenerates the Xcode project, commits `Release v<version>` (unless that's already the version), makes an annotated tag with the notes as its message (the workflow reads them from there), and pushes `main` and the tag.
 
 `LOCAL=1` builds and publishes from this Mac instead. Use it only if the user asks or the workflow can't run. For signing and notarizing locally, the credentials are in `~/Library/CloudStorage/Dropbox/Secure/apple_no_certifications_password/` (`DEVELOPER_ID="Developer ID Application: LI ZHONG (5P9ZHW7578)"`, `APPLE_API_KEY_PATH`, `APPLE_API_KEY_ID=C9X9XHN78Y`, `APPLE_API_ISSUER` from `ASC_ISSUER_ID.txt`). Never print or `cat` those files.
 

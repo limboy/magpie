@@ -33,7 +33,8 @@ fi
 
 sed -i '' -E "s/^( *MARKETING_VERSION: ).*/\1\"$version\"/" project.yml
 xcodegen generate >/dev/null
-git commit -q -am "Release $tag"
+# Already at this version (e.g. the first release): tag what's there.
+if [[ -n $(git status --porcelain) ]]; then git commit -q -am "Release $tag"; fi
 if (( ${#notes_args} )); then git tag -a "$tag" "${notes_args[@]}"; else git tag "$tag"; fi
 
 if [[ ${LOCAL:-0} != 1 ]]; then
