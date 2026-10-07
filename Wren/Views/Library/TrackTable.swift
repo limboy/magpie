@@ -121,6 +121,10 @@ struct TrackTable: NSViewRepresentable {
                 currentPath = parent.currentPath
                 isPlaying = parent.isPlaying
                 table.reloadData(forRowIndexes: affected, columnIndexes: IndexSet(integersIn: 0..<table.numberOfColumns))
+                // Reloading cells leaves the row views alone.
+                for row in affected {
+                    (table.rowView(atRow: row, makeIfNecessary: false) as? TrackRowView)?.isCurrent = rows[row].id == currentPath
+                }
             }
 
             let descriptors = [NSSortDescriptor(key: parent.sortKey.rawValue, ascending: parent.sortAscending)]
@@ -144,6 +148,13 @@ struct TrackTable: NSViewRepresentable {
             let item = rows[row]
             cell.configure(item, isCurrent: item.id == currentPath, isPlaying: isPlaying)
             return cell
+        }
+
+        func tableView(_ tableView: NSTableView, rowViewForRow row: Int) -> NSTableRowView? {
+            let view = tableView.makeView(withIdentifier: TrackRowView.identifier, owner: nil) as? TrackRowView
+                ?? TrackRowView()
+            view.isCurrent = rows.indices.contains(row) && rows[row].id == currentPath
+            return view
         }
 
         // MARK: Interaction
@@ -271,10 +282,37 @@ enum TrackColumn: String, CaseIterable {
 
 // MARK: - Cells
 
+/// Tints the row of the song that's playing, so it stands out in the list.
+final class TrackRowView: NSTableRowView {
+    static let identifier = NSUserInterfaceItemIdentifier("TrackRow")
+
+    var isCurrent = false {
+        didSet { if isCurrent != oldValue { needsDisplay = true } }
+    }
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        identifier = Self.identifier
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func drawBackground(in dirtyRect: NSRect) {
+        super.drawBackground(in: dirtyRect)
+        guard isCurrent else { return }
+        NSColor.controlAccentColor.withAlphaComponent(0.16).setFill()
+        NSBezierPath(roundedRect: bounds.insetBy(dx: 10, dy: 0), xRadius: 6, yRadius: 6).fill()
+    }
+}
+
 final class TrackCellView: NSTableCellView {
     private let column: TrackColumn
     private let label = NSTextField(labelWithString: "")
     private let symbol = NSImageView()
+    /// Colors that would vanish on a selected row's accent background.
+    private var accentLabel = false
+    private var accentSymbol = false
 
     init(column: TrackColumn) {
         self.column = column
@@ -309,12 +347,26 @@ final class TrackCellView: NSTableCellView {
     private static let semibold = NSFont.systemFont(ofSize: 13, weight: .semibold)
     private static let digits = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .regular)
 
+    override var backgroundStyle: NSView.BackgroundStyle {
+        didSet { applyAccent() }
+    }
+
+    /// The accent turns white on a selected row, as the other colors do.
+    private func applyAccent() {
+        let accent: NSColor = backgroundStyle == .emphasized ? .alternateSelectedControlTextColor : .controlAccentColor
+        if accentLabel { label.textColor = accent }
+        if accentSymbol { symbol.contentTintColor = accent }
+    }
+
     func configure(_ row: TrackRow, isCurrent: Bool, isPlaying: Bool) {
+        defer { applyAccent() }
         symbol.removeAllSymbolEffects()
         symbol.isHidden = true
         label.isHidden = false
         label.font = Self.regular
         label.textColor = .secondaryLabelColor
+        accentLabel = column == .title && isCurrent
+        accentSymbol = (column == .number && isCurrent) || (column == .favorite && row.isFavorite)
 
         switch column {
         case .number:
@@ -322,7 +374,6 @@ final class TrackCellView: NSTableCellView {
                 label.isHidden = true
                 symbol.isHidden = false
                 symbol.image = NSImage(systemSymbolName: "speaker.wave.2.fill", accessibilityDescription: "Now Playing")
-                symbol.contentTintColor = .controlAccentColor
                 if isPlaying { symbol.addSymbolEffect(.variableColor.iterative.dimInactiveLayers) }
             } else {
                 label.font = Self.digits
@@ -332,7 +383,7 @@ final class TrackCellView: NSTableCellView {
         case .title:
             label.stringValue = row.title
             label.font = isCurrent ? Self.semibold : Self.regular
-            label.textColor = isCurrent ? .controlAccentColor : .labelColor
+            label.textColor = .labelColor
         case .artist:
             label.stringValue = row.artist
         case .album:
@@ -350,7 +401,7 @@ final class TrackCellView: NSTableCellView {
                 systemSymbolName: row.isFavorite ? "star.fill" : "star",
                 accessibilityDescription: row.isFavorite ? "Unfavorite" : "Favorite"
             )
-            symbol.contentTintColor = row.isFavorite ? .controlAccentColor : .tertiaryLabelColor
+            if !row.isFavorite { symbol.contentTintColor = .tertiaryLabelColor }
         }
     }
 }
