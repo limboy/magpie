@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct SidebarView: View {
     @Environment(LibraryStore.self) private var library
@@ -17,8 +18,9 @@ struct SidebarView: View {
                 ForEach(library.collections) { collection in
                     row(collection)
                         .tag(SidebarItem.collection(collection.id))
-                        .dropDestination(for: URL.self) { urls, _ in
-                            Task { await library.add(urls, to: collection.id) }
+                        // Dropping onto a collection adds to it.
+                        .onDrop(of: [.fileURL], isTargeted: nil) { providers in
+                            Task { await library.add(await Self.fileURLs(providers), to: collection.id) }
                             return true
                         }
                         .contextMenu { menu(for: collection) }
@@ -42,10 +44,24 @@ struct SidebarView: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
         }
-        .dropDestination(for: URL.self) { urls, _ in
-            Task { await library.addCollections(from: urls) }
+        // Dropping anywhere else in the sidebar makes new collections.
+        .onDrop(of: [.fileURL], isTargeted: nil) { providers in
+            Task { await library.addCollections(from: await Self.fileURLs(providers)) }
             return true
         }
+    }
+
+    /// File URLs from a drag, read via NSItemProvider (Finder supplies them as
+    /// file-URL data).
+    static func fileURLs(_ providers: [NSItemProvider]) async -> [URL] {
+        var urls: [URL] = []
+        for provider in providers {
+            let url = await withCheckedContinuation { continuation in
+                _ = provider.loadObject(ofClass: URL.self) { url, _ in continuation.resume(returning: url) }
+            }
+            if let url { urls.append(url) }
+        }
+        return urls
     }
 
     @ViewBuilder

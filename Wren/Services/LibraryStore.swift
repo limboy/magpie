@@ -120,20 +120,36 @@ final class LibraryStore {
         Task { await addCollections(from: urls) }
     }
 
-    func addCollections(from folders: [URL]) async {
-        for folder in folders where AudioFiles.isDirectory(folder) {
+    /// Turns each folder into a new collection, and any loose audio files into
+    /// one more, named after their folder. A folder that's already a
+    /// collection is just selected.
+    func addCollections(from urls: [URL]) async {
+        for folder in urls where AudioFiles.isDirectory(folder) {
+            if let existing = collections.first(where: { $0.folders.contains(folder.path) }) {
+                selection = .collection(existing.id)
+                continue
+            }
             let items = await AudioFiles.scan([folder])
-            let now = Date()
-            let collection = LibraryCollection(
-                name: folder.lastPathComponent,
-                folders: [folder.path],
-                items: items,
-                addedAt: Dictionary(uniqueKeysWithValues: items.map { ($0, now) })
-            )
-            collections.append(collection)
-            selection = .collection(collection.id)
-            await loadMetadata(items)
+            await addCollection(named: folder.lastPathComponent, folders: [folder.path], items: items)
         }
+        let files = urls.filter { !AudioFiles.isDirectory($0) && AudioFiles.isAudio($0) }
+        if let first = files.first {
+            let items = await AudioFiles.scan(files)
+            await addCollection(named: first.deletingLastPathComponent().lastPathComponent, folders: [], items: items)
+        }
+    }
+
+    private func addCollection(named name: String, folders: [String], items: [String]) async {
+        let now = Date()
+        let collection = LibraryCollection(
+            name: name,
+            folders: folders,
+            items: items,
+            addedAt: Dictionary(items.map { ($0, now) }, uniquingKeysWith: { first, _ in first })
+        )
+        collections.append(collection)
+        selection = .collection(collection.id)
+        await loadMetadata(items)
     }
 
     /// Adds dropped files and folders to an existing collection.
