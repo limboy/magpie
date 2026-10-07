@@ -38,6 +38,8 @@ final class AppState {
     }
     /// Bumped to ask the library view to focus its search field.
     var searchFocusRequest = 0
+    /// The song shown in the Get Info sheet, if open.
+    var infoPath: String?
     var onlyFavorites = UserDefaults.standard.bool(forKey: "onlyFavorites") {
         didSet { UserDefaults.standard.set(onlyFavorites, forKey: "onlyFavorites") }
     }

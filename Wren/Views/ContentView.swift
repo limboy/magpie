@@ -23,6 +23,9 @@ struct ContentView: View {
         .frame(minWidth: ui.mode.minimumSize.width, minHeight: ui.mode.minimumSize.height)
         .background(WindowReader(window: $window))
         .onAppear(perform: installKeyMonitor)
+        .sheet(isPresented: Binding(get: { ui.infoPath != nil }, set: { if !$0 { ui.infoPath = nil } })) {
+            if let path = ui.infoPath { TrackInfoView(path: path) }
+        }
         .onChange(of: window) { ui.window = window }
     }
 

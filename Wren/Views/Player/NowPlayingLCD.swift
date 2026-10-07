@@ -126,7 +126,7 @@ struct NowPlayingLCD: View {
             if let path = player.currentPath {
                 Button("Show in Finder") { library.revealInFinder([path]) }
                 Divider()
-                Button(library.isFavorite(path) ? "Unfavorite" : "Favorite") { library.toggleFavorite(path) }
+                Button("Get Info") { ui.infoPath = path }
             }
         } label: {
             accessoryIcon("ellipsis")
