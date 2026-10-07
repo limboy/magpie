@@ -11,6 +11,8 @@ enum TrackMenuEntry {
 /// stutters with a few hundred songs; plain reused AppKit cells don't.
 struct TrackTable: NSViewRepresentable {
     let rows: [TrackRow]
+    /// Room below the last row, so it can scroll clear of the floating player.
+    var bottomInset: CGFloat = 0
     let currentPath: String?
     let isPlaying: Bool
     @Binding var selection: Set<String>
@@ -69,6 +71,8 @@ struct TrackTable: NSViewRepresentable {
         scrollView.documentView = table
         scrollView.hasVerticalScroller = true
         scrollView.autohidesScrollers = true
+        scrollView.automaticallyAdjustsContentInsets = false
+        scrollView.contentInsets = NSEdgeInsets(top: 0, left: 0, bottom: bottomInset, right: 0)
         coordinator.update(self)
         return scrollView
     }

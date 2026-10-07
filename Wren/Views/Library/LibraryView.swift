@@ -9,22 +9,13 @@ struct LibraryView: View {
                 .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 320)
         } detail: {
             TrackListView()
+                .toolbar { ListModeToolbar() }
         }
-        .toolbar { ListModeToolbar() }
-        .toolbar(removing: .title)
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { ui.contentWidth = $0 }
     }
 }
 
 struct ListModeToolbar: ToolbarContent {
     var body: some ToolbarContent {
-        ToolbarItem(placement: .navigation) {
-            TransportControls(style: .toolbar)
-        }
-        ToolbarItem(placement: .principal) {
-            NowPlayingLCD()
-        }
-        .sharedBackgroundVisibility(.hidden)
         ToolbarItem(placement: .primaryAction) {
             FilterSortMenu()
         }

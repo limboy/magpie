@@ -32,8 +32,6 @@ final class AppState {
     var showLyrics = UserDefaults.standard.object(forKey: "showLyrics") as? Bool ?? true {
         didSet { UserDefaults.standard.set(showLyrics, forKey: "showLyrics") }
     }
-    /// The window's content width; the toolbar LCD sizes itself from it.
-    var contentWidth: CGFloat = 1080
     /// Bumped to ask the library view to focus its search field.
     var searchFocusRequest = 0
     var onlyFavorites = UserDefaults.standard.bool(forKey: "onlyFavorites") {

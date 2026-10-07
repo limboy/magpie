@@ -65,12 +65,17 @@ struct TrackListView: View {
                 } else {
                     table(rows)
                 }
-                Divider()
-                statusBar(rows)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(.background)
+        .overlay(alignment: .bottom) {
+            if !library.collections.isEmpty {
+                NowPlayingLCD()
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, Self.playerMargin)
+            }
+        }
         .dropDestination(for: URL.self) { urls, _ in
             if case .collection(let id) = library.selection {
                 Task { await library.add(urls, to: id) }
@@ -80,20 +85,17 @@ struct TrackListView: View {
             return true
         }
         .onChange(of: library.selection) { selection.removeAll() }
+        // Shown in the toolbar row: the collection name over the song count.
+        .navigationTitle(library.collections.isEmpty ? "Wren" : library.title(for: library.selection))
+        .navigationSubtitle(library.collections.isEmpty ? "" : summary(rows))
     }
 
-    // MARK: Status bar
+    // MARK: Summary
 
-    private func statusBar(_ rows: [TrackRow]) -> some View {
-        Text(summary(rows))
-            .font(.system(size: 11))
-            .monospacedDigit()
-            .foregroundStyle(.secondary)
-            .lineLimit(1)
-            .frame(maxWidth: .infinity)
-            .frame(height: 36)
-            .contentTransition(.numericText())
-    }
+    /// The floating player's height plus the gap below it; the list scrolls
+    /// its last rows clear of it.
+    private static let playerMargin: CGFloat = 16
+    static let playerClearance: CGFloat = 54 + playerMargin + 12
 
     private func summary(_ rows: [TrackRow]) -> String {
         func songs(_ count: Int) -> String { "\(count) \(count == 1 ? "song" : "songs")" }
@@ -111,6 +113,7 @@ struct TrackListView: View {
         let ids = rows.map(\.id)
         return TrackTable(
             rows: rows,
+            bottomInset: Self.playerClearance,
             currentPath: player.currentPath,
             isPlaying: player.isPlaying,
             selection: $selection,

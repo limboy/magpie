@@ -5,42 +5,46 @@ struct TransportControls: View {
 
     @Environment(PlayerEngine.self) private var player
     let style: Style
+    var showsModes = true
 
     var body: some View {
         let large = style == .large
-        HStack(spacing: large ? 28 : 2) {
-            toggle(
-                "Shuffle", symbol: "shuffle", isOn: player.shuffle
-            ) { player.shuffle.toggle() }
+        HStack(spacing: large ? 28 : 4) {
+            if showsModes {
+                toggle(
+                    "Shuffle", symbol: "shuffle", isOn: player.shuffle
+                ) { player.shuffle.toggle() }
+            }
 
-            button("Previous", symbol: "backward.fill", size: large ? 24 : 13) { player.previous() }
+            button("Previous", symbol: "backward.fill", size: large ? 24 : 16) { player.previous() }
 
             Button {
                 player.togglePlayPause()
             } label: {
                 Image(systemName: player.isPlaying ? "pause.fill" : "play.fill")
-                    .font(.system(size: large ? 36 : 17, weight: .semibold))
+                    .font(.system(size: large ? 36 : 24, weight: .semibold))
                     .contentTransition(.symbolEffect(.replace))
-                    .frame(width: large ? 52 : 30, height: large ? 52 : 28)
+                    .frame(width: large ? 52 : 32, height: large ? 52 : 32)
                     .contentShape(.rect)
             }
             .buttonStyle(PressableStyle())
             .help(player.isPlaying ? "Pause (Space)" : "Play (Space)")
 
-            button("Next", symbol: "forward.fill", size: large ? 24 : 13) { player.next() }
+            button("Next", symbol: "forward.fill", size: large ? 24 : 16) { player.next() }
 
-            toggle(
-                "Repeat", symbol: player.repeatMode.symbol, isOn: player.repeatMode != .off
-            ) { player.repeatMode = player.repeatMode.next }
+            if showsModes {
+                toggle(
+                    "Repeat", symbol: player.repeatMode.symbol, isOn: player.repeatMode != .off
+                ) { player.repeatMode = player.repeatMode.next }
+            }
         }
-        .padding(.horizontal, large ? 0 : 4)
     }
 
     private func button(_ title: String, symbol: String, size: CGFloat, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
                 .font(.system(size: size, weight: .semibold))
-                .frame(width: style == .large ? 44 : 26, height: style == .large ? 44 : 28)
+                .frame(width: style == .large ? 44 : 28, height: style == .large ? 44 : 30)
                 .contentShape(.rect)
         }
         .buttonStyle(PressableStyle())
@@ -52,9 +56,9 @@ struct TransportControls: View {
         let large = style == .large
         return Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: large ? 15 : 11, weight: .semibold))
-                .foregroundStyle(isOn ? (large ? AnyShapeStyle(.primary) : AnyShapeStyle(.tint)) : AnyShapeStyle(.secondary))
-                .frame(width: large ? 32 : 24, height: large ? 32 : 28)
+                .font(.system(size: large ? 15 : 13, weight: .semibold))
+                .foregroundStyle(isOn ? (large ? AnyShapeStyle(.primary) : AnyShapeStyle(.tint)) : (large ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tertiary)))
+                .frame(width: large ? 32 : 26, height: large ? 32 : 30)
                 .background {
                     if isOn && large {
                         RoundedRectangle(cornerRadius: 7).fill(.white.opacity(0.18))
