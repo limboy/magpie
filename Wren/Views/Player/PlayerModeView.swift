@@ -83,7 +83,8 @@ private struct NowPlayingPanel: View {
 
     var body: some View {
         VStack(spacing: 22) {
-            ArtworkView(path: player.currentPath, maxPixel: 1200, cornerRadius: 12)
+            // The whole cover, tall or wide, within a square of artSide.
+            ArtworkView(path: player.currentPath, maxPixel: 1200, cornerRadius: 12, contentMode: .fit)
                 .frame(width: max(120, artSide), height: max(120, artSide))
                 .shadow(color: .black.opacity(0.35), radius: player.isPlaying ? 30 : 14, y: player.isPlaying ? 16 : 6)
                 .scaleEffect(player.isPlaying ? 1 : 0.86)
