@@ -3,7 +3,19 @@ import SwiftUI
 /// A slowly drifting mesh gradient tinted by the current artwork.
 struct AmbientBackground: View {
     @Environment(PlayerEngine.self) private var player
-    @State private var colors: [Color] = AmbientBackground.fallback
+    let path: String?
+    @State private var colors: [Color]
+
+    init(path: String?) {
+        self.path = path
+        // Start from the palette if it's ready, so the player doesn't open on
+        // the fallback colors and then shift.
+        _colors = State(initialValue: Self.colors(path.flatMap(ArtworkCache.shared.cachedPalette)))
+    }
+
+    private static func colors(_ palette: [RGB]?) -> [Color] {
+        palette.map { $0.map { Color(red: $0.r, green: $0.g, blue: $0.b) } } ?? fallback
+    }
 
     private static let fallback: [Color] = [
         Color(red: 0.16, green: 0.14, blue: 0.22), Color(red: 0.22, green: 0.16, blue: 0.26), Color(red: 0.12, green: 0.12, blue: 0.18),
@@ -17,9 +29,9 @@ struct AmbientBackground: View {
             MeshGradient(width: 3, height: 3, points: points(t), colors: colors, smoothsColors: true)
         }
         .overlay(.black.opacity(0.28))
-        .task(id: player.currentPath.map { "\($0)#\(ArtworkCache.shared.generation($0))" }) {
-            let palette = await player.currentPath.asyncMap { await ArtworkCache.shared.palette($0) } ?? nil
-            let next = palette.map { $0.map { Color(red: $0.r, green: $0.g, blue: $0.b) } } ?? Self.fallback
+        .task(id: path.map { "\($0)#\(ArtworkCache.shared.generation($0))" }) {
+            let next = Self.colors(await path.asyncMap { await ArtworkCache.shared.palette($0) } ?? nil)
+            guard next != colors else { return }
             withAnimation(.easeInOut(duration: 1.2)) { colors = next }
         }
     }

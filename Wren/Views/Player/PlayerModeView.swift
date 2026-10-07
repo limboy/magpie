@@ -22,26 +22,13 @@ struct PlayerModeView: View {
             .frame(width: size.width, height: size.height)
             .animation(.smooth(duration: 0.4), value: ui.showLyrics)
         }
-        .background { AmbientBackground().ignoresSafeArea() }
+        .background { AmbientBackground(path: player.currentPath).ignoresSafeArea() }
         .ignoresSafeArea()
         .environment(\.colorScheme, .dark)
+        // Scroll views don't follow the slide; draw lyrics statically until
+        // the player has settled.
+        .environment(\.lyricsStatic, ui.settledMode != .player)
         .foregroundStyle(.white)
-        .toolbar {
-            ToolbarSpacer(.flexible)
-            ToolbarItem {
-                Button {
-                    ui.toggleLyrics()
-                } label: {
-                    Label("Lyrics", systemImage: ui.showLyrics ? "quote.bubble.fill" : "quote.bubble")
-                }
-                .help(ui.showLyrics ? "Hide Lyrics (⌘U)" : "Show Lyrics (⌘U)")
-            }
-            ToolbarItem {
-                ModeToggleButton()
-            }
-        }
-        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
-        .toolbar(removing: .title)
     }
 
     // MARK: Layouts

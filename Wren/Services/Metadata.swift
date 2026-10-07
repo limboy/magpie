@@ -154,6 +154,8 @@ final class ArtworkCache {
         return image
     }
 
+    func cachedPalette(_ path: String) -> [RGB]? { palettes[path] }
+
     func palette(_ path: String) async -> [RGB]? {
         if let palette = palettes[path] { return palette }
         if missing.contains(path) { return nil }

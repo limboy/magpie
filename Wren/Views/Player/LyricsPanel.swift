@@ -2,16 +2,23 @@ import SwiftUI
 
 struct LyricsPanel: View {
     @Environment(PlayerEngine.self) private var player
+    @Environment(\.lyricsStatic) private var isStatic
     var fontSize: CGFloat = 28
 
     @State private var lyrics: Lyrics?
     @State private var loadedKey: String?
 
+    init(fontSize: CGFloat = 28) {
+        self.fontSize = fontSize
+    }
+
     var body: some View {
         let track = player.currentTrack
-        let key = track.map { "\($0.path)|\($0.title)|\($0.artist)|\(Int($0.duration))" }
+        let key = track.map(LyricsCache.key)
+        // Already-loaded lyrics show at once, with no loading state.
+        let shown = lyrics ?? track.flatMap(LyricsCache.shared.cached)
         Group {
-            switch lyrics {
+            switch shown {
             case nil:
                 if track == nil {
                     message("Play something to see its lyrics.", symbol: "music.note")
@@ -22,14 +29,18 @@ struct LyricsPanel: View {
             case .synced(let lines):
                 SyncedLyricsView(lines: lines, fontSize: fontSize)
             case .plain(let text):
-                ScrollView(showsIndicators: false) {
-                    Text(text)
-                        .font(.system(size: fontSize * 0.7, weight: .semibold))
-                        .foregroundStyle(.primary.opacity(0.85))
-                        .lineSpacing(8)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 40)
-                        .textSelection(.enabled)
+                let body = Text(text)
+                    .font(.system(size: fontSize * 0.7, weight: .semibold))
+                    .foregroundStyle(.primary.opacity(0.85))
+                    .lineSpacing(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 40)
+                Group {
+                    if isStatic {
+                        body.frame(maxHeight: .infinity, alignment: .top).clipped()
+                    } else {
+                        ScrollView(showsIndicators: false) { body.textSelection(.enabled) }
+                    }
                 }
                 .mask(edgeFade)
             case .none?:
@@ -38,11 +49,15 @@ struct LyricsPanel: View {
         }
         .task(id: key) {
             guard let track, key != loadedKey else { return }
-            lyrics = nil
+            lyrics = LyricsCache.shared.cached(track)
+            if lyrics != nil {
+                loadedKey = key
+                return
+            }
             // Metadata may still be loading; give it a beat so we search with real tags.
             if track.duration == 0 { try? await Task.sleep(for: .milliseconds(600)) }
             guard !Task.isCancelled else { return }
-            let result = await LyricsService.lyrics(for: track)
+            let result = await LyricsCache.shared.load(track)
             guard !Task.isCancelled else { return }
             lyrics = result
             loadedKey = key
@@ -73,6 +88,7 @@ private var edgeFade: some View {
 
 private struct SyncedLyricsView: View {
     @Environment(PlayerEngine.self) private var player
+    @Environment(\.lyricsStatic) private var isStatic
     let lines: [LyricLine]
     let fontSize: CGFloat
 
@@ -81,18 +97,57 @@ private struct SyncedLyricsView: View {
 
     var body: some View {
         let active = activeIndex(at: player.currentTime + 0.2)
+        if isStatic {
+            staticLines(active: active)
+        } else {
+            scrollingLines(active: active)
+        }
+    }
+
+    private func lineView(_ line: LyricLine, active: Int?) -> some View {
+        LyricLineView(
+            text: line.text,
+            distance: active.map { abs(line.id - $0) } ?? 99,
+            isActive: line.id == active,
+            fontSize: fontSize
+        )
+    }
+
+    /// The lines around the current one, placed where the scroll view puts
+    /// them (current line's 32% point at 32% of the height), without a scroll
+    /// view: plain SwiftUI views follow the player's slide, AppKit ones don't.
+    private func staticLines(active: Int?) -> some View {
+        let anchor = active ?? 0
+        let nearby = lines[max(0, anchor - 10)..<min(lines.count, anchor + 14)]
+        return GeometryReader { geometry in
+            // An overlay keeps the panel's size and lets the lines overflow
+            // it, aligned on the current line.
+            Color.clear
+                .frame(width: geometry.size.width, height: geometry.size.height)
+                .alignmentGuide(.lyricAnchor) { $0.height * 0.32 }
+                .overlay(alignment: Alignment(horizontal: .leading, vertical: .lyricAnchor)) {
+                    VStack(alignment: .leading, spacing: fontSize * 0.75) {
+                        ForEach(nearby) { line in
+                            lineView(line, active: active)
+                                .modifier(LyricAnchorGuide(isAnchor: line.id == anchor))
+                        }
+                    }
+                    .frame(width: geometry.size.width)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+                .clipped()
+        }
+        .mask(edgeFade)
+    }
+
+    private func scrollingLines(active: Int?) -> some View {
         GeometryReader { geometry in
             ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
                     LazyVStack(alignment: .leading, spacing: fontSize * 0.75) {
                         Color.clear.frame(height: geometry.size.height * 0.3)
                         ForEach(lines) { line in
-                            LyricLineView(
-                                text: line.text,
-                                distance: active.map { abs(line.id - $0) } ?? 99,
-                                isActive: line.id == active,
-                                fontSize: fontSize
-                            )
+                            lineView(line, active: active)
                             .id(line.id)
                             .onTapGesture {
                                 player.seek(to: line.time)
@@ -112,7 +167,13 @@ private struct SyncedLyricsView: View {
                     }
                 }
                 .onAppear {
-                    proxy.scrollTo(active ?? 0, anchor: UnitPoint(x: 0, y: 0.32))
+                    // Jump straight to the current line, even if this appears
+                    // inside an animation (like the player sliding in).
+                    var jump = Transaction()
+                    jump.disablesAnimations = true
+                    withTransaction(jump) {
+                        proxy.scrollTo(active ?? 0, anchor: UnitPoint(x: 0, y: 0.32))
+                    }
                 }
             }
         }
@@ -155,4 +216,30 @@ private struct LyricLineView: View {
             .animation(.smooth(duration: 0.45), value: isActive)
             .animation(.easeOut(duration: 0.15), value: hovering)
     }
+}
+
+extension VerticalAlignment {
+    private enum LyricAnchor: AlignmentID {
+        static func defaultValue(in context: ViewDimensions) -> CGFloat { context[.top] }
+    }
+
+    /// Where the current lyric line sits in the static layout.
+    fileprivate static let lyricAnchor = VerticalAlignment(LyricAnchor.self)
+}
+
+private struct LyricAnchorGuide: ViewModifier {
+    let isAnchor: Bool
+
+    func body(content: Content) -> some View {
+        if isAnchor {
+            content.alignmentGuide(.lyricAnchor) { $0.height * 0.32 }
+        } else {
+            content
+        }
+    }
+}
+
+extension EnvironmentValues {
+    /// Draw lyrics without a scroll view, e.g. while the player slides.
+    @Entry var lyricsStatic = false
 }

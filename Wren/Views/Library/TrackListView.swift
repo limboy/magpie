@@ -89,6 +89,7 @@ struct TrackListView: View {
         // item rather than navigationTitle, so it can be larger and line up
         // with the list.
         .toolbar {
+            if ui.settledMode == .list {
             ToolbarItem(placement: .navigation) {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(library.collections.isEmpty ? "Wren" : library.title(for: library.selection))
@@ -104,6 +105,7 @@ struct TrackListView: View {
                 .lineLimit(1)
             }
             .sharedBackgroundVisibility(.hidden)
+            }
         }
         .toolbar(removing: .title)
     }

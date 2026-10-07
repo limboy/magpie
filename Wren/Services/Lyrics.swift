@@ -197,3 +197,23 @@ nonisolated enum LyricsService {
             .map { LyricLine(id: $0.offset, time: $0.element.0, text: $0.element.1) }
     }
 }
+
+/// Lyrics already loaded this session, so a lyrics view can show them the
+/// moment it appears (e.g. as the player slides in) instead of loading.
+final class LyricsCache {
+    static let shared = LyricsCache()
+    private var values: [String: Lyrics] = [:]
+
+    static func key(_ track: Track) -> String {
+        "\(track.path)|\(track.title)|\(track.artist)|\(Int(track.duration))"
+    }
+
+    func cached(_ track: Track) -> Lyrics? { values[Self.key(track)] }
+
+    func load(_ track: Track) async -> Lyrics {
+        if let value = cached(track) { return value }
+        let value = await LyricsService.lyrics(for: track)
+        values[Self.key(track)] = value
+        return value
+    }
+}

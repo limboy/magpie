@@ -164,6 +164,11 @@ final class PlayerEngine {
         if autoplay { player.play() }
         isPlaying = autoplay
         updateNowPlaying()
+        // Ready the player backdrop's colors before anyone opens it.
+        Task { _ = await ArtworkCache.shared.palette(path) }
+        // And its lyrics, so the player shows them as it slides in.
+        let track = library.track(for: path)
+        if track.duration > 0 { Task { _ = await LyricsCache.shared.load(track) } }
     }
 
     private func resumePoint(for path: String) -> TimeInterval? {

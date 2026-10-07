@@ -28,6 +28,10 @@ struct WrenApp: App {
 @Observable
 final class AppState {
     var mode: DisplayMode = .list
+    /// The mode once its transition has finished; nil while the player slides
+    /// in or out. Drives the toolbar (so its items never sit over the wrong
+    /// view mid-slide) and the player's lyrics.
+    private(set) var settledMode: DisplayMode? = .list
     var searchText = ""
     var showLyrics = UserDefaults.standard.object(forKey: "showLyrics") as? Bool ?? true {
         didSet { UserDefaults.standard.set(showLyrics, forKey: "showLyrics") }
@@ -64,7 +68,15 @@ final class AppState {
 
     func toggleMode() {
         let new: DisplayMode = mode == .list ? .player : .list
-        let switchMode = { withAnimation(.smooth(duration: 0.4)) { self.mode = new } }
+        let switchMode = {
+            self.settledMode = nil
+            withAnimation(.smooth(duration: 0.3)) {
+                self.mode = new
+            } completion: {
+                // A quick second toggle may have moved on already.
+                if self.mode == new { self.settledMode = new }
+            }
+        }
         guard let window, !window.styleMask.contains(.fullScreen) else { return switchMode() }
 
         savedSizes[mode] = window.frame.size

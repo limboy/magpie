@@ -4,12 +4,17 @@ struct LibraryView: View {
     @Environment(AppState.self) private var ui
 
     var body: some View {
+        let isPlayer = ui.settledMode == .player
+        let isList = ui.settledMode == .list
         NavigationSplitView {
             SidebarView()
                 .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 320)
+                .toolbar(removing: isList ? nil : .sidebarToggle)
         } detail: {
             TrackListView()
-                .toolbar { ListModeToolbar() }
+                .toolbar {
+                    ListModeToolbar(mode: ui.settledMode, playerButtonsHere: !ui.showLyricsSidebar)
+                }
         }
         // On the split view rather than the song list, so the lyrics sidebar
         // runs the full height of the window like the left one.
@@ -17,23 +22,75 @@ struct LibraryView: View {
             LyricsPanel(fontSize: 20)
                 .padding(.horizontal, 20)
                 .inspectorColumnWidth(min: 240, ideal: 320, max: 480)
-                // An (empty) toolbar section of its own keeps filter and search
-                // over the list instead of above the sidebar.
-                .toolbar { ToolbarSpacer(.flexible) }
+                // Its own toolbar section keeps filter and search over the
+                // list; in player mode it holds the player's buttons, so they
+                // stay at the window's top-right corner.
+                .toolbar {
+                    ToolbarSpacer(.flexible)
+                    // Its toolbar lingers while it's closed, so check both.
+                    if isPlayer && ui.showLyricsSidebar { PlayerToolbarItems() }
+                }
         }
+        // The player covers this view rather than replacing it, so the toolbar
+        // stays put (and the content under it never moves); it just turns
+        // transparent and trades its items for the player's.
+        .toolbarBackgroundVisibility(isList ? .automatic : .hidden, for: .windowToolbar)
     }
 }
 
 struct ListModeToolbar: ToolbarContent {
+    /// Nil while the player slides in or out: show nothing.
+    let mode: DisplayMode?
+    /// False when the lyrics sidebar is open: its section holds them instead.
+    let playerButtonsHere: Bool
+
     var body: some ToolbarContent {
         ToolbarSpacer(.flexible)
-        ToolbarItem(placement: .primaryAction) {
-            FilterSortMenu()
+        if mode == .list {
+            ToolbarItem(placement: .primaryAction) {
+                FilterSortMenu()
+            }
+            ToolbarItem(placement: .primaryAction) {
+                SongSearchField()
+            }
+            .sharedBackgroundVisibility(.hidden)
+        } else if mode == .player && playerButtonsHere {
+            PlayerToolbarItems()
         }
-        ToolbarItem(placement: .primaryAction) {
-            SongSearchField()
+    }
+}
+
+/// Lyrics and close, shown in the toolbar over the full player.
+struct PlayerToolbarItems: ToolbarContent {
+    var body: some ToolbarContent {
+        ToolbarItem { PlayerLyricsButton() }
+        ToolbarItem { PlayerCloseButton() }
+    }
+}
+
+private struct PlayerLyricsButton: View {
+    @Environment(AppState.self) private var ui
+
+    var body: some View {
+        Button {
+            ui.toggleLyrics()
+        } label: {
+            Label("Lyrics", systemImage: ui.showLyrics ? "quote.bubble.fill" : "quote.bubble")
         }
-        .sharedBackgroundVisibility(.hidden)
+        .help(ui.showLyrics ? "Hide Lyrics (⌘U)" : "Show Lyrics (⌘U)")
+    }
+}
+
+private struct PlayerCloseButton: View {
+    @Environment(AppState.self) private var ui
+
+    var body: some View {
+        Button {
+            ui.toggleMode()
+        } label: {
+            Label("Close Player", systemImage: "xmark")
+        }
+        .help("Close Player (⇧⌘F)")
     }
 }
 
@@ -120,21 +177,5 @@ struct FilterSortMenu: View {
         }
         .menuIndicator(.hidden)
         .help("Filter and Sort")
-    }
-}
-
-struct ModeToggleButton: View {
-    @Environment(AppState.self) private var ui
-
-    var body: some View {
-        Button {
-            ui.toggleMode()
-        } label: {
-            Label(
-                ui.mode == .list ? "Show Player" : "Show Song List",
-                systemImage: ui.mode == .list ? "play.square.stack" : "list.bullet"
-            )
-        }
-        .help(ui.mode == .list ? "Show Player (⇧⌘F)" : "Show Song List (⇧⌘F)")
     }
 }

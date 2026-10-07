@@ -7,18 +7,26 @@ struct ContentView: View {
     @State private var window: NSWindow?
 
     var body: some View {
+        // The song list stays alive under the player, which slides up over the
+        // whole window. Nothing beneath changes, so nothing re-lays out.
         ZStack {
-            switch ui.mode {
-            case .list:
-                LibraryView()
-                    .transition(.opacity)
-            case .player:
-                PlayerModeView()
-                    .transition(.asymmetric(
-                        insertion: .opacity.combined(with: .scale(scale: 0.96)),
-                        removal: .opacity.combined(with: .scale(scale: 0.98))
-                    ))
+            LibraryView()
+            // The player's layer spans the whole window, toolbar area
+            // included, so its size never changes while it slides.
+            GeometryReader { geometry in
+                if ui.mode == .player {
+                    PlayerModeView()
+                        .transition(.modifier(
+                            active: SlideLayout(offset: geometry.size.height),
+                            identity: SlideLayout(offset: 0)
+                        ))
+                }
             }
+            .ignoresSafeArea()
+            // Keeps it on top while it slides out; otherwise the removal
+            // drops behind the list and just vanishes.
+            .zIndex(1)
+            .allowsHitTesting(ui.mode == .player)
         }
         .frame(minWidth: ui.mode.minimumSize.width, minHeight: ui.mode.minimumSize.height)
         .background(WindowReader(window: $window))
@@ -55,5 +63,21 @@ private struct WindowReader: NSViewRepresentable {
 
     func updateNSView(_ view: NSView, context: Context) {
         if window == nil { DispatchQueue.main.async { window = view.window } }
+    }
+}
+
+/// Slides by moving the view's layout rather than with a visual offset (as
+/// `.move` does): native AppKit views inside, like the lyrics' scroll view,
+/// only follow layout, so this keeps them moving with everything else.
+private struct SlideLayout: ViewModifier {
+    let offset: CGFloat
+
+    func body(content: Content) -> some View {
+        content
+            // Native views aren't clipped by the window edge mid-slide, so
+            // keep everything inside the player's own bounds.
+            .clipped()
+            .padding(.top, offset)
+            .padding(.bottom, -offset)
     }
 }
