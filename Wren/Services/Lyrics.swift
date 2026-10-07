@@ -33,8 +33,9 @@ nonisolated enum LyricsService {
 
     @concurrent static func lyrics(for track: Track) async -> Lyrics {
         let sidecar = track.url.deletingPathExtension().appendingPathExtension("lrc")
-        if let text = try? String(contentsOf: sidecar, encoding: .utf8) {
-            return parse(Record(syncedLyrics: text))
+        if let data = try? Data(contentsOf: sidecar), let text = decode(data) {
+            // Timed lines play in sync; an .lrc without timestamps shows as plain text.
+            return parse(Record(syncedLyrics: text, plainLyrics: plainLRC(text)))
         }
 
         let cacheURL = cacheDirectory.appendingPathComponent(signature(track) + ".json")
@@ -124,6 +125,56 @@ nonisolated enum LyricsService {
             return .plain(plain)
         }
         return .none
+    }
+
+    // MARK: Sidecar files
+
+    private static func encoding(_ cf: CFStringEncodings) -> String.Encoding {
+        String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(cf.rawValue)))
+    }
+
+    /// Legacy encodings common for hand-made .lrc files, most likely first.
+    private static let legacyEncodings: [String.Encoding] = [
+        encoding(.GB_18030_2000), encoding(.big5), .shiftJIS, encoding(.EUC_KR),
+    ]
+
+    /// Reads a text file of unknown encoding: UTF-8 or a BOM-marked UTF-16
+    /// first, then the legacy encodings, accepting only a lossless decode.
+    static func decode(_ data: Data) -> String? {
+        if data.starts(with: [0xEF, 0xBB, 0xBF]) {
+            return String(data: data.dropFirst(3), encoding: .utf8)
+        }
+        if data.starts(with: [0xFF, 0xFE]) || data.starts(with: [0xFE, 0xFF]) {
+            return String(data: data, encoding: .utf16)
+        }
+        if let text = String(data: data, encoding: .utf8) { return text }
+
+        var converted: NSString?
+        var lossy: ObjCBool = false
+        let detected = NSString.stringEncoding(
+            for: data,
+            encodingOptions: [
+                .suggestedEncodingsKey: legacyEncodings.map { NSNumber(value: $0.rawValue) },
+                .useOnlySuggestedEncodingsKey: true,
+                .allowLossyKey: false,
+            ],
+            convertedString: &converted,
+            usedLossyConversion: &lossy
+        )
+        guard detected != 0, !lossy.boolValue, let converted else { return nil }
+        return converted as String
+    }
+
+    /// An .lrc's text without its timestamps and `[ar:…]`-style tag lines.
+    static func plainLRC(_ text: String) -> String {
+        let tag = /^\s*\[[A-Za-z#]+:[^\]]*\]\s*$/
+        return text
+            .split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+            .map(String.init)
+            .filter { !$0.contains(tag) }
+            .map { $0.replacing(/\[\d+:\d+(?:[.:]\d+)?\]/, with: "").trimmingCharacters(in: .whitespaces) }
+            .joined(separator: "\n")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     static func parseLRC(_ text: String) -> [LyricLine] {
