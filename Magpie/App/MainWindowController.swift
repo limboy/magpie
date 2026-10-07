@@ -164,6 +164,9 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
             let search = NSSearchToolbarItem(itemIdentifier: identifier)
             search.label = "Find in Songs"
             search.preferredWidthForSearchField = 180
+            // The preferred width is only a hint; without a cap the field
+            // stretches to fill the space after the sidebar divider.
+            search.searchField.widthAnchor.constraint(lessThanOrEqualToConstant: 180).isActive = true
             search.resignsFirstResponderWithCancel = true
             search.searchField.placeholderString = "Find in Songs"
             search.searchField.sendsSearchStringImmediately = true
