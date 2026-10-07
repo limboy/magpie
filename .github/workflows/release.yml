@@ -68,7 +68,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           version=${GITHUB_REF_NAME#v}
-          gh release create "$GITHUB_REF_NAME" dist/Magpie-$version.zip dist/appcast.xml \
+          gh release create "$GITHUB_REF_NAME" dist/Magpie-$version.dmg dist/Magpie-$version.zip dist/appcast.xml \
             --title "Magpie $version" --notes-file dist/notes.md
 
       - name: Clean up keychain

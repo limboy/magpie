@@ -5,7 +5,7 @@ description: Cut a Magpie release — pick the version, draft release notes, pus
 
 # Releasing Magpie
 
-A release is a pushed `v*` tag. `.github/workflows/release.yml` builds that tag with `scripts/build-release.sh`: Developer ID signing, notarization with an App Store Connect API key, the Sparkle-signed zip, and `appcast.xml`. It publishes both as a GitHub release on `limboy/magpie-native`. Installed copies find updates through `releases/latest/download/appcast.xml`, so **the newest release is what every user's Sparkle sees**.
+A release is a pushed `v*` tag. `.github/workflows/release.yml` builds that tag with `scripts/build-release.sh`: Developer ID signing, notarization with an App Store Connect API key, the Sparkle-signed zip (what updates install), a notarized DMG (what people download), and `appcast.xml`. It publishes all three as a GitHub release on `limboy/magpie-native`. Installed copies find updates through `releases/latest/download/appcast.xml`, so **the newest release is what every user's Sparkle sees**.
 
 Publishing is outward-facing and can't be quietly undone once users have updated. Confirm the version and notes with the user before pushing anything.
 
@@ -76,7 +76,7 @@ gh release view v<version> -R limboy/magpie-native --json assets --jq '.assets[]
 curl -sL https://github.com/limboy/magpie-native/releases/latest/download/appcast.xml | grep -E 'shortVersionString|<sparkle:version>|enclosure'
 ```
 
-The release needs `Magpie-<version>.zip` and `appcast.xml`, and the latest appcast must name this version and link to this release's zip.
+The release needs `Magpie-<version>.dmg`, `Magpie-<version>.zip` and `appcast.xml`, and the latest appcast must name this version and link to this release's zip.
 
 Then check the download as a user would see it, in your scratchpad:
 
@@ -86,6 +86,14 @@ ditto -x -k <scratch>/Magpie-<version>.zip <scratch>/app
 xattr -w com.apple.quarantine "0081;$(printf %x $(date +%s));Safari;" <scratch>/app/Magpie.app
 spctl -a -t exec -vv <scratch>/app/Magpie.app   # expect: source=Notarized Developer ID
 xcrun stapler validate <scratch>/app/Magpie.app
+
+gh release download v<version> -R limboy/magpie-native -p 'Magpie-*.dmg' -D <scratch>
+xattr -w com.apple.quarantine "0081;$(printf %x $(date +%s));Safari;" <scratch>/Magpie-<version>.dmg
+spctl -a -t open --context context:primary-signature -vv <scratch>/Magpie-<version>.dmg   # expect: source=Notarized Developer ID
+xcrun stapler validate <scratch>/Magpie-<version>.dmg
+hdiutil attach -nobrowse -readonly -mountpoint <scratch>/mnt <scratch>/Magpie-<version>.dmg
+ls <scratch>/mnt   # expect: Applications  Magpie.app
+hdiutil detach <scratch>/mnt
 ```
 
 Don't launch it, and don't install it over the user's own Magpie. To try the update itself, use a dev-bundle build (`com.limboy.magpie.dev`) as in `scripts/build-release.sh`'s testing variables, never the user's installed app or its data.

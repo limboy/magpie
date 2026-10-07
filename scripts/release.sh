@@ -46,6 +46,6 @@ fi
 
 scripts/build-release.sh "$version" $notes_file
 git push -q origin main "$tag"
-gh release create "$tag" dist/Magpie-$version.zip dist/appcast.xml \
+gh release create "$tag" dist/Magpie-$version.dmg dist/Magpie-$version.zip dist/appcast.xml \
   --title "Magpie $version" --notes-file dist/notes.md
 echo "Released Magpie $version."

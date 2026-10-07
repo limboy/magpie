@@ -35,7 +35,7 @@ Magpie updates itself with [Sparkle](https://sparkle-project.org) (Magpie → Ch
 scripts/release.sh 0.2.0 notes.md
 ```
 
-This sets the version, commits it, tags `v0.2.0` (with the notes as its message) and pushes. The Release workflow then builds the app, signs it with the Developer ID, notarizes it, signs the zip for Sparkle, writes `appcast.xml`, and publishes the GitHub release. Without a notes file, the notes are the commit subjects since the last tag.
+This sets the version, commits it, tags `v0.2.0` (with the notes as its message) and pushes. The Release workflow then builds the app, signs it with the Developer ID, notarizes it, signs the zip for Sparkle, builds a signed and notarized DMG, writes `appcast.xml`, and publishes the GitHub release with all three. Without a notes file, the notes are the commit subjects since the last tag.
 
 The workflow needs these repository secrets: `CSC_LINK` (the Developer ID Application certificate as a base64 `.p12`), `CSC_KEY_PASSWORD` (if the `.p12` has one), `APPLE_API_KEY` (an App Store Connect API key's `.p8` contents), `APPLE_API_KEY_ID`, `APPLE_API_ISSUER`, and `SPARKLE_PRIVATE_KEY` (from `generate_keys -x`).
 

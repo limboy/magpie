@@ -1,5 +1,6 @@
 #!/bin/zsh
-# Builds a Magpie release into dist/: the app zip and the Sparkle appcast.
+# Builds a Magpie release into dist/: the app zip (what Sparkle installs),
+# a DMG to download and drag to Applications, and the Sparkle appcast.
 #
 #   scripts/build-release.sh 0.2.0 [notes.md]
 #
@@ -72,19 +73,43 @@ zip=$dist/Magpie-$version.zip
 rm -f $zip
 ditto -c -k --sequesterRsrc --keepParent $app $zip
 
+notarize=0
 if [[ -n ${DEVELOPER_ID:-} && -n ${APPLE_API_KEY_ID:-} ]]; then
+  notarize=1
   key_path=${APPLE_API_KEY_PATH:-}
   if [[ -z $key_path ]]; then
     key_path=$(mktemp -t notary).p8
     print -rn -- "$APPLE_API_KEY" > $key_path
     trap "rm -f $key_path" EXIT
   fi
-  xcrun notarytool submit $zip --wait \
+fi
+notarize_file() {
+  xcrun notarytool submit $1 --wait \
     --key $key_path --key-id "$APPLE_API_KEY_ID" --issuer "$APPLE_API_ISSUER"
+}
+
+if (( notarize )); then
+  notarize_file $zip
   xcrun stapler staple $app
   # Zip again so the download carries the stapled ticket.
   rm -f $zip
   ditto -c -k --sequesterRsrc --keepParent $app $zip
+fi
+
+# The DMG: the (stapled) app and an Applications shortcut to drag it to.
+dmg=$dist/Magpie-$version.dmg
+staging=$(mktemp -d)
+ditto $app $staging/Magpie.app
+ln -s /Applications $staging/Applications
+rm -f $dmg
+hdiutil create -quiet -volname Magpie -srcfolder $staging -format UDZO $dmg
+rm -rf $staging
+if [[ -n ${DEVELOPER_ID:-} ]]; then
+  codesign --force --timestamp --sign "$DEVELOPER_ID" $dmg
+fi
+if (( notarize )); then
+  notarize_file $dmg
+  xcrun stapler staple $dmg
 fi
 
 # Prints: sparkle:edSignature="…" length="…"
@@ -115,4 +140,4 @@ $notes_html
 </rss>
 EOF
 
-echo "Built $zip and $dist/appcast.xml (Magpie $version, build $build_number)."
+echo "Built $zip, $dmg and $dist/appcast.xml (Magpie $version, build $build_number)."
