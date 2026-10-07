@@ -24,6 +24,16 @@ final class PlayerEngine {
         }
     }
     var isMuted = false { didSet { player.isMuted = isMuted } }
+    /// Playback speed, for every song. Pitch stays where it was.
+    var rate: Float {
+        didSet {
+            UserDefaults.standard.set(rate, forKey: "playbackRate")
+            player.defaultRate = rate
+            if isPlaying { player.rate = rate }
+            updateNowPlayingTime()
+        }
+    }
+    static let rates: [Float] = [0.5, 0.75, 1, 1.25, 1.5, 2]
     var shuffle: Bool {
         didSet {
             UserDefaults.standard.set(shuffle, forKey: "shuffle")
@@ -64,7 +74,10 @@ final class PlayerEngine {
         volume = defaults.object(forKey: "volume") as? Double ?? 1
         shuffle = defaults.bool(forKey: "shuffle")
         repeatMode = RepeatMode(rawValue: defaults.string(forKey: "repeatMode") ?? "") ?? .off
+        rate = defaults.object(forKey: "playbackRate") as? Float ?? 1
         player.volume = Float(volume)
+        // play() starts at this rate.
+        player.defaultRate = rate
         player.actionAtItemEnd = .advance
         upNext = (defaults.stringArray(forKey: "upNext") ?? [])
             .filter { FileManager.default.fileExists(atPath: $0) }
@@ -225,7 +238,7 @@ final class PlayerEngine {
         // Tracks that resume mid-way load when they start instead.
         guard let playingItem, player.items().contains(playingItem),
               let (path, fromUpNext) = nextUp, resumePoint(for: path) == nil else { return }
-        let item = AVPlayerItem(url: URL(fileURLWithPath: path))
+        let item = Self.makeItem(path)
         player.insert(item, after: playingItem)
         upcoming = (item, path, fromUpNext)
     }
@@ -259,7 +272,7 @@ final class PlayerEngine {
         savePosition(force: true)
         currentPath = path
         library.lastTrackPath = path
-        let item = AVPlayerItem(url: URL(fileURLWithPath: path))
+        let item = Self.makeItem(path)
         player.removeAllItems()
         upcoming = nil
         player.insert(item, after: nil)
@@ -273,6 +286,13 @@ final class PlayerEngine {
         isPlaying = autoplay
         preloadNext()
         trackDidStart()
+    }
+
+    private static func makeItem(_ path: String) -> AVPlayerItem {
+        let item = AVPlayerItem(url: URL(fileURLWithPath: path))
+        // The best quality for music when the speed isn't 1×.
+        item.audioTimePitchAlgorithm = .spectral
+        return item
     }
 
     /// The player moved on to the queued track by itself; catch up with it.
@@ -408,6 +428,8 @@ final class PlayerEngine {
         Self.handle(center.nextTrackCommand) { [weak self] in self?.next() }
         Self.handle(center.previousTrackCommand) { [weak self] in self?.previous() }
         Self.handleSeek(center.changePlaybackPositionCommand) { [weak self] time in self?.seek(to: time) }
+        center.changePlaybackRateCommand.supportedPlaybackRates = Self.rates.map { NSNumber(value: $0) }
+        Self.handleRate(center.changePlaybackRateCommand) { [weak self] rate in self?.rate = rate }
     }
 
     // Built outside the main actor so the handlers aren't main-actor isolated:
@@ -428,6 +450,15 @@ final class PlayerEngine {
         }
     }
 
+    nonisolated private static func handleRate(_ command: MPChangePlaybackRateCommand, _ action: @escaping @MainActor @Sendable (Float) -> Void) {
+        command.addTarget { event in
+            guard let event = event as? MPChangePlaybackRateCommandEvent else { return .commandFailed }
+            let rate = event.playbackRate
+            Task { @MainActor in action(rate) }
+            return .success
+        }
+    }
+
     nonisolated private static func artwork(_ image: SendableImage) -> MPMediaItemArtwork {
         let size = CGSize(width: image.cgImage.width, height: image.cgImage.height)
         return MPMediaItemArtwork(boundsSize: size) { _ in NSImage(cgImage: image.cgImage, size: size) }
@@ -444,7 +475,8 @@ final class PlayerEngine {
             MPMediaItemPropertyAlbumTitle: track.album,
             MPMediaItemPropertyPlaybackDuration: duration,
             MPNowPlayingInfoPropertyElapsedPlaybackTime: currentTime,
-            MPNowPlayingInfoPropertyPlaybackRate: isPlaying ? 1.0 : 0.0,
+            MPNowPlayingInfoPropertyPlaybackRate: isPlaying ? Double(rate) : 0.0,
+            MPNowPlayingInfoPropertyDefaultPlaybackRate: Double(rate),
         ]
         if let existing = MPNowPlayingInfoCenter.default().nowPlayingInfo,
            existing[MPMediaItemPropertyTitle] as? String == track.title,
@@ -466,7 +498,8 @@ final class PlayerEngine {
     private func updateNowPlayingTime() {
         let center = MPNowPlayingInfoCenter.default()
         center.nowPlayingInfo?[MPNowPlayingInfoPropertyElapsedPlaybackTime] = currentTime
-        center.nowPlayingInfo?[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
+        center.nowPlayingInfo?[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? Double(rate) : 0.0
+        center.nowPlayingInfo?[MPNowPlayingInfoPropertyDefaultPlaybackRate] = Double(rate)
         center.playbackState = isPlaying ? .playing : .paused
     }
 }

@@ -140,6 +140,12 @@ struct NowPlayingLCD: View {
             Button("Show Player") { ui.toggleMode() }
             if let path = player.currentPath {
                 Button("Show in Finder") { library.revealInFinder([path]) }
+            }
+            Divider()
+            Picker("Playback Speed", selection: Binding(get: { player.rate }, set: { player.rate = $0 })) {
+                ForEach(PlayerEngine.rates, id: \.self) { Text(formatRate($0)).tag($0) }
+            }
+            if let path = player.currentPath {
                 Divider()
                 Button("Get Info") { ui.infoPath = path }
             }

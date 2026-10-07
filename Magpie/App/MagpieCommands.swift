@@ -53,6 +53,10 @@ struct MagpieCommands: Commands {
             Button("Decrease Volume") { player.adjustVolume(by: -0.1) }
                 .keyboardShortcut(.downArrow)
             Divider()
+            Picker("Playback Speed", selection: Binding(get: { player.rate }, set: { player.rate = $0 })) {
+                ForEach(PlayerEngine.rates, id: \.self) { Text(formatRate($0)).tag($0) }
+            }
+            Divider()
             Toggle("Shuffle", isOn: Binding(get: { player.shuffle }, set: { player.shuffle = $0 }))
             Picker("Repeat", selection: Binding(get: { player.repeatMode }, set: { player.repeatMode = $0 })) {
                 Text("Off").tag(RepeatMode.off)

@@ -111,3 +111,8 @@ func formatDuration(_ seconds: TimeInterval) -> String {
     let hours = Double(minutes) / 60
     return hours < 10 ? String(format: "%.1f hr", hours) : "\(Int(hours)) hr"
 }
+
+/// "1×", "1.25×", "0.5×".
+func formatRate(_ rate: Float) -> String {
+    rate.formatted(.number.precision(.fractionLength(0...2))) + "×"
+}
