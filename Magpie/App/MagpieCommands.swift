@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct WrenCommands: Commands {
+struct MagpieCommands: Commands {
     let library: LibraryStore
     let player: PlayerEngine
     let ui: AppState

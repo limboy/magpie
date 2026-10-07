@@ -92,7 +92,7 @@ struct TrackListView: View {
             if ui.settledMode == .list {
             ToolbarItem(placement: .navigation) {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(library.collections.isEmpty ? "Wren" : library.title(for: library.selection))
+                    Text(library.collections.isEmpty ? "Magpie" : library.title(for: library.selection))
                         .font(.system(size: 17, weight: .bold))
                     if !library.collections.isEmpty {
                         Text(summary(rows))

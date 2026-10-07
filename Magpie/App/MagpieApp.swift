@@ -1,19 +1,22 @@
 import SwiftUI
 
 @main
-struct WrenApp: App {
+struct MagpieApp: App {
     @State private var library: LibraryStore
     @State private var player: PlayerEngine
-    @State private var ui = AppState()
+    @State private var ui: AppState
 
     init() {
+        // Before anything reads the library or settings.
+        Storage.migrateFromWren()
+        _ui = State(initialValue: AppState())
         let library = LibraryStore()
         _library = State(initialValue: library)
         _player = State(initialValue: PlayerEngine(library: library))
     }
 
     var body: some Scene {
-        Window("Wren", id: "main") {
+        Window("Magpie", id: "main") {
             ContentView()
                 .environment(library)
                 .environment(player)
@@ -21,7 +24,7 @@ struct WrenApp: App {
         }
         .defaultSize(width: 1080, height: 720)
         .windowToolbarStyle(.unified)
-        .commands { WrenCommands(library: library, player: player, ui: ui) }
+        .commands { MagpieCommands(library: library, player: player, ui: ui) }
     }
 }
 

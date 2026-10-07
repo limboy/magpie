@@ -78,8 +78,8 @@ final class LibraryStore {
     func title(for item: SidebarItem?) -> String {
         switch item {
         case .favorites: "Favorites"
-        case .collection(let id): collection(id)?.name ?? "Wren"
-        case nil: "Wren"
+        case .collection(let id): collection(id)?.name ?? "Magpie"
+        case nil: "Magpie"
         }
     }
 

@@ -23,7 +23,7 @@ nonisolated enum LyricsService {
         var duration: Double?
     }
 
-    private static let userAgent = "Wren (https://github.com/limboy/wren)"
+    private static let userAgent = "Magpie (https://github.com/limboy/magpie-native)"
 
     private static let cacheDirectory: URL = {
         let url = Storage.directory.appendingPathComponent("lyrics", isDirectory: true)

@@ -1,6 +1,6 @@
-# Wren
+# Magpie
 
-A native macOS 26+ audio player for your local library, written in SwiftUI + AVFoundation. It's modeled on [Magpie](../magpie) and Apple Music.
+A native macOS 26+ audio player for your local library, written in SwiftUI + AVFoundation. A native rewrite of the Electron [Magpie](../magpie), modeled on Apple Music.
 
 ## Two modes
 
@@ -23,8 +23,8 @@ Switch modes with ⇧⌘F, the toolbar button, or a click on the LCD artwork. Ea
 
 ```bash
 xcodegen generate
-xcodebuild -project Wren.xcodeproj -scheme Wren -configuration Debug -derivedDataPath build build
-open build/Build/Products/Debug/Wren.app
+xcodebuild -project Magpie.xcodeproj -scheme Magpie -configuration Debug -derivedDataPath build build
+open build/Build/Products/Debug/Magpie.app
 ```
 
 Formats: MP3, AAC/M4A/M4B, ALAC, FLAC, WAV, AIFF, CAF. OGG isn't supported by AVFoundation.
