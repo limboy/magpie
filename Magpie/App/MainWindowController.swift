@@ -73,13 +73,13 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
         window.titlebarAppearsTransparent = mode != .list
         // The collection name over the song count, as the toolbar's title.
         let hasCollections = !library.collections.isEmpty
-        let listTitle = ui.openBook.map { library.track(for: $0).title } ?? library.title(for: library.selection)
+        let listTitle = ui.openBook.map { library.track(for: $0).title } ?? library.title(for: library.listSelection)
         window.title = mode == .list && hasCollections ? listTitle : "Magpie"
         window.subtitle = mode == .list && hasCollections ? ui.listSummary : ""
         window.titleVisibility = mode == .list ? .visible : .hidden
 
         items[.sidebarButton]?.toolTip = ui.isSidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"
-        items[.back]?.toolTip = "Back to \(library.title(for: library.selection)) (⌘[)"
+        items[.back]?.toolTip = "Back to \(library.title(for: library.listSelection)) (⌘[)"
         if let item = items[.filter] {
             item.image = Self.symbol("line.3.horizontal.decrease", "Filter and Sort", tinted: ui.onlyFavorites)
         }

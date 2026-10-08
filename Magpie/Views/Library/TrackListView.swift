@@ -38,7 +38,7 @@ struct TrackListView: View {
     }
 
     private var rows: [TrackRow] {
-        let item = library.selection
+        let item = library.listSelection
         let query = ui.searchText.trimmingCharacters(in: .whitespaces)
         if let book = ui.openBook {
             let rows = library.chapterIDs(book).enumerated().compactMap { index, id -> TrackRow? in
@@ -93,14 +93,14 @@ struct TrackListView: View {
             }
         }
         .dropDestination(for: URL.self) { urls, _ in
-            if case .collection(let id) = library.selection {
+            if case .collection(let id) = library.listSelection {
                 Task { await library.add(urls, to: id) }
             } else {
                 Task { await library.addCollections(from: urls) }
             }
             return true
         }
-        .onChange(of: library.selection) {
+        .onChange(of: library.listSelection) {
             selection.removeAll()
             ui.openBook = nil
         }
@@ -189,7 +189,7 @@ struct TrackListView: View {
             for id in selected where library.isFavorite(id) == allFavorite { library.toggleFavorite(id) }
         }]
         entries += [.item("Show in Finder") { library.revealInFinder(Array(selected)) }]
-        if !inBook, case .collection(let collectionID) = library.selection {
+        if !inBook, case .collection(let collectionID) = library.listSelection {
             entries += [.separator, .item("Remove from Collection") { library.remove(selected, from: collectionID) }]
         }
         return entries
@@ -221,7 +221,7 @@ struct TrackListView: View {
             } actions: {
                 Button("Show All Songs") { ui.onlyFavorites = false }
             }
-        } else if library.selection == .favorites {
+        } else if library.listSelection == .favorites {
             ContentUnavailableView(
                 "No Favorites", systemImage: "star",
                 description: Text("Star songs to collect them here.")

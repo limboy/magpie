@@ -9,7 +9,17 @@ final class LibraryStore {
             watcher.watch(collections.flatMap(\.folders))
         }
     }
-    var selection: SidebarItem? { didSet { scheduleSave() } }
+    var selection: SidebarItem? {
+        didSet {
+            scheduleSave()
+            // After this frame, so the sidebar's highlight isn't held up by
+            // the song list redrawing in it.
+            afterFrame { [weak self] in self?.listSelection = self?.selection }
+        }
+    }
+    /// What the song list (and the window's title) shows: the selection,
+    /// once the sidebar has drawn it.
+    private(set) var listSelection: SidebarItem?
     private(set) var favorites: Set<String> = [] { didSet { scheduleSave() } }
     private(set) var playCounts: [String: Int] = [:] { didSet { scheduleSave() } }
     private(set) var tracks: [String: Track] = [:]
@@ -46,6 +56,7 @@ final class LibraryStore {
             modified = cache.mapValues(\.modified)
         }
         if selection == nil, let first = collections.first { selection = .collection(first.id) }
+        listSelection = selection
         isRestoring = false
 
         watcher.onChange = { [weak self] paths in self?.foldersChanged(paths) }
@@ -365,4 +376,13 @@ final class LibraryStore {
         saveTask?.cancel()
         if let data = Storage.encode(snapshot) { Storage.write(data, to: Self.libraryFile) }
     }
+}
+
+/// Runs `body` once the main run loop has drawn the frame in progress: it
+/// goes idle (after Core Animation's commit), then wakes for `body`.
+func afterFrame(_ body: @escaping @MainActor () -> Void) {
+    let observer = CFRunLoopObserverCreateWithHandler(nil, CFRunLoopActivity.beforeWaiting.rawValue, false, CFIndex.max) { _, _ in
+        DispatchQueue.main.async { body() }
+    }
+    CFRunLoopAddObserver(CFRunLoopGetMain(), observer, .commonModes)
 }
