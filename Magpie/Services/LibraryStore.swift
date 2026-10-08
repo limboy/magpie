@@ -89,8 +89,11 @@ final class LibraryStore {
     func paths(for item: SidebarItem?) -> [String] {
         switch item {
         case .favorites:
+            // Each starred book or song, then any starred chapters of it.
             var seen = Set<String>()
-            return collections.flatMap(\.items).filter { favorites.contains($0) && seen.insert($0).inserted }
+            return collections.flatMap(\.items).filter { seen.insert($0).inserted }.flatMap { path in
+                (favorites.contains(path) ? [path] : []) + favoriteChapters(of: path)
+            }
         case .collection(let id):
             return collection(id)?.items ?? []
         case nil:
@@ -111,16 +114,24 @@ final class LibraryStore {
         return collections.lazy.compactMap { $0.addedAt[path] }.first
     }
 
-    // A chapter's favorite, plays and position are its book's; a position
-    // is always into the whole file.
-    func isFavorite(_ path: String) -> Bool { favorites.contains(ChapterID.file(path)) }
+    // A chapter is starred on its own, under its ID. Its plays and position
+    // are its book's; a position is always into the whole file.
+    func isFavorite(_ path: String) -> Bool { favorites.contains(path) }
+
+    /// A book's starred chapters, in order.
+    func favoriteChapters(of book: String) -> [String] {
+        guard tracks[book]?.isBook == true else { return [] }
+        return chapterIDs(book).filter(favorites.contains)
+    }
+
+    /// Whether a path is starred, or is a book with starred chapters.
+    func hasFavorite(_ path: String) -> Bool { isFavorite(path) || !favoriteChapters(of: path).isEmpty }
     func plays(_ path: String) -> Int { playCounts[ChapterID.file(path)] ?? 0 }
     func position(_ path: String) -> Double? { positions[ChapterID.file(path)] }
 
     // MARK: Mutations
 
     func toggleFavorite(_ path: String) {
-        let path = ChapterID.file(path)
         if favorites.contains(path) { favorites.remove(path) } else { favorites.insert(path) }
     }
 

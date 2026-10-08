@@ -416,8 +416,6 @@ final class TrackCellView: NSTableCellView {
             label.stringValue = row.duration > 0 ? formatTime(row.duration) : ""
         case .favorite:
             label.isHidden = true
-            // A chapter's favorite is its book's.
-            guard row.kind != .chapter else { return }
             symbol.isHidden = false
             symbol.image = NSImage(
                 systemSymbolName: row.isFavorite ? "star.fill" : "star",

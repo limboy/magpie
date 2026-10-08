@@ -42,22 +42,27 @@ struct TrackListView: View {
         let query = ui.searchText.trimmingCharacters(in: .whitespaces)
         if let book = ui.openBook {
             let rows = library.chapterIDs(book).enumerated().compactMap { index, id -> TrackRow? in
+                if ui.onlyFavorites && !library.isFavorite(id) { return nil }
                 let chapter = library.track(for: id)
                 if !query.isEmpty, !chapter.title.localizedStandardContains(query) { return nil }
-                return TrackRow(track: chapter, kind: .chapter, plays: 0, isFavorite: false, added: .distantPast, order: index)
+                return TrackRow(
+                    track: chapter, kind: .chapter, plays: 0, isFavorite: library.isFavorite(id),
+                    added: .distantPast, order: index
+                )
             }
             return rows.sorted(using: Self.comparator(ui.sortKey, ascending: ui.sortAscending))
         }
         let rows = library.paths(for: item).enumerated().compactMap { index, path -> TrackRow? in
-            if ui.onlyFavorites && !library.isFavorite(path) { return nil }
+            if ui.onlyFavorites && !library.hasFavorite(path) { return nil }
             let track = library.track(for: path)
             if !query.isEmpty,
                !(track.title.localizedStandardContains(query) || track.artist.localizedStandardContains(query)
                    || track.album.localizedStandardContains(query)) {
                 return nil
             }
+            let kind: TrackRow.Kind = track.isBook ? .book : ChapterID.parse(path) != nil ? .chapter : .song
             return TrackRow(
-                track: track, kind: track.isBook ? .book : .song, plays: library.plays(path), isFavorite: library.isFavorite(path),
+                track: track, kind: kind, plays: library.plays(path), isFavorite: library.isFavorite(path),
                 added: library.addedDate(path, in: item) ?? .distantPast, order: index
             )
         }
@@ -146,7 +151,7 @@ struct TrackListView: View {
                 ui.sortAscending = ascending
             },
             onPlay: { open($0, ids: ids) },
-            onToggleFavorite: { if ChapterID.parse($0) == nil { library.toggleFavorite($0) } },
+            onToggleFavorite: { library.toggleFavorite($0) },
             menu: { menuEntries($0, ids: ids) }
         )
     }
@@ -154,7 +159,8 @@ struct TrackListView: View {
     /// Double-click or Return: a book opens like a folder; anything else plays,
     /// with the list's other songs (not its books) as the queue.
     private func open(_ id: String, ids: [String]) {
-        if ui.openBook == nil, library.book(id) != nil {
+        // A starred chapter in Favorites plays rather than opening its book.
+        if ui.openBook == nil, ChapterID.parse(id) == nil, library.book(id) != nil {
             ui.openBook = id
         } else {
             player.play(id, in: ids)
@@ -168,7 +174,7 @@ struct TrackListView: View {
         let ordered = library.playable(ids.filter(selected.contains))
         let inBook = ui.openBook != nil
         var entries: [TrackMenuEntry] = []
-        if !inBook, selected.count == 1, library.book(first) != nil {
+        if !inBook, selected.count == 1, ChapterID.parse(first) == nil, library.book(first) != nil {
             entries += [.item("Open") { ui.openBook = first }, .separator]
         }
         if let firstSong = ordered.first {
@@ -179,12 +185,9 @@ struct TrackListView: View {
                 .separator,
             ]
         }
-        // A chapter's favorite is its book's; star the book itself.
-        if !inBook {
-            entries += [.item(allFavorite ? "Unfavorite" : "Favorite") {
-                for id in selected where library.isFavorite(id) == allFavorite { library.toggleFavorite(id) }
-            }]
-        }
+        entries += [.item(allFavorite ? "Unfavorite" : "Favorite") {
+            for id in selected where library.isFavorite(id) == allFavorite { library.toggleFavorite(id) }
+        }]
         entries += [.item("Show in Finder") { library.revealInFinder(Array(selected)) }]
         if !inBook, case .collection(let collectionID) = library.selection {
             entries += [.separator, .item("Remove from Collection") { library.remove(selected, from: collectionID) }]

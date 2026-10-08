@@ -14,7 +14,7 @@ Switch modes with ⇧⌘F, the toolbar button, or a click on the LCD artwork. Ea
 - Add folders as collections (⌘O or drag & drop). Folders are watched live with FSEvents: added, renamed, deleted and retagged files show up within about a second. ⌘R forces a full rescan.
 - Reads title, artist, album, duration and artwork, falling back to `cover.jpg`/`folder.jpg` next to the files. Metadata is cached.
 - Lyrics: a sidecar `.lrc` first, then [LRCLIB](https://lrclib.net). Lyrics are cached on disk.
-- Audiobooks (`.m4b`/`.m4a` with embedded chapters) work like folders: double-click to open one (⌘[ to go back), and its chapters are plain tracks there, queued only with each other. A collection's own queue skips books. A book resumes in the chapter you left it; favorites and play counts belong to the whole book.
+- Audiobooks (`.m4b`/`.m4a` with embedded chapters) work like folders: double-click to open one (⌘[ to go back), and its chapters are plain tracks there, queued only with each other. A collection's own queue skips books. A book resumes in the chapter you left it; play counts belong to the whole book, while the book and each chapter are starred separately (starred chapters show up in Favorites).
 - Favorites, play counts, shuffle, repeat (all/one).
 - Reopens the last song where you left off. Long tracks (≥10 min) remember their position.
 - Now Playing / Control Center integration and media keys.

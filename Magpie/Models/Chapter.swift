@@ -30,9 +30,9 @@ nonisolated struct Chapter: Identifiable, Hashable, Codable, Sendable {
 
 /// A book's chapters play as tracks of their own, identified by the book's
 /// path plus the chapter number: `/Books/Dune.m4b#3`. Everything that keys
-/// off a path (the queue, Up Next, the song list) takes these as is; what
-/// belongs to the whole book (favorites, play counts, the resume position)
-/// is kept under the file's path.
+/// off a path (the queue, Up Next, the song list, favorites) takes these as
+/// is; what belongs to the whole book (play counts, the resume position) is
+/// kept under the file's path.
 nonisolated enum ChapterID {
     static func make(_ file: String, _ index: Int) -> String { "\(file)#\(index + 1)" }
 
