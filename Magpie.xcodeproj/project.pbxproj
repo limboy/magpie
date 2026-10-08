@@ -28,6 +28,7 @@
 		6F426F71C932E1A02D9E120B /* UpNextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2FFCAC3C125AA6C7A2C3538 /* UpNextView.swift */; };
 		8131DD75927F0719937F5FCA /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 491E4AC022D4704414DEBE72 /* Sparkle */; };
 		82FC8AEFC6949C5584871D8B /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EDEFFC652E4F140B528CE68 /* SidebarView.swift */; };
+		93E5FA4E56C69061E9590E22 /* AboutPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B27920536836E798818436AC /* AboutPanel.swift */; };
 		9DF0361C8C0601A1C4165A0F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF5AD32BB133E96D82360F1 /* ContentView.swift */; };
 		A38138D39BF01E712E1DB957 /* ArtworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34110A922267DED81135D507 /* ArtworkView.swift */; };
 		A4F4E12CB7DEDCDFB6FD5DC7 /* Metadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC36BA95474A3C43C911EA91 /* Metadata.swift */; };
@@ -70,6 +71,7 @@
 		A2FFCAC3C125AA6C7A2C3538 /* UpNextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpNextView.swift; sourceTree = "<group>"; };
 		AFF5AD32BB133E96D82360F1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		B2325B2197D0A7101A0CCAF5 /* app.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = app.icon; sourceTree = "<group>"; };
+		B27920536836E798818436AC /* AboutPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutPanel.swift; sourceTree = "<group>"; };
 		B3C36E32F9A7C6B096E4C511 /* LyricsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsPanel.swift; sourceTree = "<group>"; };
 		BC32FE433F4C42A11B022350 /* Lyrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lyrics.swift; sourceTree = "<group>"; };
 		CAA548FD471C02A5D9CFB123 /* TransportControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransportControls.swift; sourceTree = "<group>"; };
@@ -149,6 +151,7 @@
 		740E1CCD12BA08CC9D1BAA36 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				B27920536836E798818436AC /* AboutPanel.swift */,
 				9BE3EDEFFA3312B7416A3144 /* MagpieApp.swift */,
 				5B5AB2166BCC75BED6F03515 /* MagpieCommands.swift */,
 				33F720141A5A3DB29F31B7E3 /* MainWindowController.swift */,
@@ -286,6 +289,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				93E5FA4E56C69061E9590E22 /* AboutPanel.swift in Sources */,
 				4EC4052021E3814E75C68353 /* AmbientBackground.swift in Sources */,
 				A38138D39BF01E712E1DB957 /* ArtworkView.swift in Sources */,
 				5A3031E06FAA1E8DDFB7BED5 /* AudioFiles.swift in Sources */,
@@ -336,7 +340,7 @@
 				INFOPLIST_FILE = Magpie/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Magpie;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Limboy";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -423,7 +427,7 @@
 				INFOPLIST_FILE = Magpie/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Magpie;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Limboy";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

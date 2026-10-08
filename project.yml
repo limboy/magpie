@@ -39,7 +39,7 @@ targets:
         SPARKLE_FEED_URL: https://github.com/limboy/magpie-native/releases/latest/download/appcast.xml
         INFOPLIST_KEY_CFBundleDisplayName: Magpie
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.music
-        INFOPLIST_KEY_NSHumanReadableCopyright: ""
+        INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 Limboy"
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_IDENTITY: "-"
         ENABLE_HARDENED_RUNTIME: NO

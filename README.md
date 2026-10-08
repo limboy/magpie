@@ -52,3 +52,10 @@ The workflow needs these repository secrets: `CSC_LINK` (the Developer ID Applic
 `LOCAL=1 scripts/release.sh …` builds and publishes from your Mac instead, signing updates with the Sparkle key in your Keychain; set `DEVELOPER_ID` and the `APPLE_API_*` variables to sign and notarize too. `scripts/build-release.sh` alone builds into `dist/` without touching git or GitHub.
 
 Formats: MP3, AAC/M4A/M4B, ALAC, FLAC, WAV, AIFF, CAF. OGG isn't supported by AVFoundation.
+
+## License
+
+Magpie is licensed under the [MIT License](LICENSE).
+Copyright © 2026 Limboy.
+
+Magpie uses [Sparkle](https://sparkle-project.org) (MIT) for software updates and [LRCLIB](https://lrclib.net) for lyrics.

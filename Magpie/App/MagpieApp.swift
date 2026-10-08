@@ -9,9 +9,12 @@ struct MagpieApp: App {
         // carries the menus.
         Settings { EmptyView() }
             .commands {
+                AboutCommand()
                 MagpieCommands(library: app.library, player: app.player, ui: app.ui, updater: app.updater)
                 CommandGroup(replacing: .appSettings) {}
             }
+
+        AboutWindow()
     }
 }
 
