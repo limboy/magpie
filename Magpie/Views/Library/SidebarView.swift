@@ -5,6 +5,7 @@ struct SidebarView: View {
     @Environment(LibraryStore.self) private var library
     @State private var renaming: UUID?
     @State private var draftName = ""
+    @FocusState private var listFocused: Bool
     @FocusState private var renameFocused: Bool
 
     var body: some View {
@@ -33,6 +34,12 @@ struct SidebarView: View {
                 }
             }
         }
+        .focused($listFocused)
+        // Clicking an already selected row must also take focus back from
+        // the AppKit song table; a selection-change handler misses that case.
+        .simultaneousGesture(TapGesture().onEnded {
+            if renaming == nil { listFocused = true }
+        })
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if library.isLoadingMetadata {
                 ProgressView()
@@ -112,4 +119,3 @@ struct SidebarView: View {
         renaming = nil
     }
 }
-
