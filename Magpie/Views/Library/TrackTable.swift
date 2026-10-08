@@ -335,7 +335,7 @@ final class TrackCellView: NSTableCellView {
 
         disclosure.translatesAutoresizingMaskIntoConstraints = false
         disclosure.symbolConfiguration = .init(pointSize: 11, weight: .semibold)
-        disclosure.image = NSImage(systemSymbolName: "chevron.right", accessibilityDescription: "Book")
+        disclosure.image = Self.chevron
         disclosure.contentTintColor = .tertiaryLabelColor
         disclosure.setContentCompressionResistancePriority(.required, for: .horizontal)
         disclosure.isHidden = true
@@ -358,6 +358,12 @@ final class TrackCellView: NSTableCellView {
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError() }
+
+    // Shared, so each cell doesn't load and render its own copy.
+    private static let chevron = NSImage(systemSymbolName: "chevron.right", accessibilityDescription: "Book")
+    private static let nowPlaying = NSImage(systemSymbolName: "speaker.wave.2.fill", accessibilityDescription: "Now Playing")
+    private static let star = NSImage(systemSymbolName: "star", accessibilityDescription: "Favorite")
+    private static let starFill = NSImage(systemSymbolName: "star.fill", accessibilityDescription: "Unfavorite")
 
     private static let regular = NSFont.systemFont(ofSize: 13)
     private static let semibold = NSFont.systemFont(ofSize: 13, weight: .semibold)
@@ -393,7 +399,7 @@ final class TrackCellView: NSTableCellView {
             if isCurrent {
                 label.isHidden = true
                 symbol.isHidden = false
-                symbol.image = NSImage(systemSymbolName: "speaker.wave.2.fill", accessibilityDescription: "Now Playing")
+                symbol.image = Self.nowPlaying
                 if isPlaying { symbol.addSymbolEffect(.variableColor.iterative.dimInactiveLayers) }
             } else {
                 label.font = Self.digits
@@ -417,10 +423,7 @@ final class TrackCellView: NSTableCellView {
         case .favorite:
             label.isHidden = true
             symbol.isHidden = false
-            symbol.image = NSImage(
-                systemSymbolName: row.isFavorite ? "star.fill" : "star",
-                accessibilityDescription: row.isFavorite ? "Unfavorite" : "Favorite"
-            )
+            symbol.image = row.isFavorite ? Self.starFill : Self.star
             if !row.isFavorite { symbol.contentTintColor = .tertiaryLabelColor }
         }
     }
