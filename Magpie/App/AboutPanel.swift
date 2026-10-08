@@ -39,7 +39,6 @@ struct AboutWindow: Scene {
         .defaultLaunchBehavior(.suppressed)
         .defaultPosition(.center)
         .handlesExternalEvents(matching: [])
-        .commandsRemoved()
     }
 }
 

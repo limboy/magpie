@@ -24,6 +24,7 @@ struct LibrarySplitView: NSViewControllerRepresentable {
 final class LibrarySplitController: NSSplitViewController {
     private let sidebarItem: NSSplitViewItem
     private let lyricsItem: NSSplitViewItem
+    private let songsItem: NSSplitViewItem
     private weak var ui: AppState?
     private var collapseObservations: [NSKeyValueObservation] = []
     private var hasPlacedSidebar = false
@@ -46,7 +47,9 @@ final class LibrarySplitController: NSSplitViewController {
         }
 
         sidebarItem = NSSplitViewItem(sidebarWithViewController: host(SidebarView()))
-        sidebarItem.minimumThickness = 180
+        // Room for the window buttons, Add Folder and the sidebar button above
+        // it; narrower, the toolbar overflows and folds the search field.
+        sidebarItem.minimumThickness = LibraryLayout.defaultSidebarWidth
         sidebarItem.maximumThickness = 320
         sidebarItem.canCollapse = true
         sidebarItem.isCollapsed = defaults.bool(forKey: Self.sidebarCollapsedKey)
@@ -57,7 +60,7 @@ final class LibrarySplitController: NSSplitViewController {
         lyricsItem.maximumThickness = LibraryLayout.lyricsWidth
         lyricsItem.canCollapse = true
         lyricsItem.isCollapsed = !defaults.bool(forKey: Self.lyricsShownKey)
-        let songsItem = NSSplitViewItem(viewController: host(TrackListView()))
+        songsItem = NSSplitViewItem(viewController: host(TrackListView()))
         // Window resizing goes to the song list; the sidebars keep their width.
         songsItem.holdingPriority = .defaultLow
         sidebarItem.holdingPriority = .defaultLow + 10
@@ -69,7 +72,8 @@ final class LibrarySplitController: NSSplitViewController {
         addSplitViewItem(songsItem)
         addSplitViewItem(lyricsItem)
 
-        ui.sidebarWidth = defaults.object(forKey: Self.sidebarWidthKey) as? Double ?? LibraryLayout.defaultSidebarWidth
+        let savedWidth = defaults.object(forKey: Self.sidebarWidthKey) as? Double ?? LibraryLayout.defaultSidebarWidth
+        ui.sidebarWidth = max(savedWidth, sidebarItem.minimumThickness)
         ui.toggleSidebar = { [weak self] in self?.toggle(isSidebar: true) }
         ui.toggleLyricsSidebar = { [weak self] in self?.toggle(isSidebar: false) }
         collapseObservations = [sidebarItem, lyricsItem].map { item in
@@ -85,7 +89,18 @@ final class LibrarySplitController: NSSplitViewController {
     private func toggle(isSidebar: Bool) {
         let item = isSidebar ? sidebarItem : lyricsItem
         if item.isCollapsed { makeRoom(sidebar: isSidebar || !sidebarItem.isCollapsed, lyrics: !isSidebar || !lyricsItem.isCollapsed) }
+        // A hidden view can't keep focus, and AppKit would hand it to the
+        // next key view: the toolbar's search field. The song list takes it.
+        if !item.isCollapsed, let window = view.window,
+           let focused = window.firstResponder as? NSView, focused.isDescendant(of: item.viewController.view) {
+            window.makeFirstResponder(Self.songTable(in: songsItem.viewController.view))
+        }
         if isSidebar { toggleSidebar(nil) } else { toggleInspector(nil) }
+    }
+
+    private static func songTable(in view: NSView) -> NSTableView? {
+        if let table = view as? TrackNSTableView { return table }
+        return view.subviews.lazy.compactMap { songTable(in: $0) }.first
     }
 
     /// Widens the window, before a sidebar opens, so the song list keeps room
