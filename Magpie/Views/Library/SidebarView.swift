@@ -25,6 +25,12 @@ struct SidebarView: View {
                         }
                         .contextMenu { menu(for: collection) }
                 }
+                // Between rows and the empty space below them. The List's
+                // table view takes every drag over it, so the List-level
+                // onDrop never sees these; without this they're refused.
+                .onInsert(of: [.fileURL]) { _, providers in
+                    Task { await library.addCollections(from: await Self.fileURLs(providers)) }
+                }
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -44,7 +50,7 @@ struct SidebarView: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
         }
-        // Dropping anywhere else in the sidebar makes new collections.
+        // Dropping outside the list (the bottom bar) makes new collections.
         .onDrop(of: [.fileURL], isTargeted: nil) { providers in
             Task { await library.addCollections(from: await Self.fileURLs(providers)) }
             return true
