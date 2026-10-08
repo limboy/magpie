@@ -346,7 +346,7 @@ final class TrackCellView: NSTableCellView {
         NSLayoutConstraint.activate([
             label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 2),
             labelToEdge,
-            disclosure.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4),
+            disclosure.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -4),
             disclosure.centerYAnchor.constraint(equalTo: centerYAnchor),
             label.centerYAnchor.constraint(equalTo: centerYAnchor),
             symbol.centerYAnchor.constraint(equalTo: centerYAnchor),
@@ -358,6 +358,10 @@ final class TrackCellView: NSTableCellView {
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError() }
+
+    // These cells only display content. Let the table receive the entire
+    // click sequence, including the first click over a title or image.
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
 
     // Shared, so each cell doesn't load and render its own copy.
     private static let chevron = NSImage(systemSymbolName: "chevron.right", accessibilityDescription: "Book")
@@ -444,6 +448,15 @@ final class TrackScrollView: NSScrollView {
 
 final class TrackNSTableView: NSTableView {
     var onReturn: () -> Void = {}
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func mouseDown(with event: NSEvent) {
+        // Passive cells can pass clicks here through their row view. Take
+        // focus as well as selecting, so the native selection stays accented.
+        if acceptsFirstResponder { window?.makeFirstResponder(self) }
+        super.mouseDown(with: event)
+    }
 
     override func keyDown(with event: NSEvent) {
         if event.keyCode == 36 || event.keyCode == 76 {
