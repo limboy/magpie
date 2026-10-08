@@ -5,6 +5,13 @@ nonisolated enum AudioFiles {
         "mp3", "m4a", "m4b", "aac", "alac", "flac", "wav", "aif", "aiff", "aifc", "caf", "mp4",
     ]
 
+    /// Containers whose chapters we read; each chapter becomes a track.
+    static let chapterExtensions: Set<String> = ["m4b", "m4a", "mp4"]
+
+    static func mayHaveChapters(_ path: String) -> Bool {
+        chapterExtensions.contains((path as NSString).pathExtension.lowercased())
+    }
+
     static func isAudio(_ url: URL) -> Bool {
         extensions.contains(url.pathExtension.lowercased())
     }

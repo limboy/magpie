@@ -56,7 +56,30 @@ final class LibraryStore {
     // MARK: Queries
 
     func track(for path: String) -> Track {
-        tracks[path] ?? .placeholder(path: path)
+        if let (file, index) = ChapterID.parse(path), let chapter = tracks[file]?.chapterTrack(index) {
+            return chapter
+        }
+        return tracks[path] ?? .placeholder(path: path)
+    }
+
+    /// The book a path is, or one of whose chapters it is.
+    func book(_ path: String) -> Track? {
+        tracks[ChapterID.file(path)].flatMap { $0.isBook ? $0 : nil }
+    }
+
+    func chapter(_ id: String) -> Chapter? {
+        ChapterID.parse(id).flatMap { tracks[$0.file]?.chapters?[safe: $0.index] }
+    }
+
+    /// A book's chapters as tracks to play.
+    func chapterIDs(_ book: String) -> [String] {
+        (tracks[book]?.chapters ?? []).map { ChapterID.make(book, $0.id) }
+    }
+
+    /// What plays from a list: a book is a folder, opened to play its
+    /// chapters, so lists play past it.
+    func playable(_ paths: [String]) -> [String] {
+        paths.filter { ChapterID.parse($0) != nil || book($0) == nil }
     }
 
     func collection(_ id: UUID) -> LibraryCollection? {
@@ -88,22 +111,25 @@ final class LibraryStore {
         return collections.lazy.compactMap { $0.addedAt[path] }.first
     }
 
-    func isFavorite(_ path: String) -> Bool { favorites.contains(path) }
-    func plays(_ path: String) -> Int { playCounts[path] ?? 0 }
-    func position(_ path: String) -> Double? { positions[path] }
+    // A chapter's favorite, plays and position are its book's; a position
+    // is always into the whole file.
+    func isFavorite(_ path: String) -> Bool { favorites.contains(ChapterID.file(path)) }
+    func plays(_ path: String) -> Int { playCounts[ChapterID.file(path)] ?? 0 }
+    func position(_ path: String) -> Double? { positions[ChapterID.file(path)] }
 
     // MARK: Mutations
 
     func toggleFavorite(_ path: String) {
+        let path = ChapterID.file(path)
         if favorites.contains(path) { favorites.remove(path) } else { favorites.insert(path) }
     }
 
     func recordPlay(_ path: String) {
-        playCounts[path, default: 0] += 1
+        playCounts[ChapterID.file(path), default: 0] += 1
     }
 
     func setPosition(_ position: Double?, for path: String) {
-        positions[path] = position
+        positions[ChapterID.file(path)] = position
         scheduleSave()
     }
 
@@ -239,14 +265,16 @@ final class LibraryStore {
     }
 
     func revealInFinder(_ paths: [String]) {
-        NSWorkspace.shared.activateFileViewerSelecting(paths.map { URL(fileURLWithPath: $0) })
+        NSWorkspace.shared.activateFileViewerSelecting(Set(paths.map(ChapterID.file)).map { URL(fileURLWithPath: $0) })
     }
 
     // MARK: Metadata
 
     func loadMetadata(_ paths: [String]) async {
         let candidates = Array(Set(paths).subtracting(loading))
-        let stale = await MetadataReader.stale(candidates, known: modified)
+        // Entries cached before chapters were read are read again.
+        let known = modified.filter { tracks[$0.key]?.chapters != nil }
+        let stale = await MetadataReader.stale(candidates, known: known)
         guard !stale.isEmpty else { return }
         loading.formUnion(stale)
         isLoadingMetadata = true

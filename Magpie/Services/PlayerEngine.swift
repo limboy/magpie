@@ -63,6 +63,8 @@ final class PlayerEngine {
     @ObservationIgnored private var timeObserver: Any?
     @ObservationIgnored private var isSeeking = false
     @ObservationIgnored private var lastPositionSave = Date.distantPast
+    /// Set when a track ends, so leaving it doesn't overwrite where its book carries on.
+    @ObservationIgnored private var positionSettled = false
     @ObservationIgnored private var artworkTask: Task<Void, Never>?
 
     /// Tracks at least this long remember where you left off (audiobooks, podcasts, mixes).
@@ -80,7 +82,7 @@ final class PlayerEngine {
         player.defaultRate = rate
         player.actionAtItemEnd = .advance
         upNext = (defaults.stringArray(forKey: "upNext") ?? [])
-            .filter { FileManager.default.fileExists(atPath: $0) }
+            .filter { FileManager.default.fileExists(atPath: ChapterID.file($0)) }
             .map { QueueEntry(path: $0) }
 
         observeTime()
@@ -91,13 +93,48 @@ final class PlayerEngine {
 
     var currentTrack: Track? { currentPath.map(library.track(for:)) }
 
+    // MARK: Chapters
+
+    /// Where the current track begins in its file: a chapter's start, else 0.
+    private var fileOffset: TimeInterval { currentPath.flatMap(library.chapter)?.start ?? 0 }
+
+    /// Whether `next` carries straight on from `current` in the same file.
+    private static func follows(_ next: String, _ current: String) -> Bool {
+        guard let next = ChapterID.parse(next), let current = ChapterID.parse(current) else { return false }
+        return next.file == current.file && next.index == current.index + 1
+    }
+
+    /// Where a track's item stops: a chapter at its end, unless it's the book's last.
+    private func endTime(_ path: String) -> CMTime {
+        guard let chapter = library.chapter(path), let book = library.book(path),
+              chapter.id + 1 < (book.chapters?.count ?? 0) else { return .invalid }
+        return CMTime(seconds: chapter.end, preferredTimescale: 600)
+    }
+
+    /// What plays for a path: a book picks up in the chapter it was left in.
+    private func startingPoint(_ path: String) -> (path: String, startAt: TimeInterval?) {
+        guard ChapterID.parse(path) == nil, let book = library.book(path), let chapters = book.chapters else {
+            return (path, resumePoint(for: path))
+        }
+        let position = library.position(path).flatMap { $0 > 5 && $0 < book.duration - 10 ? $0 : nil }
+        let id = ChapterID.make(path, position.flatMap { Chapter.index(at: $0, in: chapters) } ?? 0)
+        return (id, resumePoint(for: id))
+    }
+
+    /// The queue for a track played on its own: its whole book, if it's in one.
+    private func ownQueue(_ path: String) -> [String] {
+        library.book(path).map { library.chapterIDs($0.path) } ?? [path]
+    }
+
     // MARK: Transport
 
     func play(_ path: String, in list: [String]) {
-        sourceQueue = list.contains(path) ? list : [path]
+        let list = library.playable(list)
+        let (path, startAt) = startingPoint(path)
+        sourceQueue = list.contains(path) ? list : ownQueue(path)
         rebuildQueue(startingWith: path)
         queuePath = path
-        load(path, autoplay: true, startAt: resumePoint(for: path))
+        load(path, autoplay: true, startAt: startAt)
     }
 
     func togglePlayPause() {
@@ -106,9 +143,8 @@ final class PlayerEngine {
 
     func resume() {
         guard currentPath != nil else {
-            if let first = queue.first ?? library.paths(for: library.selection).first {
-                play(first, in: library.paths(for: library.selection))
-            }
+            let list = library.playable(library.paths(for: library.selection))
+            if let first = queue.first ?? list.first { play(first, in: list) }
             return
         }
         player.play()
@@ -137,7 +173,7 @@ final class PlayerEngine {
         guard player.currentItem != nil else { return }
         isSeeking = true
         currentTime = time
-        player.seek(to: CMTime(seconds: time, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] _ in
+        player.seek(to: CMTime(seconds: fileOffset + time, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] _ in
             Task { @MainActor in
                 self?.isSeeking = false
                 self?.updateNowPlayingTime()
@@ -188,7 +224,7 @@ final class PlayerEngine {
     func addToQueue(_ paths: [String]) { enqueue(paths, atFront: false) }
 
     private func enqueue(_ paths: [String], atFront: Bool) {
-        var entries = paths.map { QueueEntry(path: $0) }
+        var entries = library.playable(paths).map { QueueEntry(path: $0) }
         // With nothing loaded, the first one plays right away.
         let first = currentPath == nil && !entries.isEmpty ? entries.removeFirst() : nil
         upNext.insert(contentsOf: entries, at: atFront ? 0 : upNext.count)
@@ -232,13 +268,22 @@ final class PlayerEngine {
     /// Queues the next track behind the current one, replacing whatever was queued.
     private func preloadNext() {
         if let upcoming {
-            player.remove(upcoming.item)
+            if upcoming.item !== playingItem { player.remove(upcoming.item) }
             self.upcoming = nil
         }
-        // Tracks that resume mid-way load when they start instead.
-        guard let playingItem, player.items().contains(playingItem),
-              let (path, fromUpNext) = nextUp, resumePoint(for: path) == nil else { return }
+        guard let playingItem, let current = currentPath else { return }
+        playingItem.forwardPlaybackEndTime = endTime(current)
+        guard player.items().contains(playingItem), let (path, fromUpNext) = nextUp else { return }
+        // The next chapter: keep playing the same item, and catch up as it crosses over.
+        if Self.follows(path, current) {
+            playingItem.forwardPlaybackEndTime = .invalid
+            upcoming = (playingItem, path, fromUpNext)
+            return
+        }
+        // Tracks that start mid-file load when they start instead.
+        guard resumePoint(for: path) == nil, (library.chapter(path)?.start ?? 0) == 0 else { return }
         let item = Self.makeItem(path)
+        item.forwardPlaybackEndTime = endTime(path)
         player.insert(item, after: playingItem)
         upcoming = (item, path, fromUpNext)
     }
@@ -279,17 +324,20 @@ final class PlayerEngine {
         playingItem = item
         currentTime = startAt ?? 0
         duration = library.track(for: path).duration
-        if let startAt, startAt > 0 {
-            player.seek(to: CMTime(seconds: startAt, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
+        let begin = fileOffset + (startAt ?? 0)
+        if begin > 0 {
+            player.seek(to: CMTime(seconds: begin, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
         }
-        if autoplay { player.play() }
+        // The player keeps its rate when its queue runs out, and would start
+        // a newly inserted item by itself.
+        if autoplay { player.play() } else { player.pause() }
         isPlaying = autoplay
         preloadNext()
         trackDidStart()
     }
 
     private static func makeItem(_ path: String) -> AVPlayerItem {
-        let item = AVPlayerItem(url: URL(fileURLWithPath: path))
+        let item = AVPlayerItem(url: URL(fileURLWithPath: ChapterID.file(path)))
         // The best quality for music when the speed isn't 1×.
         item.audioTimePitchAlgorithm = .spectral
         return item
@@ -315,36 +363,48 @@ final class PlayerEngine {
 
     private func trackDidStart() {
         guard let path = currentPath else { return }
+        positionSettled = false
         updateNowPlaying()
         // Ready the player backdrop's colors before anyone opens it.
         Task { _ = await ArtworkCache.shared.palette(path) }
-        // And its lyrics, so the player shows them as it slides in.
+        // And its lyrics, so the player shows them as it slides in. Chapters show the book instead.
         let track = library.track(for: path)
         if track.duration > 0 { Task { _ = await LyricsCache.shared.load(track) } }
     }
 
     private func resumePoint(for path: String) -> TimeInterval? {
+        guard let position = library.position(path) else { return nil }
+        // A chapter resumes only if its book was left inside it.
+        if let chapter = library.chapter(path) {
+            let offset = position - chapter.start
+            return offset > 5 && position < chapter.end - 2 ? offset : nil
+        }
         let track = library.track(for: path)
-        guard track.duration >= Self.resumableDuration, let position = library.position(path),
-              position > 5, position < track.duration - 10 else { return nil }
+        guard track.duration >= Self.resumableDuration, position > 5, position < track.duration - 10 else { return nil }
         return position
     }
 
     /// Reopens the last track, paused, where it was left.
     private func restore() {
-        guard let path = library.lastTrackPath, FileManager.default.fileExists(atPath: path) else { return }
-        let list = library.paths(for: library.selection)
-        sourceQueue = list.contains(path) ? list : [path]
+        guard let last = library.lastTrackPath, FileManager.default.fileExists(atPath: ChapterID.file(last)) else { return }
+        // A book saved before its chapters played as tracks reopens in its chapter.
+        let path = ChapterID.parse(last) == nil ? startingPoint(last).path : last
+        let list = library.playable(library.paths(for: library.selection))
+        sourceQueue = list.contains(path) ? list : ownQueue(path)
         rebuildQueue(startingWith: path)
         queuePath = path
-        load(path, autoplay: false, startAt: library.position(path))
+        let start = library.chapter(path)?.start ?? 0
+        let position = library.position(path).map { $0 - start }.flatMap { $0 >= 0 && $0 < library.track(for: path).duration ? $0 : nil }
+        load(path, autoplay: false, startAt: position)
     }
 
+    /// Positions are into the whole file, so a book resumes in the right chapter.
     private func savePosition(force: Bool = false) {
-        guard let path = currentPath else { return }
+        guard let path = currentPath, !positionSettled else { return }
         guard force || Date().timeIntervalSince(lastPositionSave) > 5 else { return }
         lastPositionSave = Date()
-        library.setPosition(currentTime > 1 ? currentTime : nil, for: path)
+        let position = fileOffset + currentTime
+        library.setPosition(position > 1 ? position : nil, for: path)
     }
 
     // MARK: Observation
@@ -359,8 +419,14 @@ final class PlayerEngine {
     private func tick(_ seconds: TimeInterval) {
         // Between the player moving on and us hearing about it, times belong to the next track.
         guard player.currentItem === playingItem else { return }
-        if !isSeeking, seconds.isFinite { currentTime = seconds }
-        if let itemDuration = playingItem?.duration.seconds, itemDuration.isFinite, itemDuration > 0,
+        // Played on into the next chapter.
+        if let upcoming, upcoming.item === playingItem, !isSeeking, seconds.isFinite,
+           let chapter = currentPath.flatMap(library.chapter), seconds >= chapter.end {
+            adoptUpcoming()
+        }
+        if !isSeeking, seconds.isFinite { currentTime = max(0, seconds - fileOffset) }
+        // A chapter's length comes from the book, not the item.
+        if currentPath.flatMap(library.chapter) == nil, let itemDuration = playingItem?.duration.seconds, itemDuration.isFinite, itemDuration > 0,
            abs(itemDuration - duration) > 0.5 {
             duration = itemDuration
             updateNowPlaying()
@@ -405,11 +471,18 @@ final class PlayerEngine {
 
     private func itemDidFinish() {
         guard let path = currentPath else { return }
-        library.recordPlay(path)
-        library.setPosition(nil, for: path)
+        // A book counts as played at the end of its last chapter; until then
+        // it carries on from the next one.
+        if let chapter = library.chapter(path), endTime(path).isValid {
+            library.setPosition(chapter.end, for: path)
+        } else {
+            library.recordPlay(path)
+            library.setPosition(nil, for: path)
+        }
+        positionSettled = true
         currentTime = 0
         // The queued track is already playing, unless it failed to load and was dropped.
-        if let upcoming, player.items().contains(upcoming.item) {
+        if let upcoming, upcoming.item !== playingItem, player.items().contains(upcoming.item) {
             adoptUpcoming()
         } else if repeatMode == .one {
             load(path, autoplay: true)
@@ -503,3 +576,4 @@ final class PlayerEngine {
         center.playbackState = isPlaying ? .playing : .paused
     }
 }
+

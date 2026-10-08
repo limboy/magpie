@@ -21,6 +21,8 @@ nonisolated enum MetadataReader {
             if let artist = await string(metadata, .commonIdentifierArtist) { track.artist = artist }
             if let album = await string(metadata, .commonIdentifierAlbumName) { track.album = album }
         }
+        // Failed reads must never keep a file from playing; it's just not a book then.
+        track.chapters = AudioFiles.mayHaveChapters(path) ? ((try? await ChapterReader.read(asset)) ?? []) : []
         return CachedTrack(track: track, modified: AudioFiles.modificationDate(path) ?? .distantPast)
     }
 
@@ -33,6 +35,7 @@ nonisolated enum MetadataReader {
     }
 
     /// Paths whose cached metadata is missing or older than the file on disk.
+    /// `known` leaves out entries cached before chapters were read.
     @concurrent static func stale(_ paths: [String], known: [String: Date]) async -> [String] {
         paths.filter { path in
             guard let cached = known[path] else { return true }
@@ -47,7 +50,7 @@ nonisolated enum MetadataReader {
     private static let folderArtExtensions = ["jpg", "jpeg", "png", "webp"]
 
     @concurrent static func artwork(path: String, maxPixel: Int) async -> SendableImage? {
-        guard let data = await artworkData(path: path) else { return nil }
+        guard let data = await artworkData(path: ChapterID.file(path)) else { return nil }
         return thumbnail(data, maxPixel: maxPixel)
     }
 
@@ -123,17 +126,19 @@ final class ArtworkCache {
     @ObservationIgnored private var inflight: [String: Task<NSImage?, Never>] = [:]
     @ObservationIgnored private var missing: Set<String> = []
 
-    func generation(_ path: String) -> Int { generations[path] ?? 0 }
+    // A book's chapters all share its artwork.
+    func generation(_ path: String) -> Int { generations[ChapterID.file(path)] ?? 0 }
 
     private func key(_ path: String, _ maxPixel: Int) -> String {
         "\(path)#\(maxPixel)#\(generation(path))"
     }
 
     func cached(_ path: String, maxPixel: Int) -> NSImage? {
-        images.object(forKey: key(path, maxPixel) as NSString)
+        images.object(forKey: key(ChapterID.file(path), maxPixel) as NSString)
     }
 
     func image(_ path: String, maxPixel: Int) async -> NSImage? {
+        let path = ChapterID.file(path)
         let key = key(path, maxPixel)
         if let image = images.object(forKey: key as NSString) { return image }
         if missing.contains(path) { return nil }
@@ -154,9 +159,10 @@ final class ArtworkCache {
         return image
     }
 
-    func cachedPalette(_ path: String) -> [RGB]? { palettes[path] }
+    func cachedPalette(_ path: String) -> [RGB]? { palettes[ChapterID.file(path)] }
 
     func palette(_ path: String) async -> [RGB]? {
+        let path = ChapterID.file(path)
         if let palette = palettes[path] { return palette }
         if missing.contains(path) { return nil }
         let palette = await MetadataReader.palette(path: path)

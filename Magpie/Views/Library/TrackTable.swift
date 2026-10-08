@@ -310,6 +310,10 @@ final class TrackCellView: NSTableCellView {
     private let column: TrackColumn
     private let label = NSTextField(labelWithString: "")
     private let symbol = NSImageView()
+    /// A book's title ends in a chevron: it opens like a folder.
+    private let disclosure = NSImageView()
+    private var labelToEdge: NSLayoutConstraint!
+    private var labelToDisclosure: NSLayoutConstraint!
     /// Colors that would vanish on a selected row's accent background.
     private var accentLabel = false
     private var accentSymbol = false
@@ -329,9 +333,21 @@ final class TrackCellView: NSTableCellView {
         symbol.symbolConfiguration = .init(pointSize: 12, weight: .regular)
         addSubview(symbol)
 
+        disclosure.translatesAutoresizingMaskIntoConstraints = false
+        disclosure.symbolConfiguration = .init(pointSize: 11, weight: .semibold)
+        disclosure.image = NSImage(systemSymbolName: "chevron.right", accessibilityDescription: "Book")
+        disclosure.contentTintColor = .tertiaryLabelColor
+        disclosure.setContentCompressionResistancePriority(.required, for: .horizontal)
+        disclosure.isHidden = true
+        addSubview(disclosure)
+        labelToEdge = label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -2)
+        labelToDisclosure = label.trailingAnchor.constraint(equalTo: disclosure.leadingAnchor, constant: -6)
+
         NSLayoutConstraint.activate([
             label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 2),
-            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -2),
+            labelToEdge,
+            disclosure.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4),
+            disclosure.centerYAnchor.constraint(equalTo: centerYAnchor),
             label.centerYAnchor.constraint(equalTo: centerYAnchor),
             symbol.centerYAnchor.constraint(equalTo: centerYAnchor),
             column == .number
@@ -363,6 +379,10 @@ final class TrackCellView: NSTableCellView {
         symbol.removeAllSymbolEffects()
         symbol.isHidden = true
         label.isHidden = false
+        let isBook = column == .title && row.kind == .book
+        disclosure.isHidden = !isBook
+        labelToEdge.isActive = !isBook
+        labelToDisclosure.isActive = isBook
         label.font = Self.regular
         label.textColor = .secondaryLabelColor
         accentLabel = column == .title && isCurrent
@@ -396,6 +416,8 @@ final class TrackCellView: NSTableCellView {
             label.stringValue = row.duration > 0 ? formatTime(row.duration) : ""
         case .favorite:
             label.isHidden = true
+            // A chapter's favorite is its book's.
+            guard row.kind != .chapter else { return }
             symbol.isHidden = false
             symbol.image = NSImage(
                 systemSymbolName: row.isFavorite ? "star.fill" : "star",

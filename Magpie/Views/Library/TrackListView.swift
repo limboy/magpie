@@ -1,7 +1,10 @@
 import SwiftUI
 
 nonisolated struct TrackRow: Identifiable, Hashable {
+    enum Kind { case song, book, chapter }
+
     let track: Track
+    var kind: Kind = .song
     let plays: Int
     let isFavorite: Bool
     let added: Date
@@ -37,6 +40,14 @@ struct TrackListView: View {
     private var rows: [TrackRow] {
         let item = library.selection
         let query = ui.searchText.trimmingCharacters(in: .whitespaces)
+        if let book = ui.openBook {
+            let rows = library.chapterIDs(book).enumerated().compactMap { index, id -> TrackRow? in
+                let chapter = library.track(for: id)
+                if !query.isEmpty, !chapter.title.localizedStandardContains(query) { return nil }
+                return TrackRow(track: chapter, kind: .chapter, plays: 0, isFavorite: false, added: .distantPast, order: index)
+            }
+            return rows.sorted(using: Self.comparator(ui.sortKey, ascending: ui.sortAscending))
+        }
         let rows = library.paths(for: item).enumerated().compactMap { index, path -> TrackRow? in
             if ui.onlyFavorites && !library.isFavorite(path) { return nil }
             let track = library.track(for: path)
@@ -46,7 +57,7 @@ struct TrackListView: View {
                 return nil
             }
             return TrackRow(
-                track: track, plays: library.plays(path), isFavorite: library.isFavorite(path),
+                track: track, kind: track.isBook ? .book : .song, plays: library.plays(path), isFavorite: library.isFavorite(path),
                 added: library.addedDate(path, in: item) ?? .distantPast, order: index
             )
         }
@@ -84,7 +95,18 @@ struct TrackListView: View {
             }
             return true
         }
-        .onChange(of: library.selection) { selection.removeAll() }
+        .onChange(of: library.selection) {
+            selection.removeAll()
+            ui.openBook = nil
+        }
+        // Next, Previous and the queue moving on take the selection along.
+        .onChange(of: player.currentPath) { _, current in
+            if let current, rows.contains(where: { $0.id == current }) { selection = [current] }
+        }
+        .onChange(of: ui.openBook) { old, _ in
+            // Back out with the book still selected.
+            selection = old.map { [$0] } ?? []
+        }
         // Shown under the collection name in the toolbar.
         .onChange(of: summary(rows), initial: true) { ui.listSummary = $1 }
     }
@@ -97,7 +119,8 @@ struct TrackListView: View {
     static let playerClearance: CGFloat = 54 + playerMargin + 12
 
     private func summary(_ rows: [TrackRow]) -> String {
-        func songs(_ count: Int) -> String { "\(count) \(count == 1 ? "song" : "songs")" }
+        let noun = ui.openBook == nil ? "song" : "chapter"
+        func songs(_ count: Int) -> String { "\(count) \(noun)\(count == 1 ? "" : "s")" }
         let selected = rows.filter { selection.contains($0.id) }
         if selected.count > 1 {
             let time = formatDuration(selected.reduce(0) { $0 + $1.duration })
@@ -122,27 +145,48 @@ struct TrackListView: View {
                 ui.sortKey = key
                 ui.sortAscending = ascending
             },
-            onPlay: { player.play($0, in: ids) },
-            onToggleFavorite: { library.toggleFavorite($0) },
+            onPlay: { open($0, ids: ids) },
+            onToggleFavorite: { if ChapterID.parse($0) == nil { library.toggleFavorite($0) } },
             menu: { menuEntries($0, ids: ids) }
         )
+    }
+
+    /// Double-click or Return: a book opens like a folder; anything else plays,
+    /// with the list's other songs (not its books) as the queue.
+    private func open(_ id: String, ids: [String]) {
+        if ui.openBook == nil, library.book(id) != nil {
+            ui.openBook = id
+        } else {
+            player.play(id, in: ids)
+        }
     }
 
     private func menuEntries(_ selected: Set<String>, ids: [String]) -> [TrackMenuEntry] {
         guard let first = ids.first(where: selected.contains) else { return [] }
         let allFavorite = selected.allSatisfy(library.isFavorite)
-        let ordered = ids.filter(selected.contains)
-        var entries: [TrackMenuEntry] = [
-            .item("Play") { player.play(first, in: ids) },
-            .item("Play Next") { player.playNext(ordered) },
-            .item("Add to Queue") { player.addToQueue(ordered) },
-            .separator,
-            .item(allFavorite ? "Unfavorite" : "Favorite") {
+        // Books are folders: they open, and never go in the queue themselves.
+        let ordered = library.playable(ids.filter(selected.contains))
+        let inBook = ui.openBook != nil
+        var entries: [TrackMenuEntry] = []
+        if !inBook, selected.count == 1, library.book(first) != nil {
+            entries += [.item("Open") { ui.openBook = first }, .separator]
+        }
+        if let firstSong = ordered.first {
+            entries += [
+                .item("Play") { player.play(firstSong, in: ids) },
+                .item("Play Next") { player.playNext(ordered) },
+                .item("Add to Queue") { player.addToQueue(ordered) },
+                .separator,
+            ]
+        }
+        // A chapter's favorite is its book's; star the book itself.
+        if !inBook {
+            entries += [.item(allFavorite ? "Unfavorite" : "Favorite") {
                 for id in selected where library.isFavorite(id) == allFavorite { library.toggleFavorite(id) }
-            },
-            .item("Show in Finder") { library.revealInFinder(Array(selected)) },
-        ]
-        if case .collection(let collectionID) = library.selection {
+            }]
+        }
+        entries += [.item("Show in Finder") { library.revealInFinder(Array(selected)) }]
+        if !inBook, case .collection(let collectionID) = library.selection {
             entries += [.separator, .item("Remove from Collection") { library.remove(selected, from: collectionID) }]
         }
         return entries

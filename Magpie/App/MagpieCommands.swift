@@ -32,6 +32,9 @@ struct MagpieCommands: Commands {
                 .keyboardShortcut("f", modifiers: [.command, .shift])
             Button(ui.lyricsShown ? "Hide Lyrics" : "Show Lyrics") { ui.toggleLyrics() }
                 .keyboardShortcut("u")
+            Button("Back") { ui.openBook = nil }
+                .keyboardShortcut("[")
+                .disabled(ui.mode != .list || ui.openBook == nil)
             Divider()
         }
 

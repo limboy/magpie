@@ -66,18 +66,20 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
     private func apply() {
         guard let window, let toolbar = window.toolbar else { return }
         let mode = ui.settledMode
-        let identifiers = Self.identifiers(for: mode)
+        let identifiers = Self.identifiers(for: mode, inBook: ui.openBook != nil)
         if toolbar.itemIdentifiers != identifiers { toolbar.itemIdentifiers = identifiers }
         // The player covers this view rather than replacing it, so the toolbar
         // stays put; over the player it just turns clear.
         window.titlebarAppearsTransparent = mode != .list
         // The collection name over the song count, as the toolbar's title.
         let hasCollections = !library.collections.isEmpty
-        window.title = mode == .list && hasCollections ? library.title(for: library.selection) : "Magpie"
+        let listTitle = ui.openBook.map { library.track(for: $0).title } ?? library.title(for: library.selection)
+        window.title = mode == .list && hasCollections ? listTitle : "Magpie"
         window.subtitle = mode == .list && hasCollections ? ui.listSummary : ""
         window.titleVisibility = mode == .list ? .visible : .hidden
 
         items[.sidebarButton]?.toolTip = ui.isSidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"
+        items[.back]?.toolTip = "Back to \(library.title(for: library.selection)) (⌘[)"
         if let item = items[.filter] {
             item.image = Self.symbol("line.3.horizontal.decrease", "Filter and Sort", tinted: ui.onlyFavorites)
         }
@@ -118,10 +120,11 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
 
     /// Nothing while the player slides in or out, so items never sit over the
     /// wrong view mid-slide.
-    private static func identifiers(for mode: DisplayMode?) -> [NSToolbarItem.Identifier] {
+    private static func identifiers(for mode: DisplayMode?, inBook: Bool = false) -> [NSToolbarItem.Identifier] {
         switch mode {
         case .list?:
-            [.sidebarDivider, .sidebarButton, .flexibleSpace, .filter, .search, .lyricsDivider]
+            [.sidebarDivider, .sidebarButton] + (inBook ? [.back] : [])
+                + [.flexibleSpace, .filter, .search, .lyricsDivider]
         case .player?:
             [.flexibleSpace, .playerLyrics, .closePlayer]
         case nil:
@@ -130,11 +133,11 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
     }
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        Self.identifiers(for: ui.settledMode)
+        Self.identifiers(for: ui.settledMode, inBook: ui.openBook != nil)
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        Self.identifiers(for: .list) + Self.identifiers(for: .player)
+        Self.identifiers(for: .list, inBook: true) + Self.identifiers(for: .player)
     }
 
     func toolbar(
@@ -150,6 +153,9 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
         case .sidebarButton:
             item = button(identifier, "Sidebar", symbol: "sidebar.left", action: #selector(sidebarClicked))
             // Before the title, which comes after navigational items.
+            item.isNavigational = true
+        case .back:
+            item = button(identifier, "Back", symbol: "chevron.left", action: #selector(backClicked))
             item.isNavigational = true
         case .filter:
             let menuItem = NSMenuToolbarItem(itemIdentifier: identifier)
@@ -208,6 +214,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
     // MARK: Actions
 
     @objc private func sidebarClicked() { ui.toggleSidebar() }
+    @objc private func backClicked() { ui.openBook = nil }
     @objc private func playerLyricsClicked() { ui.toggleLyrics() }
     @objc private func closePlayerClicked() { ui.toggleMode() }
 
@@ -260,6 +267,7 @@ private extension NSToolbarItem.Identifier {
     static let sidebarDivider = Self("sidebarDivider")
     static let lyricsDivider = Self("lyricsDivider")
     static let sidebarButton = Self("sidebarButton")
+    static let back = Self("back")
     static let filter = Self("filter")
     static let search = Self("search")
     static let playerLyrics = Self("playerLyrics")
