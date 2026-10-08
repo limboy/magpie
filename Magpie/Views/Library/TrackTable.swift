@@ -50,6 +50,10 @@ struct TrackTable: NSViewRepresentable {
                 tableColumn.headerCell.attributedStringValue = Self.symbolTitle("star")
             }
             tableColumn.headerCell.alignment = column.alignment
+            let headerTitle = NSMutableAttributedString(attributedString: tableColumn.headerCell.attributedStringValue)
+            headerTitle.addAttribute(.foregroundColor, value: Self.headerTextColor,
+                                     range: NSRange(location: 0, length: headerTitle.length))
+            tableColumn.headerCell.attributedStringValue = headerTitle
             table.addTableColumn(tableColumn)
         }
         table.autosaveName = "TrackTable"
@@ -79,6 +83,13 @@ struct TrackTable: NSViewRepresentable {
 
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         context.coordinator.update(self)
+    }
+
+    // Match the softer header text in Music while retaining the native light appearance.
+    private static let headerTextColor = NSColor(name: nil) { appearance in
+        appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+            ? .headerTextColor.withAlphaComponent(0.8)
+            : .headerTextColor
     }
 
     private static func symbolTitle(_ name: String) -> NSAttributedString {
