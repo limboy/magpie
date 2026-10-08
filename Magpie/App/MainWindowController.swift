@@ -66,7 +66,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
     private func apply() {
         guard let window, let toolbar = window.toolbar else { return }
         let mode = ui.settledMode
-        let identifiers = Self.identifiers(for: mode, inBook: ui.openBook != nil)
+        let identifiers = Self.identifiers(for: mode, inBook: ui.openBook != nil, sidebar: !ui.isSidebarCollapsed)
         if toolbar.itemIdentifiers != identifiers { toolbar.itemIdentifiers = identifiers }
         // The player covers this view rather than replacing it, so the toolbar
         // stays put; over the player it just turns clear.
@@ -120,10 +120,14 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
 
     /// Nothing while the player slides in or out, so items never sit over the
     /// wrong view mid-slide.
-    private static func identifiers(for mode: DisplayMode?, inBook: Bool = false) -> [NSToolbarItem.Identifier] {
+    /// Add Folder and the sidebar button sit over the sidebar's trailing
+    /// edge; with the sidebar hidden, only the sidebar button stays.
+    private static func identifiers(
+        for mode: DisplayMode?, inBook: Bool = false, sidebar: Bool = true
+    ) -> [NSToolbarItem.Identifier] {
         switch mode {
         case .list?:
-            [.sidebarDivider, .sidebarButton] + (inBook ? [.back] : [])
+            (sidebar ? [.flexibleSpace, .addFolder] : []) + [.sidebarButton, .sidebarDivider] + (inBook ? [.back] : [])
                 + [.flexibleSpace, .filter, .search, .lyricsDivider]
         case .player?:
             [.flexibleSpace, .playerLyrics, .closePlayer]
@@ -133,7 +137,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
     }
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        Self.identifiers(for: ui.settledMode, inBook: ui.openBook != nil)
+        Self.identifiers(for: ui.settledMode, inBook: ui.openBook != nil, sidebar: !ui.isSidebarCollapsed)
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
@@ -152,8 +156,9 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
             item = NSTrackingSeparatorToolbarItem(identifier: identifier, splitView: split.splitView, dividerIndex: 1)
         case .sidebarButton:
             item = button(identifier, "Sidebar", symbol: "sidebar.left", action: #selector(sidebarClicked))
-            // Before the title, which comes after navigational items.
-            item.isNavigational = true
+        case .addFolder:
+            item = button(identifier, "Add Folder", symbol: "folder.badge.plus", action: #selector(addFolderClicked))
+            item.toolTip = "Add a folder as a collection (⌘O)"
         case .back:
             item = button(identifier, "Back", symbol: "chevron.left", action: #selector(backClicked))
             item.isNavigational = true
@@ -214,6 +219,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
     // MARK: Actions
 
     @objc private func sidebarClicked() { ui.toggleSidebar() }
+    @objc private func addFolderClicked() { library.presentAddFolder() }
     @objc private func backClicked() { ui.openBook = nil }
     @objc private func playerLyricsClicked() { ui.toggleLyrics() }
     @objc private func closePlayerClicked() { ui.toggleMode() }
@@ -267,6 +273,7 @@ private extension NSToolbarItem.Identifier {
     static let sidebarDivider = Self("sidebarDivider")
     static let lyricsDivider = Self("lyricsDivider")
     static let sidebarButton = Self("sidebarButton")
+    static let addFolder = Self("addFolder")
     static let back = Self("back")
     static let filter = Self("filter")
     static let search = Self("search")

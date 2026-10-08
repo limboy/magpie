@@ -34,23 +34,15 @@ struct SidebarView: View {
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            HStack {
-                Button {
-                    library.presentAddFolder()
-                } label: {
-                    Label("Add Folder", systemImage: "plus")
-                }
-                .buttonStyle(.borderless)
-                .help("Add a folder as a collection (⌘O)")
-                Spacer()
-                if library.isLoadingMetadata {
-                    ProgressView().controlSize(.small)
-                }
+            if library.isLoadingMetadata {
+                ProgressView()
+                    .controlSize(.small)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
         }
-        // Dropping outside the list (the bottom bar) makes new collections.
+        // Dropping outside the list's rows makes new collections.
         .onDrop(of: [.fileURL], isTargeted: nil) { providers in
             Task { await library.addCollections(from: await Self.fileURLs(providers)) }
             return true
