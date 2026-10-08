@@ -1,6 +1,6 @@
 # Magpie
 
-A native macOS 26+ audio player for your local library, written in SwiftUI + AVFoundation. A native rewrite of the Electron [Magpie](../magpie), modeled on Apple Music.
+A native macOS 26+ audio player for your local library, written in SwiftUI + AVFoundation.
 
 ![](assets/s1.jpg)
 ![](assets/s2.jpg)
