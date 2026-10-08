@@ -174,7 +174,10 @@ final class LibraryStore {
             addedAt: Dictionary(items.map { ($0, now) }, uniquingKeysWith: { first, _ in first })
         )
         collections.append(collection)
-        selection = .collection(collection.id)
+        // Selected once the sidebar has its row: inserted and selected in
+        // one update, the row kept its selected (bold) look after the
+        // selection moved on.
+        DispatchQueue.main.async { self.selection = .collection(collection.id) }
         await loadMetadata(items)
     }
 
