@@ -2,6 +2,9 @@
 
 A native macOS 26+ audio player for your local library, written in SwiftUI + AVFoundation. A native rewrite of the Electron [Magpie](../magpie), modeled on Apple Music.
 
+![](assets/s1.jpg)
+![](assets/s2.jpg)
+
 ## Two modes
 
 - **List mode**: collections in the sidebar and a song table. The toolbar holds transport controls, an Apple Music–style "LCD" (artwork, title, progress), a filter/sort menu (All Songs / Only Favorites, sort by any column) and "Find in Songs" search.
