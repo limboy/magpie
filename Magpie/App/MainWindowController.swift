@@ -127,8 +127,10 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
     ) -> [NSToolbarItem.Identifier] {
         switch mode {
         case .list?:
+            // No flexible space before Filter: the title already fills that
+            // room, and one there nudged Filter as the sidebar opened.
             (sidebar ? [.flexibleSpace, .addFolder] : []) + [.sidebarButton, .sidebarDivider] + (inBook ? [.back] : [])
-                + [.flexibleSpace, .filter, .search, .lyricsDivider]
+                + [.filter, .search, .lyricsDivider]
         case .player?:
             [.flexibleSpace, .playerLyrics, .closePlayer]
         case nil:
