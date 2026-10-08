@@ -5,16 +5,15 @@ struct MagpieApp: App {
     @NSApplicationDelegateAdaptor private var app: AppDelegate
 
     var body: some Scene {
-        // The main window is AppKit's (MainWindowController); this scene only
-        // carries the menus.
-        Settings { EmptyView() }
+        // The main window belongs to AppKit (MainWindowController). Attach
+        // menus to the existing About scene instead of registering an empty
+        // Settings window that SwiftUI can present.
+        AboutWindow()
             .commands {
                 AboutCommand()
                 MagpieCommands(library: app.library, player: app.player, ui: app.ui, updater: app.updater)
                 CommandGroup(replacing: .appSettings) {}
             }
-
-        AboutWindow()
     }
 }
 
