@@ -5,7 +5,7 @@ description: Cut a Magpie release — pick the version, draft release notes, pus
 
 # Releasing Magpie
 
-A release is a pushed `v*` tag. `.github/workflows/release.yml` builds that tag with `scripts/build-release.sh`: Developer ID signing, notarization with an App Store Connect API key, the Sparkle-signed zip (what updates install), a notarized DMG (what people download), and `appcast.xml`. It publishes all three as a GitHub release on `limboy/magpie-native`. Installed copies find updates through `releases/latest/download/appcast.xml`, so **the newest release is what every user's Sparkle sees**.
+A release is a pushed `v*` tag. `.github/workflows/release.yml` builds that tag with `scripts/build-release.sh`: Developer ID signing, notarization with an App Store Connect API key, the Sparkle-signed zip (what updates install), a notarized DMG (what people download), and `appcast.xml`. It publishes all three as a GitHub release on `limboy/magpie`. Installed copies find updates through `releases/latest/download/appcast.xml`, so **the newest release is what every user's Sparkle sees**.
 
 Publishing is outward-facing and can't be quietly undone once users have updated. Confirm the version and notes with the user before pushing anything.
 
@@ -15,7 +15,7 @@ Publishing is outward-facing and can't be quietly undone once users have updated
 git status --short && git branch --show-current
 git fetch --tags -q && git tag --sort=-v:refname | head -5
 grep MARKETING_VERSION project.yml
-gh secret list -R limboy/magpie-native
+gh secret list -R limboy/magpie
 ```
 
 - The tree must be clean and on `main`; `scripts/release.sh` refuses otherwise. Don't commit or stash the user's work on your own; ask.
@@ -52,14 +52,14 @@ This sets `MARKETING_VERSION`, regenerates the Xcode project, commits `Release v
 ## 5. Watch the workflow
 
 ```bash
-gh run list -R limboy/magpie-native --workflow release.yml -L 1
-gh run watch <run-id> -R limboy/magpie-native --exit-status
+gh run list -R limboy/magpie --workflow release.yml -L 1
+gh run watch <run-id> -R limboy/magpie --exit-status
 ```
 
 Notarization usually takes a few minutes. If a run fails:
 
 ```bash
-gh run view <run-id> -R limboy/magpie-native --log-failed | tail -60
+gh run view <run-id> -R limboy/magpie --log-failed | tail -60
 ```
 
 - **Select Xcode / build errors about the SDK.** The runner's newest Xcode is too old for the project. Check `runs-on` against GitHub's current macOS images.
@@ -72,8 +72,8 @@ If the build can't be fixed under the same tag and nothing was published, delete
 ## 6. Verify what users get
 
 ```bash
-gh release view v<version> -R limboy/magpie-native --json assets --jq '.assets[].name'
-curl -sL https://github.com/limboy/magpie-native/releases/latest/download/appcast.xml | grep -E 'shortVersionString|<sparkle:version>|enclosure'
+gh release view v<version> -R limboy/magpie --json assets --jq '.assets[].name'
+curl -sL https://github.com/limboy/magpie/releases/latest/download/appcast.xml | grep -E 'shortVersionString|<sparkle:version>|enclosure'
 ```
 
 The release needs `Magpie-<version>.dmg`, `Magpie-<version>.zip` and `appcast.xml`, and the latest appcast must name this version and link to this release's zip.
@@ -81,13 +81,13 @@ The release needs `Magpie-<version>.dmg`, `Magpie-<version>.zip` and `appcast.xm
 Then check the download as a user would see it, in your scratchpad:
 
 ```bash
-gh release download v<version> -R limboy/magpie-native -p 'Magpie-*.zip' -D <scratch>
+gh release download v<version> -R limboy/magpie -p 'Magpie-*.zip' -D <scratch>
 ditto -x -k <scratch>/Magpie-<version>.zip <scratch>/app
 xattr -w com.apple.quarantine "0081;$(printf %x $(date +%s));Safari;" <scratch>/app/Magpie.app
 spctl -a -t exec -vv <scratch>/app/Magpie.app   # expect: source=Notarized Developer ID
 xcrun stapler validate <scratch>/app/Magpie.app
 
-gh release download v<version> -R limboy/magpie-native -p 'Magpie-*.dmg' -D <scratch>
+gh release download v<version> -R limboy/magpie -p 'Magpie-*.dmg' -D <scratch>
 xattr -w com.apple.quarantine "0081;$(printf %x $(date +%s));Safari;" <scratch>/Magpie-<version>.dmg
 spctl -a -t open --context context:primary-signature -vv <scratch>/Magpie-<version>.dmg   # expect: source=Notarized Developer ID
 xcrun stapler validate <scratch>/Magpie-<version>.dmg

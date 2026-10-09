@@ -36,7 +36,7 @@ targets:
         # Sparkle's keys, merged into the generated Info.plist.
         INFOPLIST_FILE: Magpie/Info.plist
         # Each GitHub release carries its own appcast.xml (scripts/release.sh).
-        SPARKLE_FEED_URL: https://github.com/limboy/magpie-native/releases/latest/download/appcast.xml
+        SPARKLE_FEED_URL: https://github.com/limboy/magpie/releases/latest/download/appcast.xml
         INFOPLIST_KEY_CFBundleDisplayName: Magpie
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.music
         INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 Limboy"

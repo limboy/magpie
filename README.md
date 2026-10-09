@@ -25,7 +25,7 @@ Switch modes with ⇧⌘F, the toolbar button, or a click on the LCD artwork. Ea
 
 ## Download
 
-Download the latest signed and notarized release from [GitHub Releases](https://github.com/limboy/magpie-native/releases/latest). Choose the `.dmg`, open it, and drag Magpie to your Applications folder.
+Download the latest signed and notarized release from [GitHub Releases](https://github.com/limboy/magpie/releases/latest). Choose the `.dmg`, open it, and drag Magpie to your Applications folder.
 
 Magpie requires macOS 26 or later. Once installed, it can check for future updates automatically or from **Magpie → Check for Updates…**.
 

@@ -28,7 +28,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 version=${1:?usage: scripts/build-release.sh <version> [notes.md]}
 notes_file=${2:-}
-repo=limboy/magpie-native
+repo=limboy/magpie
 download_base=${DOWNLOAD_BASE:-https://github.com/$repo/releases/download/v$version}
 build_number=${BUILD_NUMBER:-$(git rev-list --count HEAD)}
 derived=build/release

@@ -148,9 +148,9 @@ private struct LicenseCard: View {
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 8) {
                     LinkButton("Read License", systemImage: "doc.text",
-                               url: "https://github.com/limboy/magpie-native/blob/main/LICENSE")
+                               url: "https://github.com/limboy/magpie/blob/main/LICENSE")
                     LinkButton("Source Code", systemImage: "chevron.left.forwardslash.chevron.right",
-                               url: "https://github.com/limboy/magpie-native")
+                               url: "https://github.com/limboy/magpie")
                 }
             }
             .padding(14)

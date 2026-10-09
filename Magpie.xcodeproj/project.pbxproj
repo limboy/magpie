@@ -349,7 +349,7 @@
 				PRODUCT_NAME = Magpie;
 				SDKROOT = macosx;
 				SPARKLE_AUTOMATIC_CHECKS = NO;
-				SPARKLE_FEED_URL = "https://github.com/limboy/magpie-native/releases/latest/download/appcast.xml";
+				SPARKLE_FEED_URL = "https://github.com/limboy/magpie/releases/latest/download/appcast.xml";
 			};
 			name = Debug;
 		};
@@ -436,7 +436,7 @@
 				PRODUCT_NAME = Magpie;
 				SDKROOT = macosx;
 				SPARKLE_AUTOMATIC_CHECKS = YES;
-				SPARKLE_FEED_URL = "https://github.com/limboy/magpie-native/releases/latest/download/appcast.xml";
+				SPARKLE_FEED_URL = "https://github.com/limboy/magpie/releases/latest/download/appcast.xml";
 			};
 			name = Release;
 		};
