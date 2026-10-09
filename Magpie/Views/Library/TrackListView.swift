@@ -41,10 +41,13 @@ struct TrackListView: View {
         let item = library.listSelection
         let query = ui.searchText.trimmingCharacters(in: .whitespaces)
         if let book = ui.openBook {
+            // Every chapter shares the book's artist and album, so "All"
+            // looks only at chapter titles.
+            let scope = ui.searchScope == .all ? .title : ui.searchScope
             let rows = library.chapterIDs(book).enumerated().compactMap { index, id -> TrackRow? in
                 if ui.onlyFavorites && !library.isFavorite(id) { return nil }
                 let chapter = library.track(for: id)
-                if !query.isEmpty, !chapter.title.localizedStandardContains(query) { return nil }
+                if !query.isEmpty, !scope.matches(chapter, query) { return nil }
                 return TrackRow(
                     track: chapter, kind: .chapter, plays: 0, isFavorite: library.isFavorite(id),
                     added: .distantPast, order: index
@@ -55,11 +58,7 @@ struct TrackListView: View {
         let rows = library.paths(for: item).enumerated().compactMap { index, path -> TrackRow? in
             if ui.onlyFavorites && !library.hasFavorite(path) { return nil }
             let track = library.track(for: path)
-            if !query.isEmpty,
-               !(track.title.localizedStandardContains(query) || track.artist.localizedStandardContains(query)
-                   || track.album.localizedStandardContains(query)) {
-                return nil
-            }
+            if !query.isEmpty, !ui.searchScope.matches(track, query) { return nil }
             let kind: TrackRow.Kind = track.isBook ? .book : ChapterID.parse(path) != nil ? .chapter : .song
             return TrackRow(
                 track: track, kind: kind, plays: library.plays(path), isFavorite: library.isFavorite(path),

@@ -58,6 +58,9 @@ final class AppState {
     /// view mid-slide) and the player's lyrics.
     private(set) var settledMode: DisplayMode? = .list
     var searchText = ""
+    var searchScope = SearchScope(rawValue: UserDefaults.standard.string(forKey: "searchScope") ?? "") ?? .all {
+        didSet { UserDefaults.standard.set(searchScope.rawValue, forKey: "searchScope") }
+    }
     /// The song count and length under the collection name, from the song list.
     var listSummary = ""
     var showLyrics = UserDefaults.standard.object(forKey: "showLyrics") as? Bool ?? true {

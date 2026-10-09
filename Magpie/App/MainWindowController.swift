@@ -88,8 +88,13 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
             item.toolTip = ui.showLyrics ? "Hide Lyrics (⌘U)" : "Show Lyrics (⌘U)"
         }
         let search = items[.search] as? NSSearchToolbarItem
-        if let field = search?.searchField, field.stringValue != ui.searchText {
-            field.stringValue = ui.searchText
+        if let field = search?.searchField {
+            if field.stringValue != ui.searchText { field.stringValue = ui.searchText }
+            // The placeholder names the scope, so it also marks a stale menu.
+            if field.placeholderString != ui.searchScope.placeholder {
+                field.placeholderString = ui.searchScope.placeholder
+                field.searchMenuTemplate = searchMenu()
+            }
         }
         if ui.searchFocusRequest != searchFocusRequest {
             searchFocusRequest = ui.searchFocusRequest
@@ -181,7 +186,6 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
             // stretches to fill the space after the sidebar divider.
             search.searchField.widthAnchor.constraint(lessThanOrEqualToConstant: 180).isActive = true
             search.resignsFirstResponderWithCancel = true
-            search.searchField.placeholderString = "Find in Songs"
             search.searchField.sendsSearchStringImmediately = true
             search.searchField.target = self
             search.searchField.action = #selector(searchChanged)
@@ -228,6 +232,18 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSToolba
 
     @objc private func searchChanged(_ field: NSSearchField) {
         ui.searchText = field.stringValue
+    }
+
+    /// The search field's magnifying-glass menu: which fields to look in.
+    private func searchMenu() -> NSMenu {
+        let menu = NSMenu()
+        let header = NSMenuItem(title: "Search In", action: nil, keyEquivalent: "")
+        header.isEnabled = false
+        menu.addItem(header)
+        for scope in SearchScope.allCases {
+            menu.addItem(menuItem(scope.title, checked: ui.searchScope == scope) { [ui] in ui.searchScope = scope })
+        }
+        return menu
     }
 
     // MARK: Filter menu

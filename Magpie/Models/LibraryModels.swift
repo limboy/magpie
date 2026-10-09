@@ -75,3 +75,39 @@ enum SortKey: String, CaseIterable, Identifiable {
         }
     }
 }
+
+/// Which fields the song list's search looks in.
+enum SearchScope: String, CaseIterable, Identifiable {
+    case all, title, artist, album
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .all: "All"
+        case .title: "Title"
+        case .artist: "Artist"
+        case .album: "Album"
+        }
+    }
+
+    var placeholder: String {
+        switch self {
+        case .all: "Find in Songs"
+        case .title: "Find Titles"
+        case .artist: "Find Artists"
+        case .album: "Find Albums"
+        }
+    }
+
+    func matches(_ track: Track, _ query: String) -> Bool {
+        switch self {
+        case .all:
+            track.title.localizedStandardContains(query) || track.artist.localizedStandardContains(query)
+                || track.album.localizedStandardContains(query)
+        case .title: track.title.localizedStandardContains(query)
+        case .artist: track.artist.localizedStandardContains(query)
+        case .album: track.album.localizedStandardContains(query)
+        }
+    }
+}
