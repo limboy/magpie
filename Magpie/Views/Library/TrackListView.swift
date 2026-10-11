@@ -187,6 +187,9 @@ struct TrackListView: View {
         entries += [.item(allFavorite ? "Unfavorite" : "Favorite") {
             for id in selected where library.isFavorite(id) == allFavorite { library.toggleFavorite(id) }
         }]
+        if selected.count == 1 {
+            entries += [.item("Get Info") { ui.infoPath = first }]
+        }
         entries += [.item("Show in Finder") { library.revealInFinder(Array(selected)) }]
         if !inBook, case .collection(let collectionID) = library.listSelection {
             entries += [.separator, .item("Remove from Collection") { library.remove(selected, from: collectionID) }]
