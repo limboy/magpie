@@ -58,6 +58,8 @@ struct TrackTable: NSViewRepresentable {
         }
         table.autosaveName = "TrackTable"
         table.autosaveTableColumns = true
+        // Restore Title even if an older saved layout hid it.
+        table.tableColumn(withIdentifier: TrackColumn.title.identifier)?.isHidden = false
 
         let coordinator = context.coordinator
         coordinator.table = table
@@ -70,6 +72,9 @@ struct TrackTable: NSViewRepresentable {
         let menu = NSMenu()
         menu.delegate = coordinator
         table.menu = menu
+        coordinator.columnMenu.delegate = coordinator
+        coordinator.columnMenu.autoenablesItems = false
+        table.headerView?.menu = coordinator.columnMenu
 
         let scrollView = TrackScrollView()
         scrollView.documentView = table
@@ -106,6 +111,7 @@ struct TrackTable: NSViewRepresentable {
 
     final class Coordinator: NSObject, NSTableViewDataSource, NSTableViewDelegate, NSMenuDelegate {
         weak var table: NSTableView?
+        let columnMenu = NSMenu(title: "Columns")
         private var parent: TrackTable?
         private var rows: [TrackRow] = []
         private var rowIndex: [String: Int] = [:]
@@ -204,8 +210,27 @@ struct TrackTable: NSViewRepresentable {
             (item.representedObject as? MenuAction)?.run()
         }
 
+        @objc private func toggleColumn(_ item: NSMenuItem) {
+            guard let table, let column = item.representedObject as? NSTableColumn,
+                  column.identifier != TrackColumn.title.identifier else { return }
+            column.isHidden.toggle()
+            table.sizeToFit()
+        }
+
         func menuNeedsUpdate(_ menu: NSMenu) {
             menu.removeAllItems()
+            if menu === columnMenu {
+                guard let table else { return }
+                for column in table.tableColumns {
+                    guard let kind = TrackColumn(rawValue: column.identifier.rawValue), kind != .title else { continue }
+                    let item = NSMenuItem(title: kind.menuTitle, action: #selector(toggleColumn(_:)), keyEquivalent: "")
+                    item.target = self
+                    item.representedObject = column
+                    item.state = column.isHidden ? .off : .on
+                    menu.addItem(item)
+                }
+                return
+            }
             guard let table, let parent, rows.indices.contains(table.clickedRow) else { return }
             // Right-clicking outside the selection acts on that row alone.
             let ids: Set<String> = table.selectedRowIndexes.contains(table.clickedRow)
@@ -231,6 +256,14 @@ enum TrackColumn: String, CaseIterable {
     case number, title, artist, album, plays, time, favorite
 
     var identifier: NSUserInterfaceItemIdentifier { NSUserInterfaceItemIdentifier(rawValue) }
+
+    var menuTitle: String {
+        switch self {
+        case .number: "Track Number"
+        case .favorite: "Favorite"
+        default: title
+        }
+    }
 
     var title: String {
         switch self {
