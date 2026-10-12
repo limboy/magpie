@@ -36,6 +36,7 @@ final class PlayerEngine {
     static let rates: [Float] = [0.5, 0.75, 1, 1.25, 1.5, 2]
     var shuffle: Bool {
         didSet {
+            guard shuffle != oldValue else { return }
             UserDefaults.standard.set(shuffle, forKey: "shuffle")
             rebuildQueue()
             preloadNext()
@@ -43,6 +44,7 @@ final class PlayerEngine {
     }
     var repeatMode: RepeatMode {
         didSet {
+            guard repeatMode != oldValue else { return }
             UserDefaults.standard.set(repeatMode.rawValue, forKey: "repeatMode")
             preloadNext()
         }
@@ -265,18 +267,33 @@ final class PlayerEngine {
         load(path, autoplay: true, startAt: resumePoint(for: path))
     }
 
-    /// Queues the next track behind the current one, replacing whatever was queued.
+    /// Updates the next track without disturbing the current item's playback.
     private func preloadNext() {
+        guard let playingItem, let current = currentPath,
+              player.currentItem === playingItem else { return }
+        let next = nextUp
+        let continuesChapter = next.map { Self.follows($0.path, current) } ?? false
+        let playbackEnd = continuesChapter ? CMTime.invalid : endTime(current)
+        // Reassigning the playback boundary can interrupt audio. In particular,
+        // don't briefly restore a chapter boundary before clearing it again.
+        let existingEnd = playingItem.forwardPlaybackEndTime
+        if !(existingEnd.isValid == false && playbackEnd.isValid == false),
+           CMTimeCompare(existingEnd, playbackEnd) != 0 {
+            playingItem.forwardPlaybackEndTime = playbackEnd
+        }
+        if let upcoming, let next, upcoming.path == next.path,
+           (continuesChapter ? upcoming.item === playingItem :
+                upcoming.item !== playingItem && player.items().contains(upcoming.item)) {
+            self.upcoming = (upcoming.item, next.path, next.fromUpNext)
+            return
+        }
         if let upcoming {
             if upcoming.item !== playingItem { player.remove(upcoming.item) }
             self.upcoming = nil
         }
-        guard let playingItem, let current = currentPath else { return }
-        playingItem.forwardPlaybackEndTime = endTime(current)
-        guard player.items().contains(playingItem), let (path, fromUpNext) = nextUp else { return }
+        guard let (path, fromUpNext) = next else { return }
         // The next chapter: keep playing the same item, and catch up as it crosses over.
-        if Self.follows(path, current) {
-            playingItem.forwardPlaybackEndTime = .invalid
+        if continuesChapter {
             upcoming = (playingItem, path, fromUpNext)
             return
         }
@@ -576,4 +593,3 @@ final class PlayerEngine {
         center.playbackState = isPlaying ? .playing : .paused
     }
 }
-
