@@ -7,12 +7,16 @@ nonisolated struct Track: Identifiable, Hashable, Codable, Sendable {
     var album: String
     var duration: TimeInterval
     /// A book's chapters; empty when it has none, nil when not read yet
-    /// (metadata cached before chapters were).
+    /// (an older cache entry or a failed read).
     var chapters: [Chapter]?
 
     var id: String { path }
     var url: URL { URL(fileURLWithPath: ChapterID.file(path)) }
     var isBook: Bool { !(chapters ?? []).isEmpty }
+
+    /// Failed reads, including older cached placeholders, must be retried even
+    /// when the file's modification date hasn't changed (for example, iCloud downloads).
+    var hasLoadedMetadata: Bool { duration.isFinite && duration > 0 && chapters != nil }
 
     /// A stand-in used until the file's metadata has been read.
     static func placeholder(path: String) -> Track {

@@ -2,6 +2,16 @@ import Foundation
 
 @main struct ChapterChecks {
     static func main() async {
+        var cached = Track.placeholder(path: "/a/Book.m4b")
+        cached.chapters = []
+        precondition(!cached.hasLoadedMetadata, "Old failed reads must be retried")
+        cached.duration = 30
+        precondition(cached.hasLoadedMetadata, "A successful read without chapters is cacheable")
+        cached.chapters = nil
+        precondition(!cached.hasLoadedMetadata, "Failed chapter reads must be retried")
+        cached.chapters = []
+        cached.duration = .nan
+        precondition(!cached.hasLoadedMetadata)
         let raw = [
             Chapter(id: 2, title: " ", start: 10, end: .nan),
             Chapter(id: 0, title: "Opening", start: 0, end: 20),
@@ -35,6 +45,11 @@ import Foundation
                 precondition(plain.isEmpty)
             }
             print("AVFoundation fixture reading and empty-file checks passed")
+        }
+        if CommandLine.arguments.count > 3 {
+            let book = await ChapterReader.read(CommandLine.arguments[3])
+            precondition(book.count > 1, "Expected embedded chapters in the supplied audiobook")
+            print("Audiobook check passed: \(book.count) chapters")
         }
         print("Chapter normalization and boundary checks passed")
     }

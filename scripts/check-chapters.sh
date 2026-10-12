@@ -25,6 +25,6 @@ ffmpeg -v error -f lavfi -i anullsrc=r=44100:cl=mono -i "$CHECK_DIR/metadata.txt
     -t 6 -map_metadata 1 -map_chapters 1 -c:a aac "$CHECK_DIR/book.m4b"
 ffmpeg -v error -i "$CHECK_DIR/book.m4b" -map_chapters -1 -c:a copy "$CHECK_DIR/plain.m4b"
 swiftc -module-cache-path "$CHECK_DIR/modules" -parse-as-library \
-    Magpie/Models/Chapter.swift Magpie/Services/AudioFiles.swift \
+    Magpie/Models/Chapter.swift Magpie/Models/Track.swift Magpie/Services/AudioFiles.swift \
     Magpie/Services/ChapterReader.swift Tests/ChapterChecks.swift -o "$CHECK_DIR/check"
-"$CHECK_DIR/check" "$CHECK_DIR/book.m4b" "$CHECK_DIR/plain.m4b"
+"$CHECK_DIR/check" "$CHECK_DIR/book.m4b" "$CHECK_DIR/plain.m4b" "$@"

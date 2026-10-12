@@ -294,8 +294,8 @@ final class LibraryStore {
 
     func loadMetadata(_ paths: [String]) async {
         let candidates = Array(Set(paths).subtracting(loading))
-        // Entries cached before chapters were read are read again.
-        let known = modified.filter { tracks[$0.key]?.chapters != nil }
+        // Retry incomplete reads even when the file on disk hasn't changed.
+        let known = modified.filter { tracks[$0.key]?.hasLoadedMetadata == true }
         let stale = await MetadataReader.stale(candidates, known: known)
         guard !stale.isEmpty else { return }
         loading.formUnion(stale)

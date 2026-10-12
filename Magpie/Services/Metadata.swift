@@ -22,7 +22,8 @@ nonisolated enum MetadataReader {
             if let album = await string(metadata, .commonIdentifierAlbumName) { track.album = album }
         }
         // Failed reads must never keep a file from playing; it's just not a book then.
-        track.chapters = AudioFiles.mayHaveChapters(path) ? ((try? await ChapterReader.read(asset)) ?? []) : []
+        // Keep a failed chapter read unresolved so a later refresh retries it.
+        track.chapters = AudioFiles.mayHaveChapters(path) ? (try? await ChapterReader.read(asset)) : []
         return CachedTrack(track: track, modified: AudioFiles.modificationDate(path) ?? .distantPast)
     }
 
