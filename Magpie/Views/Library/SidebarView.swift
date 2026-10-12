@@ -12,7 +12,7 @@ struct SidebarView: View {
         @Bindable var library = library
         List(selection: $library.selection) {
             Section("Library") {
-                Self.label("Favorites", systemImage: "star")
+                Self.label("Favorites", systemImage: "star", isBold: library.selection == .favorites)
                     .tag(SidebarItem.favorites)
             }
             Section("Collections") {
@@ -69,13 +69,11 @@ struct SidebarView: View {
         return urls
     }
 
-    /// The sidebar bolds a selected row while it has focus, but kept the
-    /// bold on that row after focus and then the selection moved elsewhere.
-    /// A weight on the Text itself (not the Label, which the sidebar's
-    /// style overrides) keeps every row regular.
-    private static func label(_ title: String, systemImage: String) -> some View {
+    /// The sidebar's label style overrides weights on the Label itself,
+    /// so we apply font weight directly to the Text.
+    private static func label(_ title: String, systemImage: String, isBold: Bool = false) -> some View {
         Label {
-            Text(title).fontWeight(.regular)
+            Text(title).fontWeight(isBold ? .bold : .regular)
         } icon: {
             Image(systemName: systemImage)
         }
@@ -95,7 +93,11 @@ struct SidebarView: View {
                 Image(systemName: "folder")
             }
         } else {
-            Self.label(collection.name, systemImage: "folder")
+            Self.label(
+                collection.name,
+                systemImage: "folder",
+                isBold: library.selection == .collection(collection.id)
+            )
         }
     }
 
