@@ -54,7 +54,7 @@ enum DisplayMode: Hashable {
     case list, player
 
     var minimumSize: CGSize {
-        self == .list ? CGSize(width: 900, height: 520) : CGSize(width: 360, height: 520)
+        CGSize(width: self == .list ? LibraryLayout.songsMinimumWidth : 360, height: 520)
     }
 }
 
